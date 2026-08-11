@@ -6,6 +6,9 @@ import {
     ReportDataResult,
     ReportOrchestrationInput
 } from "./report-orchestration.types";
+import {OrderReportItem} from "../GenerateReport/domain/order-report.types";
+import {PaymentReportItem} from "../GenerateReport/domain/payment-report.types";
+import {CustomerReportData} from "../GenerateReport/domain/customer-report.types";
 
 const GET_ORDERS_ACTIVITY = "GetOrders";
 
@@ -22,69 +25,42 @@ const reportOrchestrator = df.orchestrator(function* (context) {
         const input = context.df.getInput() as ReportOrchestrationInput;
 
         const dataRequest = {
-            reportId:
-            input.reportId,
-            customerId:
-            input.customerId,
-            period:
-            input.period
+            reportId: input.reportId,
+            customerId: input.customerId,
+            period: input.period
         };
 
         const tasks = [
-            context.df.callActivity(
-                GET_ORDERS_ACTIVITY,
-                dataRequest
-            ),
-
-            context.df.callActivity(
-                GET_PAYMENTS_ACTIVITY,
-                dataRequest
-            ),
-
-            context.df.callActivity(
-                GET_CUSTOMERS_ACTIVITY,
-                dataRequest
-            )
+            context.df.callActivity(GET_ORDERS_ACTIVITY, dataRequest),
+            context.df.callActivity(GET_PAYMENTS_ACTIVITY, dataRequest),
+            context.df.callActivity(GET_CUSTOMERS_ACTIVITY, {
+                customerId:
+                input.customerId
+            })
         ];
 
-        const results =
-            yield context.df.Task.all(
-                tasks
-            );
+        const results = yield context.df.Task.all(tasks);
 
-        const reportData:
-            ReportDataResult = {
-            orders:
-                results[0],
-            payments:
-                results[1],
-            customers:
-                results[2]
+        const reportData: ReportDataResult = {
+            orders: results[0] as OrderReportItem[],
+            payments: results[1] as PaymentReportItem[],
+            customer: results[2] as CustomerReportData
         };
 
-        const generateExcelInput:
-            GenerateExcelActivityInput = {
-            reportId:
-            input.reportId,
-            customerId:
-            input.customerId,
-            data:
-            reportData
+        const generateExcelInput: GenerateExcelActivityInput = {
+            reportId: input.reportId,
+            customerId: input.customerId,
+            data: reportData
         };
 
-        const generatedReport: GenerateExcelActivityResult = yield context.df.callActivity(
-            GENERATE_EXCEL_ACTIVITY,
-            generateExcelInput
-        );
+        const generatedReport: GenerateExcelActivityResult = yield context.df.callActivity(GENERATE_EXCEL_ACTIVITY, generateExcelInput);
 
         yield context.df.callActivity(COMPLETE_GENERATION_ACTIVITY, generatedReport);
 
         return {
-            reportId:
-            generatedReport.reportId,
+            reportId: generatedReport.reportId,
             status: "GENERATED",
-            blobName:
-            generatedReport.blobName
+            blobName: generatedReport.blobName
         };
     }
 );
