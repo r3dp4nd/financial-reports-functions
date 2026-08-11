@@ -4,10 +4,14 @@ import {RequestReportCommand} from "./request-report.command";
 import {RequestReportResult} from "./request-report.result";
 import {ReportEventPublisher} from "./report-event.publisher";
 import {ReportRequestedIntegrationEvent} from "./report-requested.integration-event";
+import {RequestReportValidationError} from "./request-report-validation.error";
 
 export class RequestReportUseCase {
 
-    constructor(private readonly reportRepository: ReportRepository, private readonly reportEventPublisher: ReportEventPublisher) {
+    constructor(
+        private readonly reportRepository: ReportRepository,
+        private readonly reportEventPublisher: ReportEventPublisher
+    ) {
     }
 
     async execute(command: RequestReportCommand): Promise<RequestReportResult> {
@@ -46,23 +50,23 @@ export class RequestReportUseCase {
     private validate(command: RequestReportCommand): void {
 
         if (!command.reportId?.trim()) {
-            throw new Error("reportId is required");
+            throw new RequestReportValidationError("reportId is required");
         }
 
         if (!command.customerId?.trim()) {
-            throw new Error("customerId is required");
+            throw new RequestReportValidationError("customerId is required");
         }
 
         if (!command.from?.trim()) {
-            throw new Error("from is required");
+            throw new RequestReportValidationError("from is required");
         }
 
         if (!command.to?.trim()) {
-            throw new Error("to is required");
+            throw new RequestReportValidationError("to is required");
         }
 
         if (!command.requestedAt?.trim()) {
-            throw new Error("requestedAt is required");
+            throw new RequestReportValidationError("requestedAt is required");
         }
 
         const from = new Date(command.from);
@@ -72,19 +76,19 @@ export class RequestReportUseCase {
         const requestedAt = new Date(command.requestedAt);
 
         if (Number.isNaN(from.getTime())) {
-            throw new Error("from is invalid");
+            throw new RequestReportValidationError("from is invalid");
         }
 
         if (Number.isNaN(to.getTime())) {
-            throw new Error("to is invalid");
+            throw new RequestReportValidationError("to is invalid");
         }
 
         if (Number.isNaN(requestedAt.getTime())) {
-            throw new Error("requestedAt is invalid");
+            throw new RequestReportValidationError("requestedAt is invalid");
         }
 
         if (from > to) {
-            throw new Error("from must be before or equal to to");
+            throw new RequestReportValidationError("from must be before or equal to to");
         }
     }
 }
