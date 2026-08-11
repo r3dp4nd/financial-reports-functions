@@ -14,3 +14,4 @@ const database: Database = cosmosClient.database(config.databaseName);
 export const reportsContainer: Container = database.container(config.reportsContainerName);
 export const ordersContainer: Container = database.container(config.ordersContainerName);
 export const paymentsContainer: Container = database.container(config.paymentsContainerName);
+export const customersContainer: Container = database.container(config.customersContainerName);

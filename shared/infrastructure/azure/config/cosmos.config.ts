@@ -5,6 +5,7 @@ export interface CosmosConfig {
     reportsContainerName: string;
     ordersContainerName: string;
     paymentsContainerName: string;
+    customersContainerName: string;
 }
 
 export function getCosmosConfig(): CosmosConfig {
@@ -15,6 +16,7 @@ export function getCosmosConfig(): CosmosConfig {
     const reportsContainerName: string | undefined = process.env.COSMOS_REPORTS_CONTAINER;
     const ordersContainerName: string | undefined = process.env.COSMOS_ORDERS_CONTAINER;
     const paymentsContainerName: string | undefined = process.env.COSMOS_PAYMENTS_CONTAINER;
+    const customersContainerName: string | undefined = process.env.COSMOS_CUSTOMERS_CONTAINER;
 
     if (!endpoint) {
         throw new Error("COSMOS_ENDPOINT is required");
@@ -40,6 +42,12 @@ export function getCosmosConfig(): CosmosConfig {
         throw new Error("COSMOS_PAYMENTS_CONTAINER is required");
     }
 
+    if (!customersContainerName) {
+        throw new Error(
+            "COSMOS_CUSTOMERS_CONTAINER is required"
+        );
+    }
+
 
     try {
         new URL(endpoint);
@@ -53,6 +61,7 @@ export function getCosmosConfig(): CosmosConfig {
         databaseName,
         reportsContainerName,
         ordersContainerName,
-        paymentsContainerName
+        paymentsContainerName,
+        customersContainerName
     };
 }
