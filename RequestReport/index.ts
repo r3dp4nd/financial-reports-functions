@@ -1,17 +1,26 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions"
+import {AzureFunction} from "@azure/functions";
+import {randomUUID} from "node:crypto";
 
-const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    context.log('HTTP trigger function processed a request.');
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+import {CosmosReportRepository} from "./infrastructure/persistence/cosmos-report.repository";
+import {reportsContainer} from "../shared/infrastructure/azure/cosmos/cosmos.client";
+import {ServiceBusReportEventPublisher} from "./infrastructure/messaging/service-bus-report-event.publisher";
+import {reportRequestsSender} from "../shared/infrastructure/azure/service-bus/service-bus.client";
+import {RequestReportUseCase} from "./application/request-report.use-case";
+import {createRequestReportHandler} from "./handler";
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
+const reportRepository = new CosmosReportRepository(reportsContainer);
 
-};
+const reportEventPublisher = new ServiceBusReportEventPublisher(reportRequestsSender);
 
-export default httpTrigger;
+const requestReportUseCase = new RequestReportUseCase(reportRepository, reportEventPublisher);
+
+const requestReport: AzureFunction =
+    createRequestReportHandler({
+        useCase:
+        requestReportUseCase,
+        generateReportId:
+        randomUUID,
+        now: () => new Date().toISOString()
+    });
+
+export default requestReport;
