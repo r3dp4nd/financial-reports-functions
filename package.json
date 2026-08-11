@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@azure/cosmos": "^4.10.0",
-    "@azure/functions": "^3.5.1"
+    "@azure/functions": "^3.5.1",
+    "@azure/service-bus": "^7.9.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
