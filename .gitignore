@@ -53,3 +53,9 @@ AzuriteConfig
 
 .idea
 .vscode
+node_modules/
+dist/
+coverage/
+test-results/
+
+.env.*
