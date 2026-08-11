@@ -1,16 +1,13 @@
-export type ReportGenerationStatus =
-    | "REQUESTED"
-    | "PROCESSING"
-    | "GENERATED"
-    | "COMPLETED"
-    | "FAILED";
+import {Report} from "../../Report/domain/report";
 
-export interface ReportGenerationState {
-    reportId: string;
-    status: ReportGenerationStatus;
-    blobName?: string;
-    generatedAt?: string;
-}
+export type ReportGenerationState =
+    Pick<
+        Report,
+        | "reportId"
+        | "status"
+        | "blobName"
+        | "generatedAt"
+    >;
 
 export interface ReportGenerationSnapshot {
     state: ReportGenerationState;

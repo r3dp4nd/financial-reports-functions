@@ -30,7 +30,6 @@ describe("RequestReport HTTP handler", () => {
 
         repository = {
             save: jest.fn(),
-            findById: jest.fn()
         };
 
         publisher = {

@@ -1,13 +1,14 @@
 import {Container} from "@azure/cosmos";
 
+import {ReportStatus} from "../../../Report/domain/report-status";
 import {CompleteReportUpdate, ReportCompletionRepository} from "../../domain/report-completion.repository";
-import {ReportCompletionSnapshot, ReportCompletionStatus} from "../../domain/report-completion.types";
+import {ReportCompletionSnapshot} from "../../domain/report-completion.types";
 import {ReportCompletionConcurrencyError} from "../../domain/report-completion-concurrency.error";
 
 interface CosmosReportCompletionDocument {
     id: string;
     reportId: string;
-    status: ReportCompletionStatus;
+    status: ReportStatus;
     blobName?: string;
     generatedAt?: string;
     completedAt?: string;

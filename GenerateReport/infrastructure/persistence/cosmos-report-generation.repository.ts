@@ -1,13 +1,14 @@
 import {Container} from "@azure/cosmos";
 
+import {ReportStatus} from "../../../Report/domain/report-status";
 import {ReportGenerationRepository, UpdateGeneratedReport} from "../../domain/report-generation.repository";
-import {ReportGenerationSnapshot, ReportGenerationStatus} from "../../domain/report-generation.types";
+import {ReportGenerationSnapshot} from "../../domain/report-generation.types";
 import {ReportGenerationConcurrencyError} from "../../domain/report-generation-concurrency.error";
 
 interface CosmosReportGenerationDocument {
     id: string;
     reportId: string;
-    status: ReportGenerationStatus;
+    status: ReportStatus;
     blobName?: string;
     generatedAt?: string;
     _etag?: string;

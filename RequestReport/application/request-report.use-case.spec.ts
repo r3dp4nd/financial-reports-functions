@@ -11,7 +11,6 @@ describe("RequestReportUseCase", () => {
     beforeEach(() => {
         repository = {
             save: jest.fn(),
-            findById: jest.fn()
         };
         eventPublisher = {
             publishRequested: jest.fn()

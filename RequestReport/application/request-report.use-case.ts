@@ -1,4 +1,4 @@
-import {Report} from "../domain/report.types";
+import {Report} from "../../Report/domain/report";
 import {ReportRepository} from "../domain/report.repository";
 import {RequestReportCommand} from "./request-report.command";
 import {RequestReportResult} from "./request-report.result";

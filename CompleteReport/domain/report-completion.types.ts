@@ -1,17 +1,14 @@
-export type ReportCompletionStatus =
-    | "REQUESTED"
-    | "PROCESSING"
-    | "GENERATED"
-    | "COMPLETED"
-    | "FAILED";
+import {Report} from "../../Report/domain/report";
 
-export interface ReportCompletionState {
-    reportId: string;
-    status: ReportCompletionStatus;
-    blobName?: string;
-    generatedAt?: string;
-    completedAt?: string;
-}
+export type ReportCompletionState =
+    Pick<
+        Report,
+        | "reportId"
+        | "status"
+        | "blobName"
+        | "generatedAt"
+        | "completedAt"
+    >;
 
 export interface ReportCompletionSnapshot {
     state: ReportCompletionState;
