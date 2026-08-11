@@ -13,6 +13,7 @@
     "start": "npm run build && func start"
   },
   "dependencies": {
+    "@azure/cosmos": "^4.10.0",
     "@azure/functions": "^3.5.1"
   },
   "devDependencies": {
