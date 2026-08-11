@@ -1,0 +1,12 @@
+{
+  "bindings": [
+    {
+      "name": "message",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "%SERVICE_BUS_REPORT_GENERATED_QUEUE%",
+      "connection": "SERVICE_BUS_CONNECTION"
+    }
+  ],
+  "scriptFile": "../dist/CompleteReport/index.js"
+}
