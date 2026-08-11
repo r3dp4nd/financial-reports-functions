@@ -23,9 +23,14 @@ module.exports = {
         "**/*.ts",
 
         "!**/*.spec.ts",
-        "!**/*.types.ts",
+
+        // Contratos/declaraciones sin comportamiento runtime.
+        "!**/*.command.ts",
+        "!**/*.result.ts",
+        "!**/*.integration-event.ts",
         "!**/*.repository.ts",
         "!**/*.publisher.ts",
+        "!**/*.types.ts",
 
         "!node_modules/**",
         "!dist/**",
