@@ -37,6 +37,7 @@ module.exports = {
         "!**/*.publisher.ts",
         "!**/*.generator.ts",
         "!**/*.storage.ts",
+        "!**/*.http.ts",
 
         "!node_modules/**",
         "!dist/**",

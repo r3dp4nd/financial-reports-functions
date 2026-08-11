@@ -1,12 +1,14 @@
 export interface ServiceBusConfig {
     connectionString: string;
     reportRequestsQueueName: string;
+    reportGeneratedQueueName: string;
 }
 
 export function getServiceBusConfig(): ServiceBusConfig {
 
     const connectionString: string | undefined = process.env.SERVICE_BUS_CONNECTION;
     const reportRequestsQueueName: string | undefined = process.env.SERVICE_BUS_REPORT_REQUESTS_QUEUE;
+    const reportGeneratedQueueName: string | undefined = process.env.SERVICE_BUS_REPORT_GENERATED_QUEUE;
 
     if (!connectionString) {
         throw new Error("SERVICE_BUS_CONNECTION is required");
@@ -16,8 +18,13 @@ export function getServiceBusConfig(): ServiceBusConfig {
         throw new Error("SERVICE_BUS_REPORT_REQUESTS_QUEUE is required");
     }
 
+    if (!reportGeneratedQueueName) {
+        throw new Error("SERVICE_BUS_REPORT_GENERATED_QUEUE is required");
+    }
+
     return {
         connectionString,
-        reportRequestsQueueName
+        reportRequestsQueueName,
+        reportGeneratedQueueName
     };
 }
