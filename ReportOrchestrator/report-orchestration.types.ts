@@ -1,21 +1,14 @@
-import {OrderReportItem} from "../GenerateReport/domain/order-report.types";
-import {PaymentReportItem} from "../GenerateReport/domain/payment-report.types";
-import {CustomerReportData} from "../GenerateReport/domain/customer-report.types";
+import {ReportData} from "../GenerateReport/domain/report-data.types";
 
 export interface ReportOrchestrationInput {
     reportId: string;
     customerId: string;
     period: {
-        from: string;
-        to: string;
+        from: string; to: string;
     };
 }
 
-export interface ReportDataResult {
-    orders: OrderReportItem[];
-    payments: PaymentReportItem[];
-    customer: CustomerReportData;
-}
+export type ReportDataResult = ReportData;
 
 export interface GenerateExcelActivityInput {
     reportId: string;

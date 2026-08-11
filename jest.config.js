@@ -24,13 +24,19 @@ module.exports = {
 
         "!**/*.spec.ts",
 
-        // Contratos/declaraciones sin comportamiento runtime.
+        // Composition roots: wiring únicamente.
+        "!**/index.ts",
+
+        // Contratos y declaraciones sin comportamiento runtime.
+        "!**/*.types.ts",
         "!**/*.command.ts",
+        "!**/*.query.ts",
         "!**/*.result.ts",
         "!**/*.integration-event.ts",
         "!**/*.repository.ts",
         "!**/*.publisher.ts",
-        "!**/*.types.ts",
+        "!**/*.generator.ts",
+        "!**/*.storage.ts",
 
         "!node_modules/**",
         "!dist/**",
