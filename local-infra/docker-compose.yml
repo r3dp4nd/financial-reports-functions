@@ -1,0 +1,64 @@
+services:
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: financial-reports-azurite
+    command:
+      - azurite
+      - --blobHost
+      - 0.0.0.0
+      - --queueHost
+      - 0.0.0.0
+      - --tableHost
+      - 0.0.0.0
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+
+  cosmos:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
+    container_name: financial-reports-cosmos
+    ports:
+      - "8081:8081"
+      - "8080:8080"
+      - "1234:1234"
+    volumes:
+      - cosmos-data:/data
+    environment:
+      PROTOCOL: http
+      ENABLE_EXPLORER: "true"
+
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: financial-reports-servicebus
+    pull_policy: always
+    ports:
+      - "5672:5672"
+      - "5300:5300"
+    volumes:
+      - ./servicebus-config.json:/ServiceBus_Emulator/ConfigFiles/Config.json
+    environment:
+      SQL_SERVER: mssql
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: ${ACCEPT_EULA}
+      EMULATOR_HTTP_PORT: "5300"
+      SQL_WAIT_INTERVAL: "15"
+    depends_on:
+      - mssql
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: financial-reports-servicebus-sql
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    volumes:
+      - servicebus-sql-data:/var/opt/mssql
+
+volumes:
+  azurite-data:
+  cosmos-data:
+  servicebus-sql-data:

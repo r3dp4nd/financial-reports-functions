@@ -1,0 +1,42 @@
+{
+  "UserConfig": {
+    "Namespaces": [
+      {
+        "Name": "financial-reports-local",
+        "Queues": [
+          {
+            "Name": "report-requests",
+            "Properties": {
+              "DeadLetteringOnMessageExpiration": false,
+              "DefaultMessageTimeToLive": "PT1H",
+              "DuplicateDetectionHistoryTimeWindow": "PT5M",
+              "ForwardDeadLetteredMessagesTo": "",
+              "ForwardTo": "",
+              "LockDuration": "PT1M",
+              "MaxDeliveryCount": 5,
+              "RequiresDuplicateDetection": true,
+              "RequiresSession": false
+            }
+          },
+          {
+            "Name": "report-generated",
+            "Properties": {
+              "DeadLetteringOnMessageExpiration": false,
+              "DefaultMessageTimeToLive": "PT1H",
+              "DuplicateDetectionHistoryTimeWindow": "PT5M",
+              "ForwardDeadLetteredMessagesTo": "",
+              "ForwardTo": "",
+              "LockDuration": "PT1M",
+              "MaxDeliveryCount": 5,
+              "RequiresDuplicateDetection": true,
+              "RequiresSession": false
+            }
+          }
+        ]
+      }
+    ],
+    "Logging": {
+      "Type": "Console"
+    }
+  }
+}
