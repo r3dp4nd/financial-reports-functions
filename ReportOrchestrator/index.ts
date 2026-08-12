@@ -26,13 +26,42 @@ const COMPLETE_GENERATION_ACTIVITY = "CompleteGeneration";
 
 const FAILURE_CODE = "REPORT_GENERATION_FAILED";
 
+const ACTIVITY_RETRY_OPTIONS = createActivityRetryOptions();
+
+const FAILURE_RETRY_OPTIONS = createFailureRetryOptions();
+
+function createActivityRetryOptions(): df.RetryOptions {
+    const retryOptions = new df.RetryOptions(
+        5000,
+        3
+    );
+
+    retryOptions.backoffCoefficient = 2;
+    retryOptions.maxRetryIntervalInMilliseconds = 30000;
+
+    return retryOptions;
+}
+
+function createFailureRetryOptions(): df.RetryOptions {
+
+    const retryOptions = new df.RetryOptions(
+        2000,
+        5
+    );
+
+    retryOptions.backoffCoefficient = 2;
+    retryOptions.maxRetryIntervalInMilliseconds = 30000;
+
+    return retryOptions;
+}
+
 const reportOrchestrator = df.orchestrator(function* (context) {
 
         const input = context.df.getInput() as ReportOrchestrationInput;
 
         try {
 
-            yield context.df.callActivity(MARK_PROCESSING_ACTIVITY, {
+            yield context.df.callActivityWithRetry(MARK_PROCESSING_ACTIVITY, ACTIVITY_RETRY_OPTIONS, {
                 reportId: input.reportId,
                 processingAt: context.df.currentUtcDateTime.toISOString()
             });
@@ -44,9 +73,9 @@ const reportOrchestrator = df.orchestrator(function* (context) {
             };
 
             const tasks = [
-                context.df.callActivity(GET_ORDERS_ACTIVITY, dataRequest),
-                context.df.callActivity(GET_PAYMENTS_ACTIVITY, dataRequest),
-                context.df.callActivity(GET_CUSTOMERS_ACTIVITY, {
+                context.df.callActivityWithRetry(GET_ORDERS_ACTIVITY, ACTIVITY_RETRY_OPTIONS, dataRequest),
+                context.df.callActivityWithRetry(GET_PAYMENTS_ACTIVITY, ACTIVITY_RETRY_OPTIONS, dataRequest),
+                context.df.callActivityWithRetry(GET_CUSTOMERS_ACTIVITY, ACTIVITY_RETRY_OPTIONS, {
                     customerId:
                     input.customerId
                 })
@@ -66,9 +95,10 @@ const reportOrchestrator = df.orchestrator(function* (context) {
                 data: reportData
             };
 
-            const generatedReport: GenerateExcelActivityResult = yield context.df.callActivity(GENERATE_EXCEL_ACTIVITY, generateExcelInput);
+            const generatedReport: GenerateExcelActivityResult = yield context.df
+                .callActivityWithRetry(GENERATE_EXCEL_ACTIVITY, ACTIVITY_RETRY_OPTIONS, generateExcelInput);
 
-            yield context.df.callActivity(COMPLETE_GENERATION_ACTIVITY, generatedReport);
+            yield context.df.callActivityWithRetry(COMPLETE_GENERATION_ACTIVITY, ACTIVITY_RETRY_OPTIONS, generatedReport);
 
             return {
                 reportId: generatedReport.reportId,
@@ -83,13 +113,15 @@ const reportOrchestrator = df.orchestrator(function* (context) {
                     ? error.message
                     : "Unknown report generation failure";
 
-            yield context.df.callActivity(MARK_FAILED_ACTIVITY, {
+            try {
+                yield context.df.callActivityWithRetry(MARK_FAILED_ACTIVITY, FAILURE_RETRY_OPTIONS, {
                     reportId: input.reportId,
                     failedAt: context.df.currentUtcDateTime.toISOString(),
                     failureCode: FAILURE_CODE,
                     failureReason
-                }
-            );
+                });
+            } catch (error) {
+            }
 
             throw error;
 
