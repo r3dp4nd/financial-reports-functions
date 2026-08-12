@@ -1,19 +1,22 @@
 import {ReportGenerationSnapshot} from "./report-generation.types";
+import {ReportGeneratedIntegrationEvent} from "../application/report-generated.integration-event";
 
-export interface UpdateGeneratedReport {
-    reportId: string;
-    blobName: string;
-    generatedAt: string;
-    expectedVersion: string;
+export interface CompleteGeneratedReport {
+  reportId: string;
+  blobName: string;
+  generatedAt: string;
+  expectedVersion: string;
+
+  event: ReportGeneratedIntegrationEvent;
 }
 
 export interface ReportGenerationRepository {
 
-    findById(
-        reportId: string
-    ): Promise<ReportGenerationSnapshot | null>;
-
-    updateGenerated(
-        input: UpdateGeneratedReport
-    ): Promise<void>;
+  findById(
+    reportId: string
+  ): Promise<ReportGenerationSnapshot | null>;
+  
+  completeGeneration(
+    input: CompleteGeneratedReport
+  ): Promise<void>;
 }

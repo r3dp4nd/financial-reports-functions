@@ -1,130 +1,120 @@
 import {CompleteGenerationUseCase} from "./complete-generation.use-case";
 import {ReportGenerationRepository} from "../domain/report-generation.repository";
-import {ReportGeneratedEventPublisher} from "./report-generated-event.publisher";
 import {ReportGenerationConcurrencyError} from "../domain/report-generation-concurrency.error";
 
 describe("CompleteGenerationUseCase", () => {
 
-    let repository: jest.Mocked<ReportGenerationRepository>;
-    let publisher: jest.Mocked<ReportGeneratedEventPublisher>;
-    let useCase: CompleteGenerationUseCase;
+  let repository: jest.Mocked<ReportGenerationRepository>;
+  let useCase: CompleteGenerationUseCase;
 
-    beforeEach(() => {
+  beforeEach(() => {
 
-        repository = {
-            findById: jest.fn(),
-            updateGenerated: jest.fn()
-        };
+    repository = {
+      findById: jest.fn(),
+      completeGeneration: jest.fn()
+    };
 
-        publisher = {
-            publish: jest.fn()
-        };
+    useCase = new CompleteGenerationUseCase(repository);
+  });
 
-        useCase = new CompleteGenerationUseCase(repository, publisher);
+  it("should mark report as generated and publish event", async () => {
+
+    repository.findById
+      .mockResolvedValue({
+        state: {
+          reportId: "REP-100",
+          status: "REQUESTED"
+        },
+        version: "\"version-1\""
+      });
+
+    const result = await useCase.execute({
+      reportId: "REP-100",
+      blobName: "REP-100/financial-report.xlsx",
+      generatedAt: "2026-08-11T20:00:00.000Z"
     });
 
-    it("should mark report as generated and publish event", async () => {
-
-        repository.findById
-            .mockResolvedValue({
-                state: {
-                    reportId: "REP-100",
-                    status: "REQUESTED"
-                },
-                version: "\"version-1\""
-            });
-
-        const result = await useCase.execute({
-            reportId: "REP-100",
-            blobName: "REP-100/financial-report.xlsx",
-            generatedAt: "2026-08-11T20:00:00.000Z"
-        });
-
-        expect(repository.updateGenerated).toHaveBeenCalledWith({
-            reportId: "REP-100",
-            blobName: "REP-100/financial-report.xlsx",
-            generatedAt: "2026-08-11T20:00:00.000Z",
-            expectedVersion: "\"version-1\""
-        });
-
-        expect(publisher.publish).toHaveBeenCalledWith({
-            eventId: "REP-100:ReportGenerated",
-            occurredAt: "2026-08-11T20:00:00.000Z",
-            reportId: "REP-100",
-            blobName: "REP-100/financial-report.xlsx"
-        });
-
-        expect(result.status).toBe("GENERATED");
+    expect(repository.completeGeneration).toHaveBeenCalledWith({
+      reportId: "REP-100",
+      blobName: "REP-100/financial-report.xlsx",
+      generatedAt: "2026-08-11T20:00:00.000Z",
+      expectedVersion: "\"version-1\"",
+      event: {
+        reportId: "REP-100",
+        eventId: "REP-100:ReportGenerated",
+        occurredAt: "2026-08-11T20:00:00.000Z",
+        blobName: "REP-100/financial-report.xlsx",
+      },
     });
 
-    it("should publish again without updating when already generated", async () => {
+    expect(result.status).toBe("GENERATED");
+  });
 
-        repository.findById
-            .mockResolvedValue({
-                state: {
-                    reportId: "REP-100",
-                    status: "GENERATED",
-                    blobName: "REP-100/financial-report.xlsx",
-                    generatedAt: "2026-08-11T20:00:00.000Z"
-                },
-                version: "\"version-2\""
-            });
+  it("should publish again without updating when already generated", async () => {
 
-        await useCase.execute({
-            reportId: "REP-100",
-            blobName: "REP-100/financial-report.xlsx",
-            generatedAt: "2026-08-11T20:05:00.000Z"
-        });
+    repository.findById
+      .mockResolvedValue({
+        state: {
+          reportId: "REP-100",
+          status: "GENERATED",
+          blobName: "REP-100/financial-report.xlsx",
+          generatedAt: "2026-08-11T20:00:00.000Z"
+        },
+        version: "\"version-2\""
+      });
 
-        expect(repository.updateGenerated).not.toHaveBeenCalled();
-
-        expect(publisher.publish).toHaveBeenCalledTimes(1);
+    await useCase.execute({
+      reportId: "REP-100",
+      blobName: "REP-100/financial-report.xlsx",
+      generatedAt: "2026-08-11T20:05:00.000Z"
     });
 
-    it("should retry after optimistic concurrency conflict", async () => {
+    expect(repository.completeGeneration).not.toHaveBeenCalled();
 
-        repository.findById
-            .mockResolvedValueOnce({
-                state: {
-                    reportId: "REP-100",
-                    status: "REQUESTED"
-                },
-                version: "\"version-1\""
-            })
-            .mockResolvedValueOnce({
-                state: {
-                    reportId: "REP-100",
-                    status: "GENERATED",
-                    blobName: "REP-100/financial-report.xlsx"
-                },
-                version: "\"version-2\""
-            });
+  });
 
-        repository.updateGenerated
-            .mockRejectedValueOnce(new ReportGenerationConcurrencyError("REP-100"));
+  it("should retry after optimistic concurrency conflict", async () => {
 
-        const result = await useCase.execute({
-            reportId: "REP-100",
-            blobName: "REP-100/financial-report.xlsx",
-            generatedAt: "2026-08-11T20:00:00.000Z"
-        });
+    repository.findById
+      .mockResolvedValueOnce({
+        state: {
+          reportId: "REP-100",
+          status: "REQUESTED"
+        },
+        version: "\"version-1\""
+      })
+      .mockResolvedValueOnce({
+        state: {
+          reportId: "REP-100",
+          status: "GENERATED",
+          blobName: "REP-100/financial-report.xlsx"
+        },
+        version: "\"version-2\""
+      });
 
-        expect(repository.findById).toHaveBeenCalledTimes(2);
+    repository.completeGeneration
+      .mockRejectedValueOnce(new ReportGenerationConcurrencyError("REP-100"));
 
-        expect(publisher.publish).toHaveBeenCalledTimes(1);
-
-        expect(result.status).toBe("GENERATED");
+    const result = await useCase.execute({
+      reportId: "REP-100",
+      blobName: "REP-100/financial-report.xlsx",
+      generatedAt: "2026-08-11T20:00:00.000Z"
     });
 
-    it("should fail when report does not exist", async () => {
+    expect(repository.findById).toHaveBeenCalledTimes(2);
 
-        repository.findById
-            .mockResolvedValue(null);
+    expect(result.status).toBe("GENERATED");
+  });
 
-        await expect(useCase.execute({
-            reportId: "REP-404",
-            blobName: "REP-404/financial-report.xlsx",
-            generatedAt: "2026-08-11T20:00:00.000Z"
-        })).rejects.toThrow("Report REP-404 was not found");
-    });
+  it("should fail when report does not exist", async () => {
+
+    repository.findById
+      .mockResolvedValue(null);
+
+    await expect(useCase.execute({
+      reportId: "REP-404",
+      blobName: "REP-404/financial-report.xlsx",
+      generatedAt: "2026-08-11T20:00:00.000Z"
+    })).rejects.toThrow("Report REP-404 was not found");
+  });
 });
