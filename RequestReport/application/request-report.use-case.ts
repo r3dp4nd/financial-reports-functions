@@ -5,75 +5,93 @@ import {RequestReportCommand} from "./request-report.command";
 import {RequestReportResult} from "./request-report.result";
 import {ReportRequestedIntegrationEvent} from "./report-requested.integration-event";
 import {RequestReportValidationError} from "./request-report-validation.error";
+import {createRequestReportIdentity} from "./request-report-idempotency";
 
 export class RequestReportUseCase {
 
-    constructor(private readonly reportRepository: ReportRepository) {
+  constructor(private readonly reportRepository: ReportRepository) {
+  }
+
+  async execute(command: RequestReportCommand): Promise<RequestReportResult> {
+
+    this.validateRequiredFields(command);
+
+    const period = this.createPeriod(command.from, command.to);
+
+    this.validateRequestedAt(command.requestedAt);
+
+    const identity = createRequestReportIdentity({
+      idempotencyKey: command.idempotencyKey,
+      customerId: command.customerId,
+      from: command.from,
+      to: command.to
+    });
+
+    const report: Report = {
+      reportId: identity.reportId,
+      customerId: command.customerId,
+      period,
+      status: "REQUESTED",
+      requestedAt: command.requestedAt
+    };
+
+    const event: ReportRequestedIntegrationEvent = {
+      eventId: `${identity.reportId}:ReportRequested`,
+      occurredAt: command.requestedAt,
+      reportId: identity.reportId,
+      customerId: command.customerId,
+      period: {
+        from: period.from,
+        to: period.to
+      }
+    };
+
+    return this.reportRepository.saveRequested({
+      report,
+      event,
+      idempotencyKeyHash: identity.idempotencyKeyHash,
+      requestHash: identity.requestHash
+    });
+  }
+
+  private validateRequiredFields(command: RequestReportCommand): void {
+
+    if (!command.idempotencyKey
+      ?.trim()) {
+      throw new RequestReportValidationError("idempotencyKey is required");
     }
 
-    async execute(command: RequestReportCommand): Promise<RequestReportResult> {
+    if (!command.customerId?.trim()) {
+      throw new RequestReportValidationError("customerId is required");
+    }
+  }
 
-        this.validateRequiredFields(command);
+  private createPeriod(from: string, to: string): ReportPeriod {
 
-        const period: ReportPeriod = this.createPeriod(command.from, command.to);
+    try {
 
-        this.validateRequestedAt(command.requestedAt);
+      return ReportPeriod.create(from, to);
 
-        const report: Report = {
-            reportId: command.reportId,
-            customerId: command.customerId,
-            period,
-            status: "REQUESTED",
-            requestedAt: command.requestedAt
-        };
+    } catch (error: unknown) {
 
-        const event: ReportRequestedIntegrationEvent = {
-            eventId: `${command.reportId}:ReportRequested`,
-            occurredAt: command.requestedAt,
-            reportId: report.reportId,
-            customerId: report.customerId,
-            period: {
-                from: report.period.from,
-                to: report.period.to
-            }
-        };
+      if (error instanceof Error) {
+        throw new RequestReportValidationError(error.message);
+      }
 
-        await this.reportRepository.saveRequested(report, event);
+      throw error;
+    }
+  }
 
-        return {
-            reportId: report.reportId,
-            status: "REQUESTED"
-        };
+  private validateRequestedAt(requestedAt: string): void {
+
+    if (!requestedAt?.trim()) {
+      throw new RequestReportValidationError("requestedAt is required");
     }
 
-    private validateRequiredFields(command: RequestReportCommand): void {
-        if (!command.reportId?.trim()) {
-            throw new RequestReportValidationError("reportId is required");
-        }
+    const date = new Date(requestedAt);
 
-        if (!command.customerId?.trim()) {
-            throw new RequestReportValidationError("customerId is required");
-        }
+    if (Number.isNaN(date.getTime())) {
+      throw new RequestReportValidationError("requestedAt is invalid");
     }
-
-    private createPeriod(from: string, to: string): ReportPeriod {
-        try {
-            return ReportPeriod.create(from, to);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                throw new RequestReportValidationError(error.message);
-            }
-            throw error;
-        }
-    }
-
-    private validateRequestedAt(requestedAt: string): void {
-        if (!requestedAt?.trim()) {
-            throw new RequestReportValidationError("requestedAt is required");
-        }
-        const date = new Date(requestedAt);
-        if (Number.isNaN(date.getTime())) {
-            throw new RequestReportValidationError("requestedAt is invalid");
-        }
-    }
+  }
 }

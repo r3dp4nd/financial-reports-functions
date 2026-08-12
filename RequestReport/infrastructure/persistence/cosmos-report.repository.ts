@@ -1,48 +1,39 @@
-import {BulkOperationType, Container, JSONObject, OperationInput, OperationResponse, Response} from "@azure/cosmos";
+import {BulkOperationType, Container, JSONObject, OperationInput} from "@azure/cosmos";
 
-import {Report} from "../../../Report/domain/report";
-import {ReportRepository} from "../../domain/report.repository";
+import {ReportStatus} from "../../../Report/domain/report-status";
+import {ReportRepository, SaveRequestedReport, SaveRequestedReportResult} from "../../domain/report.repository";
+import {RequestReportConflictError} from "../../domain/request-report-conflict.error";
 import {ReportRequestedIntegrationEvent} from "../../application/report-requested.integration-event";
 
-type CosmosReportDocument = JSONObject & {
+type CosmosReportDocument = {
   id: string;
   reportId: string;
   docType: "REPORT";
-
   customerId: string;
-
   period: {
     from: string; to: string;
   };
-
-  status: string;
-
+  status: ReportStatus;
   requestedAt: string;
-
+  idempotencyKeyHash: string;
+  requestHash: string;
   processingAt?: string;
-
   blobName?: string;
   generatedAt?: string;
-
   completedAt?: string;
-
   failedAt?: string;
   failureCode?: string;
   failureReason?: string;
 }
 
-type CosmosOutboxDocument = JSONObject & {
+type CosmosOutboxDocument = {
   id: string;
   reportId: string;
   docType: "OUTBOX";
-
   eventType: "ReportRequested";
   eventVersion: number;
-
   occurredAt: string;
-
   status: "PENDING";
-
   payload: ReportRequestedIntegrationEvent;
 }
 
@@ -51,83 +42,100 @@ export class CosmosReportRepository implements ReportRepository {
   constructor(private readonly container: Container) {
   }
 
-  async saveRequested(report: Report, event: ReportRequestedIntegrationEvent): Promise<void> {
-    const reportDocument = this.toReportDocument(report);
+  async saveRequested(input: SaveRequestedReport): Promise<SaveRequestedReportResult> {
 
-    const outboxDocument = this.toOutboxDocument(event);
+    const reportDocument: CosmosReportDocument = {
+      id: input.report.reportId,
+      reportId: input.report.reportId,
+      docType: "REPORT",
+      customerId: input.report.customerId,
+      period: {
+        from: input.report.period.from,
+        to: input.report.period.to
+      },
+      status: input.report.status,
+      requestedAt: input.report.requestedAt,
+      idempotencyKeyHash: input.idempotencyKeyHash,
+      requestHash: input.requestHash,
+      processingAt: input.report.processingAt,
+      blobName: input.report.blobName,
+      generatedAt: input.report.generatedAt,
+      completedAt: input.report.completedAt,
+      failedAt: input.report.failedAt,
+      failureCode: input.report.failureCode,
+      failureReason: input.report.failureReason
+    };
 
-    const operations: OperationInput[] = [{
-      operationType: BulkOperationType.Create, resourceBody: reportDocument
-    }, {
-      operationType: BulkOperationType.Create, resourceBody: outboxDocument
-    }];
+    const outboxDocument: CosmosOutboxDocument = {
+      id: input.event.eventId,
+      reportId: input.report.reportId,
+      docType: "OUTBOX",
+      eventType: "ReportRequested",
+      eventVersion: 1,
+      occurredAt: input.event.occurredAt,
+      status: "PENDING",
+      payload: input.event
+    };
 
-    const response: Response<OperationResponse[]> = await this.container.items.batch(operations, report.reportId);
+    const operations: OperationInput[] = [
+      {
+        operationType: BulkOperationType.Create,
+        resourceBody: reportDocument
+      },
+      {
+        operationType: BulkOperationType.Create,
+        resourceBody: outboxDocument as unknown as JSONObject
+      }];
 
-    const failedOperation: OperationResponse | undefined = response.result?.find(
-      (operation: OperationResponse): boolean => operation.statusCode < 200 || operation.statusCode >= 300);
+    const response = await this.container
+      .items
+      .batch(operations, input.report.reportId);
+
+    const conflict = response.result?.some(operation => operation.statusCode === 409);
+
+    if (conflict) {
+
+      return this.resolveExistingRequest(input);
+    }
+
+    const failedOperation = response
+      .result?.find(operation => operation.statusCode < 200 || operation.statusCode >= 300);
 
     if (failedOperation) {
       throw new Error(`Request report transaction failed with status ${failedOperation.statusCode}`);
     }
-  }
-
-  private toReportDocument(
-    report: Report
-  ): CosmosReportDocument {
 
     return {
-      id: report.reportId,
-      reportId: report.reportId,
-      docType: "REPORT",
-      customerId: report.customerId,
-      period: {
-        from: report.period.from,
-        to: report.period.to
-      },
-      status: report.status,
-      requestedAt: report.requestedAt,
-      ...(report.processingAt !== undefined && {
-        processingAt: report.processingAt
-      }),
-      ...(report.blobName !== undefined && {
-        blobName: report.blobName
-      }),
-      ...(report.generatedAt !== undefined && {
-        generatedAt: report.generatedAt
-      }),
-      ...(report.completedAt !== undefined && {
-        completedAt: report.completedAt
-      }),
-      ...(report.failedAt !== undefined && {
-        failedAt: report.failedAt
-      }),
-      ...(report.failureCode !== undefined && {
-        failureCode: report.failureCode
-      }),
-      ...(report.failureReason !== undefined && {
-        failureReason: report.failureReason
-      })
+      reportId: input.report.reportId,
+      status: "REQUESTED",
+      created: true
     };
   }
 
-  private toOutboxDocument(
-    event: ReportRequestedIntegrationEvent
-  ): CosmosOutboxDocument {
+  private async resolveExistingRequest(input: SaveRequestedReport): Promise<SaveRequestedReportResult> {
+
+    const response = await this.container
+      .item(input.report.reportId, input.report.reportId)
+      .read<CosmosReportDocument>();
+
+    const existing = response.resource;
+
+    if (!existing) {
+      throw new Error(`Report ${input.report.reportId} could not be resolved after conflict`);
+    }
+
+    const sameIdempotencyKey = existing.idempotencyKeyHash === input.idempotencyKeyHash;
+
+    const sameRequest = existing.requestHash === input.requestHash;
+
+    if (!sameIdempotencyKey || !sameRequest) {
+      throw new RequestReportConflictError();
+    }
 
     return {
-      id: event.eventId,
-      reportId: event.reportId,
-      docType: "OUTBOX",
-      eventType: "ReportRequested",
-      eventVersion: 1,
-      occurredAt: event.occurredAt,
-      status: "PENDING",
-      payload: {
-        ...event
-      }
+      reportId: existing.reportId,
+      status: existing.status,
+      created: false
     };
   }
 }
-
-

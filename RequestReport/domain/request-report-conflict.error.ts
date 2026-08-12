@@ -1,0 +1,7 @@
+export class RequestReportConflictError extends Error {
+
+  constructor() {
+    super("Idempotency key was already used with a different request");
+    this.name = "RequestReportConflictError";
+  }
+}

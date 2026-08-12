@@ -1,66 +1,109 @@
 import {AzureFunction, Context, HttpRequest} from "@azure/functions";
 
 import {RequestReportUseCase} from "./application/request-report.use-case";
-
+import {RequestReportHttpRequest, RequestReportHttpResponse} from "./api/request-report.http.types";
 import {RequestReportValidationError} from "./application/request-report-validation.error";
-
-import {RequestReportHttpRequest} from "./api/request-report.http";
+import {RequestReportConflictError} from "./domain/request-report-conflict.error";
 
 export interface RequestReportHandlerDependencies {
-    useCase: RequestReportUseCase;
-    generateReportId: () => string;
-    now: () => string;
+  useCase: RequestReportUseCase;
+  now: () => string;
 }
 
 export function createRequestReportHandler(dependencies: RequestReportHandlerDependencies): AzureFunction {
 
-    return async function (context: Context, request: HttpRequest): Promise<void> {
+  return async function (context: Context, req: HttpRequest): Promise<void> {
 
-        try {
-            const body = request.body as RequestReportHttpRequest;
+    try {
 
-            if (!body) {
-                throw new RequestReportValidationError("request body is required");
-            }
+      const body = req.body as RequestReportHttpRequest | undefined;
 
-            const result = await dependencies.useCase.execute({
-                reportId: dependencies.generateReportId(),
-                customerId: body.customerId,
-                from: body.from,
-                to: body.to,
-                requestedAt: dependencies.now()
-            });
+      if (!body) {
 
-            context.res = {
-                status: 202,
-                body: {
-                    reportId: result.reportId,
-                    status: result.status
-                }
-            };
+        context.res = {
+          status: 400,
+          body: {
+            code: "INVALID_REQUEST",
+            message: "Request body is required"
+          }
+        };
 
-        } catch (error: unknown) {
+        return;
+      }
 
-            if (error instanceof RequestReportValidationError) {
+      const idempotencyKey = req.headers["x-idempotency-key"];
 
-                context.res = {
-                    status: 400,
-                    body: {
-                        error: error.message
-                    }
-                };
+      if (typeof idempotencyKey !== "string" || !idempotencyKey.trim()) {
 
-                return;
-            }
+        context.res = {
+          status: 400,
+          body: {
+            code: "INVALID_REQUEST",
+            message: "x-idempotency-key header is required"
+          }
+        };
 
-            context.log.error("Request report failed", error);
+        return;
+      }
 
-            context.res = {
-                status: 500,
-                body: {
-                    error: "Unable to request report"
-                }
-            };
+      const result = await dependencies
+        .useCase
+        .execute({
+          idempotencyKey,
+          customerId: body.customerId,
+          from: body.from,
+          to: body.to,
+          requestedAt: dependencies.now()
+        });
+
+      const response: RequestReportHttpResponse = {
+
+        reportId: result.reportId,
+        status: result.status
+      };
+
+      context.res = {
+        status: result.created ? 202 : 200,
+        body: response
+      };
+
+    } catch (error: unknown) {
+
+      if (error instanceof RequestReportValidationError) {
+
+        context.res = {
+          status: 400,
+          body: {
+            code: "INVALID_REQUEST",
+            message: error.message
+          }
+        };
+
+        return;
+      }
+
+      if (error instanceof RequestReportConflictError) {
+
+        context.res = {
+          status: 409,
+          body: {
+            code: "IDEMPOTENCY_CONFLICT",
+            message: error.message
+          }
+        };
+
+        return;
+      }
+
+      context.log.error("Unexpected error requesting report", error);
+
+      context.res = {
+        status: 500,
+        body: {
+          code: "INTERNAL_ERROR",
+          message: "Unable to request report"
         }
-    };
+      };
+    }
+  };
 }
