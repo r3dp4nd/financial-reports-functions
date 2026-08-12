@@ -12,5 +12,10 @@ export interface Report {
 
     blobName?: string;
     generatedAt?: string;
+
     completedAt?: string;
+
+    failedAt?: string;
+    failureCode?: string;
+    failureReason?: string;
 }
