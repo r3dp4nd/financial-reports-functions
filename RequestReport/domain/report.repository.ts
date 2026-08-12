@@ -1,7 +1,11 @@
 import {Report} from "../../Report/domain/report";
+import {ReportRequestedIntegrationEvent} from "../application/report-requested.integration-event";
 
 export interface ReportRepository {
 
-    save(report: Report): Promise<void>;
 
+    saveRequested(
+        report: Report,
+        event: ReportRequestedIntegrationEvent
+    ): Promise<void>;
 }

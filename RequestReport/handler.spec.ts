@@ -2,8 +2,8 @@ import {Context, HttpRequest} from "@azure/functions";
 
 import {RequestReportUseCase} from "./application/request-report.use-case";
 import {ReportRepository} from "./domain/report.repository";
-import {ReportEventPublisher} from "./application/report-event.publisher";
 import {createRequestReportHandler} from "./handler";
+import {ReportPeriod} from "../Report/domain/report-period";
 
 function createContext(): Context {
 
@@ -23,66 +23,60 @@ function createRequest(body: unknown): HttpRequest {
 describe("RequestReport HTTP handler", () => {
 
     let repository: jest.Mocked<ReportRepository>;
-    let publisher: jest.Mocked<ReportEventPublisher>;
     let useCase: RequestReportUseCase;
 
     beforeEach(() => {
 
         repository = {
-            save: jest.fn(),
+            saveRequested: jest.fn(),
         };
 
-        publisher = {
-            publishRequested: jest.fn()
-        };
-
-        useCase = new RequestReportUseCase(repository, publisher);
+        useCase = new RequestReportUseCase(repository);
     });
 
     it("should return 202 when report is requested", async () => {
 
         const handler = createRequestReportHandler({
-            useCase,
-            generateReportId: () => "REP-100",
-            now: () => "2026-08-11T16:00:00.000Z"
+            useCase, generateReportId: () => "REP-100", now: () => "2026-08-11T16:00:00.000Z"
         });
 
         const context = createContext();
 
         const request = createRequest({
-            customerId: "CUS-100",
-            from: "2026-08-01",
-            to: "2026-08-31"
+            customerId: "CUS-100", from: "2026-08-01", to: "2026-08-31"
         });
 
         await handler(context, request);
 
         expect(context.res).toEqual({
-            status: 202,
-            body: {
-                reportId: "REP-100",
-                status: "REQUESTED"
+            status: 202, body: {
+                reportId: "REP-100", status: "REQUESTED"
             }
         });
 
-        expect(repository.save).toHaveBeenCalledWith({
-            reportId: "REP-100",
-            customerId: "CUS-100",
-            period: {
-                from: "2026-08-01",
-                to: "2026-08-31"
+        expect(repository.saveRequested).toHaveBeenCalledWith({
+                customerId: "CUS-100",
+                period: expect.any(ReportPeriod),
+                reportId: "REP-100",
+                requestedAt: "2026-08-11T16:00:00.000Z",
+                status: "REQUESTED",
             },
-            status: "REQUESTED",
-            requestedAt: "2026-08-11T16:00:00.000Z"
-        });
+            {
+                customerId: "CUS-100",
+                eventId: "REP-100:ReportRequested",
+                occurredAt: "2026-08-11T16:00:00.000Z",
+                period: {
+                    from: "2026-08-01",
+                    to: "2026-08-31",
+                },
+                reportId: "REP-100",
+            },);
     });
 
     it("should return 400 when request body is missing", async () => {
 
         const handler = createRequestReportHandler({
-            useCase,
-            generateReportId: () => "REP-100",
-            now: () => "2026-08-11T16:00:00.000Z"
+            useCase, generateReportId: () => "REP-100", now: () => "2026-08-11T16:00:00.000Z"
         });
 
         const context = createContext();
@@ -90,34 +84,28 @@ describe("RequestReport HTTP handler", () => {
         await handler(context, createRequest(undefined));
 
         expect(context.res).toEqual({
-            status: 400,
-            body: {
+            status: 400, body: {
                 error: "request body is required"
             }
         });
 
-        expect(repository.save).not.toHaveBeenCalled();
+        expect(repository.saveRequested).not.toHaveBeenCalled();
     });
 
     it("should return 400 when request is invalid", async () => {
 
         const handler = createRequestReportHandler({
-            useCase,
-            generateReportId: () => "REP-100",
-            now: () => "2026-08-11T16:00:00.000Z"
+            useCase, generateReportId: () => "REP-100", now: () => "2026-08-11T16:00:00.000Z"
         });
 
         const context = createContext();
 
         await handler(context, createRequest({
-            customerId: "",
-            from: "2026-08-01",
-            to: "2026-08-31"
+            customerId: "", from: "2026-08-01", to: "2026-08-31"
         }));
 
         expect(context.res).toEqual({
-            status: 400,
-            body: {
+            status: 400, body: {
                 error: "customerId is required"
             }
         });
@@ -125,26 +113,21 @@ describe("RequestReport HTTP handler", () => {
 
     it("should return 500 when infrastructure fails", async () => {
 
-        repository.save
+        repository.saveRequested
             .mockRejectedValue(new Error("Cosmos unavailable"));
 
         const handler = createRequestReportHandler({
-            useCase,
-            generateReportId: () => "REP-100",
-            now: () => "2026-08-11T16:00:00.000Z"
+            useCase, generateReportId: () => "REP-100", now: () => "2026-08-11T16:00:00.000Z"
         });
 
         const context = createContext();
 
         await handler(context, createRequest({
-            customerId: "CUS-100",
-            from: "2026-08-01",
-            to: "2026-08-31"
+            customerId: "CUS-100", from: "2026-08-01", to: "2026-08-31"
         }));
 
         expect(context.res).toEqual({
-            status: 500,
-            body: {
+            status: 500, body: {
                 error: "Unable to request report"
             }
         });
