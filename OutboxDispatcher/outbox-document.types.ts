@@ -1,3 +1,8 @@
+export type OutboxStatus =
+  | "PENDING"
+  | "PUBLISHED"
+  | "FAILED";
+
 export interface OutboxDocument {
   id: string;
   reportId: string;
@@ -5,6 +10,11 @@ export interface OutboxDocument {
   eventType: string;
   eventVersion: number;
   occurredAt: string;
-  status: "PENDING" | "PUBLISHED";
+  status: OutboxStatus;
   payload: unknown;
+  attemptCount?: number;
+  lastAttemptAt?: string;
+  lastError?: string;
+  publishedAt?: string;
 }
+

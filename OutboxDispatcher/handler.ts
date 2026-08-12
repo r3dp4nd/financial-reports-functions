@@ -12,16 +12,16 @@ export function createOutboxDispatcherHandler(dependencies: OutboxDispatcherDepe
   return async function (context: Context, documents: unknown[]): Promise<void> {
 
     const outboxDocuments = documents
-      .filter((document): document is OutboxDocument =>
-        typeof document === "object" && document !== null && "docType" in document && document.docType === "OUTBOX");
+      .filter((document): document is OutboxDocument => typeof document === "object" &&
+        document !== null && "docType" in document && document.docType === "OUTBOX");
 
-    await dependencies
-      .useCase
-      .execute(outboxDocuments);
+    const result = await dependencies.useCase.execute(outboxDocuments);
 
     context.log("Outbox batch processed", {
       received: documents.length,
-      outbox: outboxDocuments.length
+      published: result.published,
+      failed: result.failed,
+      ignored: result.ignored
     });
   };
 }
