@@ -8,6 +8,8 @@ export interface Report {
     status: ReportStatus;
     requestedAt: string;
 
+    processingAt?: string;
+
     blobName?: string;
     generatedAt?: string;
     completedAt?: string;

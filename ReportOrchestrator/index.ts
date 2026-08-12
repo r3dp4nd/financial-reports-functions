@@ -10,6 +10,8 @@ import {OrderReportItem} from "../GenerateReport/domain/order-report.types";
 import {PaymentReportItem} from "../GenerateReport/domain/payment-report.types";
 import {CustomerReportData} from "../GenerateReport/domain/customer-report.types";
 
+const MARK_PROCESSING_ACTIVITY = "MarkReportProcessing";
+
 const GET_ORDERS_ACTIVITY = "GetOrders";
 
 const GET_PAYMENTS_ACTIVITY = "GetPayments";
@@ -23,6 +25,11 @@ const COMPLETE_GENERATION_ACTIVITY = "CompleteGeneration";
 const reportOrchestrator = df.orchestrator(function* (context) {
 
         const input = context.df.getInput() as ReportOrchestrationInput;
+
+        yield context.df.callActivity(MARK_PROCESSING_ACTIVITY, {
+            reportId: input.reportId,
+            processingAt: context.df.currentUtcDateTime.toISOString()
+        });
 
         const dataRequest = {
             reportId: input.reportId,
