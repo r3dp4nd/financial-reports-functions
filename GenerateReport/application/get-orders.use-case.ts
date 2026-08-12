@@ -1,3 +1,4 @@
+import {ReportPeriod} from "../../Report/domain/report-period";
 import {OrderReportItem} from "../domain/order-report.types";
 import {OrderReportRepository} from "../domain/order-report.repository";
 import {GetOrdersQuery} from "./get-orders.query";
@@ -13,34 +14,15 @@ export class GetOrdersUseCase {
             throw new Error("customerId is required");
         }
 
-        if (!query.period?.from?.trim()) {
-            throw new Error("period.from is required");
-        }
-
-        if (!query.period?.to?.trim()) {
-            throw new Error("period.to is required");
-        }
-
-        const from = new Date(query.period.from);
-
-        const to = new Date(query.period.to);
-
-        if (Number.isNaN(from.getTime())) {
-            throw new Error("period.from is invalid");
-        }
-
-        if (Number.isNaN(to.getTime())) {
-            throw new Error("period.to is invalid");
-        }
-
-        if (from > to) {
-            throw new Error("period.from must be before or equal to period.to");
-        }
+        const period: ReportPeriod = ReportPeriod.create(query.period?.from, query.period?.to);
 
         return this.orderReportRepository
             .findByCriteria({
                 customerId: query.customerId,
-                period: query.period
+                period: {
+                    from: period.from,
+                    to: period.to
+                }
             });
     }
 }

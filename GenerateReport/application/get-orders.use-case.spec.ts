@@ -68,7 +68,7 @@ describe("GetOrdersUseCase", () => {
                 from: "",
                 to: "2026-08-31"
             }
-        })).rejects.toThrow("period.from is required");
+        })).rejects.toThrow("from is required");
     });
 
     it("should reject empty period.to", async () => {
@@ -79,7 +79,7 @@ describe("GetOrdersUseCase", () => {
                 from: "2026-08-01",
                 to: ""
             }
-        })).rejects.toThrow("period.to is required");
+        })).rejects.toThrow("to is required");
     });
 
     it("should reject invalid period.from", async () => {
@@ -90,7 +90,7 @@ describe("GetOrdersUseCase", () => {
                 from: "invalid",
                 to: "2026-08-31"
             }
-        })).rejects.toThrow("period.from is invalid");
+        })).rejects.toThrow("from is invalid");
     });
 
     it("should reject invalid period.to", async () => {
@@ -101,7 +101,7 @@ describe("GetOrdersUseCase", () => {
                 from: "2026-08-01",
                 to: "invalid"
             }
-        })).rejects.toThrow("period.to is invalid");
+        })).rejects.toThrow("to is invalid");
     });
 
     it("should reject reversed period", async () => {
@@ -112,7 +112,7 @@ describe("GetOrdersUseCase", () => {
                 from: "2026-08-31",
                 to: "2026-08-01"
             }
-        })).rejects.toThrow("period.from must be before or equal to period.to");
+        })).rejects.toThrow("from must be before or equal to to");
     });
 
     it("should propagate repository errors", async () => {

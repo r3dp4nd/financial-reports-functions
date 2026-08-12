@@ -1,4 +1,5 @@
 import {Report} from "../../Report/domain/report";
+import {ReportPeriod} from "../../Report/domain/report-period";
 import {ReportRepository} from "../domain/report.repository";
 import {RequestReportCommand} from "./request-report.command";
 import {RequestReportResult} from "./request-report.result";
@@ -8,27 +9,25 @@ import {RequestReportValidationError} from "./request-report-validation.error";
 
 export class RequestReportUseCase {
 
-    constructor(
-        private readonly reportRepository: ReportRepository,
-        private readonly reportEventPublisher: ReportEventPublisher
-    ) {
+    constructor(private readonly reportRepository: ReportRepository, private readonly reportEventPublisher: ReportEventPublisher) {
     }
 
     async execute(command: RequestReportCommand): Promise<RequestReportResult> {
 
-        this.validate(command);
+        this.validateRequiredFields(command);
+
+        const period = this.createPeriod(command.from, command.to);
+
+        this.validateRequestedAt(command.requestedAt);
 
         const report: Report = {
             reportId: command.reportId,
             customerId: command.customerId,
-            period: {
-                from: command.from,
-                to: command.to
-            },
+            period,
             status: "REQUESTED",
             requestedAt: command.requestedAt
         };
-
+        
         await this.reportRepository.save(report);
 
         const event: ReportRequestedIntegrationEvent = {
@@ -36,7 +35,10 @@ export class RequestReportUseCase {
             occurredAt: command.requestedAt,
             reportId: report.reportId,
             customerId: report.customerId,
-            period: report.period
+            period: {
+                from: report.period.from,
+                to: report.period.to
+            }
         };
 
         await this.reportEventPublisher.publishRequested(event);
@@ -47,7 +49,7 @@ export class RequestReportUseCase {
         };
     }
 
-    private validate(command: RequestReportCommand): void {
+    private validateRequiredFields(command: RequestReportCommand): void {
 
         if (!command.reportId?.trim()) {
             throw new RequestReportValidationError("reportId is required");
@@ -56,39 +58,34 @@ export class RequestReportUseCase {
         if (!command.customerId?.trim()) {
             throw new RequestReportValidationError("customerId is required");
         }
+    }
 
-        if (!command.from?.trim()) {
-            throw new RequestReportValidationError("from is required");
+    private createPeriod(from: string, to: string): ReportPeriod {
+
+        try {
+
+            return ReportPeriod.create(from, to);
+
+        } catch (error: unknown) {
+
+            if (error instanceof Error) {
+                throw new RequestReportValidationError(error.message);
+            }
+
+            throw error;
         }
+    }
 
-        if (!command.to?.trim()) {
-            throw new RequestReportValidationError("to is required");
-        }
+    private validateRequestedAt(requestedAt: string): void {
 
-        if (!command.requestedAt?.trim()) {
+        if (!requestedAt?.trim()) {
             throw new RequestReportValidationError("requestedAt is required");
         }
 
-        const from = new Date(command.from);
+        const date = new Date(requestedAt);
 
-        const to = new Date(command.to);
-
-        const requestedAt = new Date(command.requestedAt);
-
-        if (Number.isNaN(from.getTime())) {
-            throw new RequestReportValidationError("from is invalid");
-        }
-
-        if (Number.isNaN(to.getTime())) {
-            throw new RequestReportValidationError("to is invalid");
-        }
-
-        if (Number.isNaN(requestedAt.getTime())) {
+        if (Number.isNaN(date.getTime())) {
             throw new RequestReportValidationError("requestedAt is invalid");
-        }
-
-        if (from > to) {
-            throw new RequestReportValidationError("from must be before or equal to to");
         }
     }
 }

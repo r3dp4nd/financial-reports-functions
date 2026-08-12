@@ -67,7 +67,7 @@ describe("GetPaymentsUseCase", () => {
                 from: "2026-08-31",
                 to: "2026-08-01"
             }
-        })).rejects.toThrow("period.from must be before or equal to period.to");
+        })).rejects.toThrow("from must be before or equal to to");
     });
 
     it("should propagate repository errors", async () => {

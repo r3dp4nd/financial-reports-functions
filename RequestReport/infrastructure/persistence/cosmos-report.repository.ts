@@ -39,9 +39,15 @@ export class CosmosReportRepository implements ReportRepository {
             id: report.reportId,
             reportId: report.reportId,
             customerId: report.customerId,
-            period: report.period,
+            period: {
+                from: report.period.from,
+                to: report.period.to
+            },
             status: report.status,
-            requestedAt: report.requestedAt
+            requestedAt: report.requestedAt,
+            blobName: report.blobName,
+            generatedAt: report.generatedAt,
+            completedAt: report.completedAt
         };
     }
 }
