@@ -50,13 +50,9 @@ jobs:
 
         inputs:
           rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
-
           includeRootFolder: false
-
           archiveType: 'zip'
-
           archiveFile: '$(Build.ArtifactStagingDirectory)/function-app.zip'
-
           replaceExistingArchive: true
 
       - task: PublishPipelineArtifact@1
@@ -64,5 +60,4 @@ jobs:
 
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)/function-app.zip'
-
           artifact: 'function-app'

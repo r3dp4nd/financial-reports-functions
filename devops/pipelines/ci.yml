@@ -10,7 +10,7 @@ name: ci-pr-$(Date:yyyyMMdd).$(Rev:r)
 
 stages:
   - stage: Validate
-    displayName: Validate PR
+    displayName: Validate Pull Request
 
     jobs:
       - template: ../templates/validate.yml
