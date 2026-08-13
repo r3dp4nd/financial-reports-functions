@@ -1,24 +1,43 @@
-import {AzureFunction, Context} from "@azure/functions";
-
 import {MarkReportProcessingUseCase} from "../GenerateReport/application/mark-report-processing.use-case";
 
 export interface MarkReportProcessingActivityInput {
-    reportId: string;
-    processingAt: string;
+  reportId: string;
+  processingAt: string;
 }
 
 export interface MarkReportProcessingHandlerDependencies {
-    useCase: MarkReportProcessingUseCase;
+  useCase: MarkReportProcessingUseCase;
 }
 
-export function createMarkReportProcessingHandler(dependencies: MarkReportProcessingHandlerDependencies): AzureFunction {
+export function createMarkReportProcessingHandler(dependencies: MarkReportProcessingHandlerDependencies) {
 
-    return async function (context: Context): Promise<unknown> {
+  return async function (input: unknown): Promise<unknown> {
 
-        const input = context.bindings.input as MarkReportProcessingActivityInput;
+    const command: MarkReportProcessingActivityInput = parseActivityInput(input);
 
-        return dependencies
-            .useCase
-            .execute(input);
-    };
+    return dependencies
+      .useCase
+      .execute({
+        reportId: command.reportId,
+        processingAt: command.processingAt
+      });
+  };
+}
+
+function parseActivityInput(input: unknown): MarkReportProcessingActivityInput {
+
+  if (typeof input !== "object" || input === null) {
+    throw new Error("MarkReportProcessing activity input is invalid");
+  }
+
+  const candidate = input as Partial<MarkReportProcessingActivityInput>;
+
+  if (typeof candidate.reportId !== "string" || typeof candidate.processingAt !== "string") {
+    throw new Error("MarkReportProcessing activity input is invalid");
+  }
+
+  return {
+    reportId: candidate.reportId,
+    processingAt: candidate.processingAt
+  };
 }

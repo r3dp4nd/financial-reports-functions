@@ -1,46 +1,87 @@
-import {Context} from "@azure/functions";
-
-import {MarkReportProcessingUseCase} from "../GenerateReport/application/mark-report-processing.use-case";
-import {ReportProcessingRepository} from "../GenerateReport/domain/report-processing.repository";
 import {createMarkReportProcessingHandler} from "./handler";
+import {ReportProcessingRepository} from "../GenerateReport/domain/report-processing.repository";
+import {MarkReportProcessingUseCase} from "../GenerateReport/application/mark-report-processing.use-case";
 
 describe("MarkReportProcessing handler", () => {
 
-    it("should mark report as processing", async () => {
+  let repository: jest.Mocked<ReportProcessingRepository>;
+  let useCase: MarkReportProcessingUseCase;
 
-        const repository: jest.Mocked<ReportProcessingRepository> = {
+  beforeEach(() => {
 
-            findById: jest.fn()
-                .mockResolvedValue({
-                    state: {
-                        reportId: "REP-100",
-                        status: "REQUESTED"
-                    },
-                    version: "\"version-1\""
-                }),
-            markProcessing: jest.fn()
-        };
+    repository = {
+      findById: jest.fn(),
+      markProcessing: jest.fn()
+    };
 
-        const useCase = new MarkReportProcessingUseCase(repository);
+    useCase = new MarkReportProcessingUseCase(repository);
+  });
 
-        const handler = createMarkReportProcessingHandler({
-            useCase
-        });
+  it("should mark report as processing", async () => {
 
-        const context = {
-            bindings: {
-                input: {
-                    reportId: "REP-100",
-                    processingAt: "2026-08-11T20:30:00.000Z"
-                }
-            }
-        } as unknown as Context;
+    repository
+      .findById
+      .mockResolvedValue({
+        state: {
+          reportId: "REP-100",
+          status: "REQUESTED"
+        },
+        version: "etag-1"
+      });
 
-        const result = await handler(context);
+    repository.markProcessing.mockResolvedValue();
 
-        expect(result).toEqual({
-            reportId: "REP-100",
-            status: "PROCESSING"
-        });
+    const handler = createMarkReportProcessingHandler({
+      useCase
     });
+
+    await handler({
+      reportId: "REP-100",
+      processingAt: "2026-08-12T22:00:00.000Z"
+    });
+
+    expect(repository.markProcessing).toHaveBeenCalledWith({
+      reportId: "REP-100",
+      processingAt: "2026-08-12T22:00:00.000Z",
+      expectedVersion: "etag-1"
+    });
+  });
+
+  it("should reject invalid activity input", async () => {
+
+    const handler = createMarkReportProcessingHandler({
+      useCase
+    });
+
+    await expect(handler(undefined)).rejects.toThrow("MarkReportProcessing activity input is invalid");
+
+    expect(repository.findById).not.toHaveBeenCalled();
+  });
+
+  it("should reject activity input without processingAt", async () => {
+
+    const handler = createMarkReportProcessingHandler({
+      useCase
+    });
+
+    await expect(handler({
+      reportId: "REP-100"
+    })).rejects.toThrow("MarkReportProcessing activity input is invalid");
+
+    expect(repository.findById).not.toHaveBeenCalled();
+  });
+
+  it("should propagate application failure", async () => {
+
+    repository.findById.mockRejectedValue(new Error("Cosmos unavailable"));
+
+    const handler = createMarkReportProcessingHandler({
+      useCase
+    });
+
+    await expect(handler({
+      reportId: "REP-100",
+      processingAt: "2026-08-12T22:00:00.000Z"
+    })).rejects.toThrow("Cosmos unavailable");
+  });
 });
