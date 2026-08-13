@@ -1,14 +1,19 @@
 ---
 name: discover-function-app
-description: Descubre de forma segura una Azure Function App antes de migrarla o refactorizarla. Inventaría estructura, Functions, triggers, bindings, configuración requerida, Programming Model y Durable Functions sin modificar código ni leer información sensible.
+description: Descubre de forma segura una Azure Function App antes de migrarla o refactorizarla. Inventaría estructura, Functions, triggers, bindings, configuración, Programming Model, Durable Functions, arquitectura observable y recursos compartidos sin modificar código ni leer información sensible.
 ---
 
 # Discover Function App
 
 ## Objetivo
 
-Construir una fotografía segura y reutilizable de una Azure Function App antes de analizar, planificar o modificar
-código.
+Construir una fotografía segura y reutilizable del estado actual del repositorio antes de modificar código.
+
+Debe producir:
+
+- inventario estructurado;
+- catálogo humano inicial;
+- candidatos a recursos compartidos.
 
 ## Políticas
 
@@ -17,17 +22,22 @@ Aplicar:
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
+- `../_shared/architecture-policy.md`
+
+La política arquitectónica se usa aquí como referencia de análisis.
+
+Este skill no refactoriza.
 
 ## Entradas
 
 - repositorio objetivo;
-- artefactos existentes en `.migration/`, cuando existan.
+- artefactos existentes en `.migration/` cuando correspondan.
 
 ## Principio
 
 Preferir descubrimiento determinista antes que razonamiento.
 
-No utilizar IA para volver a descubrir hechos que puede obtener el script interno.
+No usar IA para repetir hechos que pueda obtener el script interno.
 
 ## Script de inventario
 
@@ -37,92 +47,141 @@ Ejecutar primero:
 
 sobre el repositorio objetivo.
 
-El script es la fuente primaria para:
+Usar su salida como fuente primaria para:
 
 - Function Apps;
 - `package.json`;
 - `host.json`;
 - Functions legacy;
-- Functions Programming Model v4;
-- triggers y bindings detectables;
-- Durable Functions detectadas;
+- Functions v4;
+- triggers;
+- bindings;
+- Durable Functions;
 - dependencias;
-- versión Node.js declarada;
+- Node.js declarado;
 - claves `process.env`;
 - archivos sensibles detectados sin lectura.
 
-Los scripts de este skill deben permanecer compatibles con Node.js 14 o superior.
-
-## Uso de la salida
-
-Consumir la salida JSON del script.
-
-No repetir manualmente esos descubrimientos salvo que exista una inconsistencia.
-
-Cuando el script produzca:
-
-- falso positivo;
-- falso negativo;
-- caso no soportado;
-
-registrarlo como lección aprendida.
+Los scripts deben ser compatibles con Node.js 14 o superior.
 
 ## Análisis selectivo
 
-Usando el inventario y únicamente el código necesario, identificar cuando exista evidencia:
+Usando la salida del script y únicamente el código necesario, identificar:
 
 - relaciones entre Functions;
+- capabilities observables;
 - workflows Durable;
-- Functions independientes;
-- capacidades funcionales observables;
+- arquitectura actual;
+- patrones observables;
 - infraestructura compartida;
-- patrones arquitectónicos existentes.
+- recursos compartidos candidatos.
 
-No realizar todavía evaluación de compatibilidad ni planificación de cambios.
+No realizar todavía assessment de compatibilidad.
+
+## Arquitectura actual
+
+Documentar únicamente lo observable.
+
+Considerar:
+
+- organización de source;
+- ubicación de entrypoints;
+- separación o mezcla entre runtime, lógica e infraestructura;
+- contratos existentes;
+- servicios;
+- repositorios;
+- dependencias compartidas;
+- estructura por capas o por capability.
+
+No evaluar todavía la refactorización necesaria en detalle.
+
+## Patrones
+
+Registrar patrones solo cuando exista evidencia.
+
+Ejemplos:
+
+- Durable Workflow;
+- Repository;
+- Outbox;
+- Adapter;
+- Service;
+- Factory;
+- direct SDK usage.
+
+No inferir un patrón únicamente por nombres.
+
+## Recursos compartidos candidatos
+
+Detectar recursos utilizados por múltiples Functions o capabilities cuando exista evidencia.
+
+Ejemplos:
+
+- Cosmos DB;
+- MongoDB;
+- SQL;
+- Service Bus;
+- Blob Storage;
+- HTTP clients;
+- repositorios;
+- configuración;
+- servicios comunes.
+
+Cada candidato debe contener cuando sea posible:
+
+- `id`;
+- `type`;
+- `paths`;
+- `usedBy`;
+- `configurationKeys`;
+- `ownership`;
+- `status`;
+- `evidence`.
+
+Scopes iniciales:
+
+- `REPOSITORY`
+- `FUNCTION_APP`
+- `CAPABILITY`
+- `WORKFLOW`
+
+No mover ni refactorizar recursos.
 
 ## Configuración
 
-Usar únicamente nombres de claves detectadas mediante referencias como:
+Registrar únicamente nombres de claves.
 
-`process.env.KEY`
+Ejemplo:
 
-Registrar:
+`process.env.COSMOS_DATABASE`
 
-- nombre;
-- archivos donde se utiliza;
-- Function relacionada cuando pueda confirmarse.
-
-Nunca resolver valores.
-
-Cuando futuras validaciones necesiten configuración local, indicar las claves requeridas para que el desarrollador
-proporcione una configuración sanitizada o aprobada.
+Nunca registrar valores.
 
 ## Programming Model
 
-Detectar cuando exista evidencia:
+Identificar:
 
-- modelo legacy;
-- Programming Model v4;
-- estado mixto;
-- estado desconocido.
+- legacy;
+- v4;
+- mixed;
+- unknown.
 
-No asumir que toda Function App necesita migración de Programming Model.
+No asumir que toda App necesita migración de Programming Model.
 
-Una aplicación que ya está completamente en v4 debe quedar identificada como tal.
+## Durable
 
-## Durable Functions
+Identificar cuando sea posible:
 
-Detectar cuando exista evidencia de:
-
-- Durable client;
+- client;
 - starter;
 - orchestrator;
 - activity;
-- sub-orchestrator.
+- sub-orchestrator;
+- entity.
 
-El discovery no migra ni analiza todavía el workflow en profundidad.
+No analizar todavía el workflow en profundidad.
 
-## Salidas
+## Salidas estructuradas
 
 Crear:
 
@@ -130,50 +189,57 @@ Crear:
 
 `.migration/repository/inventory.md`
 
-Y:
+El JSON debe incluir como mínimo:
+
+- metadata;
+- repository;
+- Function Apps;
+- platform observable;
+- dependencies;
+- Functions;
+- triggers/bindings;
+- configuration keys;
+- relationships;
+- architecture observations;
+- patterns;
+- shared resource candidates;
+- unknowns;
+- evidence.
+
+## Catálogo del estado actual
+
+Crear:
+
+`.migration/catalog/current-state.md`
+
+Este documento es la fotografía humana principal antes de la migración.
+
+Debe incluir:
+
+- resumen del sistema;
+- plataforma;
+- Function Apps;
+- catálogo de Functions;
+- arquitectura actual observable;
+- capabilities;
+- patrones;
+- recursos compartidos candidatos;
+- configuración por nombre de clave;
+- relaciones principales;
+- testing actual observable;
+- riesgos iniciales;
+- unknowns;
+- navegación hacia fichas por Function cuando existan.
+
+No debe describir todavía la arquitectura futura como si ya estuviera implementada.
+
+## Lecciones
+
+Crear:
 
 `.migration/lessons/discover-function-app/lessons.json`
 
 `.migration/lessons/discover-function-app/lessons.md`
-
-## inventory.json
-
-Debe contener como mínimo:
-
-- metadata;
-- repositorio;
-- Function Apps;
-- Node.js declarado;
-- Runtime cuando pueda determinarse;
-- Programming Model;
-- dependencias relevantes;
-- Functions;
-- triggers y bindings;
-- Durable Functions;
-- configuración requerida;
-- relaciones;
-- observaciones;
-- unknowns;
-- evidencia.
-
-No incluir secretos.
-
-## inventory.md
-
-Debe explicar brevemente:
-
-- qué Function Apps existen;
-- qué Functions fueron encontradas;
-- Node.js, Runtime y Programming Model observables;
-- configuración requerida;
-- workflows o relaciones relevantes;
-- hechos;
-- inferencias;
-- unknowns.
-
-No debe ser una copia textual del JSON.
-
-## Lecciones aprendidas
 
 Aplicar:
 
@@ -183,13 +249,14 @@ Aplicar:
 
 El skill termina cuando:
 
-- `scripts/inventory.js` fue ejecutado;
-- su salida fue revisada;
+- el script fue ejecutado;
 - las Function Apps fueron identificadas;
 - las Functions fueron inventariadas;
-- las claves de configuración fueron registradas sin valores;
-- Programming Model fue identificado o marcado como desconocido;
-- relaciones relevantes fueron documentadas cuando existe evidencia;
+- la configuración fue registrada sin valores;
+- Programming Model fue identificado o quedó UNKNOWN;
+- arquitectura y patrones observables fueron documentados;
+- candidatos a recursos compartidos fueron registrados;
+- se creó `current-state.md`;
 - no se leyeron archivos sensibles;
 - se generaron inventory y lessons.
 
@@ -198,10 +265,10 @@ El skill termina cuando:
 Este skill no debe:
 
 - modificar código;
-- actualizar dependencias;
-- evaluar compatibilidad Node.js 24 en profundidad;
-- agregar tests;
 - refactorizar;
+- actualizar dependencias;
+- agregar tests;
+- evaluar detalladamente compatibilidad Node.js 24;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;

@@ -1,24 +1,19 @@
 ---
 name: analyze-function
-description: Analiza una Function concreta dentro de una Azure Function App para comprender su comportamiento actual, dependencias, testabilidad, compatibilidad potencial con Node.js 24 y acciones necesarias antes de su preparación o migración.
+description: Analiza una Function concreta para documentar su comportamiento actual, dependencias, arquitectura, recursos compartidos, testabilidad, compatibilidad con Node.js 24 y acciones necesarias para converger hacia la arquitectura objetivo antes de migrarla.
 ---
 
 # Analyze Function
 
 ## Objetivo
 
-Comprender una Function concreta y el slice de código necesario para ejecutar su comportamiento actual.
-
-El análisis debe producir suficiente evidencia para:
+Comprender una Function concreta y determinar las acciones necesarias para:
 
 - preservar comportamiento;
-- identificar riesgos;
-- evaluar testabilidad;
-- proponer tests;
-- determinar refactor mínimo;
-- evaluar compatibilidad potencial con Node.js 24;
-- identificar cambios de plataforma;
-- generar acciones concretas para los siguientes skills.
+- alcanzar testabilidad;
+- converger hacia la arquitectura objetivo;
+- preparar migración de plataforma;
+- reducir dependencia futura del runtime y SDKs.
 
 Este skill no modifica código.
 
@@ -29,6 +24,7 @@ Aplicar:
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
+- `../_shared/architecture-policy.md`
 
 ## Precondiciones
 
@@ -38,132 +34,147 @@ Deben existir:
 
 `.migration/repository/assessment.json`
 
-La Function objetivo debe existir en el inventario.
+La Function debe existir en el inventario.
 
-Si no puede identificarse con suficiente evidencia:
-
-- registrar `UNKNOWN`;
-- no inventar relaciones;
-- no generar acciones basadas en supuestos.
-
-## Entrada principal
+## Entrada
 
 Recibir una Function objetivo.
 
-Ejemplo:
-
-`RequestReport`
-
 Analizar una sola Function o unidad funcional coherente por ejecución.
 
-Para Durable Functions, considerar el contexto mínimo del workflow cuando sea necesario para comprender su
-comportamiento.
-
-## Reutilización de evidencia
+## Reutilización
 
 Consumir primero:
 
-- `inventory.json`;
-- `assessment.json`.
+- inventory;
+- assessment;
+- catálogo actual cuando sea útil.
 
-No volver a descubrir información global ya disponible salvo contradicción.
+No reconstruir el repositorio completo.
 
-Si aparece evidencia inconsistente, aplicar `evidence-policy.md`.
+## Slice
 
-## Slice de análisis
-
-Leer únicamente lo necesario para comprender la Function.
-
-El slice puede incluir:
+Leer únicamente el código necesario para comprender:
 
 - entrypoint;
-- handler;
-- servicios;
-- dominio relacionado;
-- repositorios;
-- clientes externos;
-- DTOs;
-- mappers;
-- configuración;
-- contratos;
-- utilidades directamente utilizadas;
-- tests existentes;
-- Functions relacionadas cuando sean necesarias.
+- comportamiento;
+- dependencias;
+- infraestructura;
+- recursos compartidos;
+- tests;
+- relaciones.
 
-No cargar toda la Function App por defecto.
+Ampliar contexto solo cuando sea necesario.
 
 ## Comportamiento actual
 
-Identificar cuando corresponda:
+Documentar cuando corresponda:
 
 - trigger;
-- entrada;
+- input;
 - validaciones;
 - decisiones;
-- servicios utilizados;
+- servicios;
 - persistencia;
+- mensajería;
+- almacenamiento;
 - llamadas externas;
-- mensajes;
 - efectos secundarios;
-- salida;
-- manejo de errores.
+- output;
+- errores.
 
-No inferir comportamiento de negocio únicamente por nombres.
+No inferir comportamiento de negocio únicamente por naming.
+
+## Arquitectura actual
+
+Describir cómo está implementada actualmente la Function.
+
+Evaluar:
+
+- responsabilidad del entrypoint;
+- mezcla entre runtime y lógica;
+- dependencia directa de SDKs;
+- acceso a configuración;
+- separación de dominio/aplicación/infraestructura;
+- contratos existentes;
+- organización por capability.
+
+## Arquitectura objetivo
+
+Determinar cómo debe encajar la Function en la arquitectura definida por:
+
+`../_shared/architecture-policy.md`
+
+La arquitectura objetivo es requerida para código refactorizado.
+
+No significa crear todas las capas.
+
+Definir únicamente las piezas necesarias.
+
+## Architecture gap
+
+Identificar el delta entre estado actual y arquitectura objetivo.
+
+Ejemplos:
+
+- mover lógica fuera de Azure entrypoint;
+- aislar Cosmos detrás de un contrato;
+- mover implementación a capability;
+- separar configuración;
+- consolidar recurso compartido;
+- crear composition root.
+
+Generar acciones `STRUCTURAL` cuando corresponda.
+
+## Recursos compartidos
+
+Usar candidatos detectados por discovery.
+
+Confirmar para la Function:
+
+- qué recursos consume;
+- cómo los usa;
+- ownership observable;
+- si el recurso es realmente compartido;
+- configuración asociada.
+
+Ejemplo conceptual:
+
+    {
+      "resourceId": "SR-COSMOS-REPORTS",
+      "usage": "Persist report request",
+      "status": "CONFIRMED"
+    }
+
+No planificar aquí modificaciones duplicadas del recurso.
 
 ## Dependencias
 
-Identificar únicamente las dependencias relevantes para el slice.
+Registrar únicamente dependencias relevantes del slice.
 
 Clasificar cuando corresponda:
 
-- código interno;
+- internal;
 - Azure SDK;
-- base de datos;
-- mensajería;
-- almacenamiento;
+- database;
+- messaging;
+- storage;
 - HTTP;
-- configuración;
-- librerías de terceros;
-- runtime Node.js.
-
-No repetir todo `package.json`.
-
-## Configuración
-
-Usar el inventario existente.
-
-Registrar únicamente:
-
-- nombre de la clave;
-- lugar de uso;
-- propósito observable cuando pueda confirmarse.
-
-Nunca leer ni registrar valores.
-
-## Relaciones
-
-Identificar relaciones relevantes como:
-
-- inicia un orchestrator;
-- publica mensajes;
-- consume mensajes;
-- comparte persistencia;
-- invoca Activities;
-- participa en un workflow Durable.
-
-No construir relaciones por similitud de nombres.
+- configuration;
+- third-party;
+- Node runtime.
 
 ## Testabilidad
 
-Evaluar señales como:
+Evaluar:
 
-- lógica mezclada con Azure;
-- uso directo de `context`;
-- uso directo de `process.env`;
-- creación directa de clientes SDK;
-- efectos secundarios dentro del handler;
-- dependencias globales;
-- lógica pura ya aislada;
+- lógica mezclada con entrypoint;
+- `context`;
+- `process.env`;
+- SDK clients directos;
+- side effects;
+- globals;
+- funciones puras;
 - dependencias sustituibles.
 
 Clasificar:
@@ -172,139 +183,71 @@ Clasificar:
 - `MEDIUM`
 - `LOW`
 
-La clasificación debe incluir razones.
-
-La ausencia de tests no implica automáticamente baja testabilidad.
+La ausencia de tests no implica baja testabilidad.
 
 ## Tests existentes
-
-Identificar los tests relacionados con el slice.
 
 Registrar:
 
 - framework;
-- archivos relevantes;
-- comportamiento cubierto observable;
-- gaps evidentes.
-
-No asumir cobertura porque exista un archivo de test.
+- archivos;
+- comportamiento observable cubierto;
+- gaps.
 
 ## Tests propuestos
 
-Proponer el conjunto mínimo necesario para proteger comportamiento existente.
+Proponer el conjunto mínimo para preservar comportamiento.
 
 Priorizar:
 
 1. comportamiento principal;
-2. validaciones relevantes;
-3. decisiones de negocio;
-4. errores importantes;
-5. interacciones externas significativas.
+2. validaciones;
+3. decisiones;
+4. errores;
+5. interacciones externas relevantes.
 
-Distinguir cuando corresponda:
+No proponer integration tests.
 
-- characterization;
-- unit;
-- contract.
+## Compatibilidad Node.js 24
 
-No proponer integration tests en esta etapa.
+Evaluar el slice relevante.
 
-No diseñar comportamiento nuevo.
-
-## Refactor mínimo
-
-Clasificar:
-
-- `NONE`
-- `MINIMAL`
-- `SIGNIFICANT`
-
-Ejemplos:
-
-- extraer lógica del entrypoint;
-- aislar `process.env`;
-- extraer creación de cliente SDK;
-- introducir dependencia sustituible;
-- separar mapping;
-- mover lógica funcional fuera del adapter Azure.
-
-No proponer Clean Architecture completa por defecto.
-
-Aplicar separación arquitectónica únicamente cuando resuelva un problema observado.
-
-## Compatibilidad con Node.js 24
-
-Analizar únicamente el código y dependencias directamente relevantes para la Function.
-
-Buscar riesgos relacionados con:
-
-- APIs Node.js;
-- módulos;
-- comportamiento del runtime;
-- sintaxis;
-- dependencias utilizadas directamente;
-- APIs eliminadas o deprecadas.
-
-Clasificar:
+Clasificar hallazgos como:
 
 - `CONFIRMED_COMPATIBLE`
 - `CHANGE_REQUIRED`
 - `REQUIRES_VALIDATION`
 - `NOT_APPLICABLE`
 
-Las conclusiones externas deben seguir `evidence-policy.md`.
-
-No asumir compatibilidad porque compile.
+No asumir compatibilidad por compilación.
 
 ## Programming Model
 
-Usar el estado identificado previamente.
+Si ya está v4:
 
-Si ya utiliza Programming Model v4:
+no generar acción de migración.
 
-- registrar la dimensión como satisfecha;
-- no generar acción de migración del modelo.
+Si es legacy:
 
-Si utiliza modelo legacy:
+identificar puntos que deberá transformar el skill correspondiente.
 
-- identificar los puntos que deberán transformarse posteriormente.
+## Durable
 
-No realizar la transformación.
+Identificar rol cuando aplique.
 
-## Durable Functions
+Considerar contexto mínimo del workflow.
 
-Si no pertenece a Durable:
-
-`NOT_APPLICABLE`
-
-Si pertenece a Durable, identificar cuando exista evidencia:
-
-- starter;
-- client;
-- orchestrator;
-- activity;
-- sub-orchestrator;
-- entity.
-
-No analizar una Activity completamente desconectada del workflow cuando su comportamiento dependa de él.
+No migrar Durable.
 
 ## Deuda técnica
 
-Registrar deuda observada y relevante.
+Registrar deuda no bloqueante separadamente.
 
-Ejemplos:
+## Optimización
 
-- acoplamiento;
-- duplicación;
-- clientes globales;
-- configuración dispersa;
-- handler demasiado grande;
-- contratos débiles;
-- código muerto evidente.
+Registrar oportunidades cuando aparezcan, pero mantenerlas fuera de alcance.
 
-No convertir automáticamente deuda técnica en trabajo obligatorio.
-
-## Categorías de cambio
+## Categorías
 
 Usar:
 
@@ -315,45 +258,22 @@ Usar:
 - `TECHNICAL_DEBT`
 - `OPTIMIZATION`
 
-`OPTIMIZATION` queda fuera del alcance de la migración.
-
 ## requiredActions
 
-El análisis debe terminar con las acciones concretas requeridas para esta Function.
+Generar acciones concretas para esta Function.
 
 Cada acción debe contener como mínimo:
 
-- categoría;
-- descripción;
-- razón;
-- evidencia;
-- estado.
+- id;
+- type;
+- action;
+- reason;
+- evidence;
+- status.
 
-Ejemplo conceptual:
+Las acciones arquitectónicas necesarias deben aparecer como `STRUCTURAL`.
 
-    {
-      "type": "REQUIRED_TESTABILITY",
-      "action": "Aislar la creación de CosmosClient.",
-      "reason": "El cliente se construye dentro del handler y bloquea unit tests deterministas.",
-      "status": "CONFIRMED"
-    }
-
-Otro ejemplo:
-
-    {
-      "type": "REQUIRED_PLATFORM",
-      "action": "Migrar el adapter HTTP al Programming Model v4.",
-      "reason": "La Function utiliza function.json y handler legacy.",
-      "status": "CONFIRMED"
-    }
-
-No generar acciones para:
-
-- preferencias estéticas;
-- optimizaciones;
-- deuda no bloqueante;
-
-salvo que deban quedar explícitamente documentadas como tales.
+Las acciones relacionadas con un recurso compartido deben referenciar su `resourceId` cuando corresponda.
 
 ## Salidas
 
@@ -363,11 +283,37 @@ Crear:
 
 `.migration/functions/<FunctionName>/analysis.md`
 
-Y:
+## Catálogo por Function
 
-`.migration/lessons/analyze-function/<FunctionName>.json`
+Crear o actualizar:
 
-`.migration/lessons/analyze-function/<FunctionName>.md`
+`.migration/catalog/functions/<FunctionName>.md`
+
+Este documento representa el estado actual anterior a la migración.
+
+Debe incluir:
+
+- resumen;
+- trigger;
+- Programming Model;
+- capability;
+- entrada;
+- comportamiento actual;
+- salida;
+- dependencias;
+- recursos compartidos;
+- configuración;
+- relaciones;
+- arquitectura actual;
+- patrones;
+- tests actuales;
+- testabilidad;
+- compatibilidad;
+- deuda;
+- riesgos;
+- unknowns.
+
+No convertirlo en documentación del estado futuro.
 
 ## analysis.json
 
@@ -375,70 +321,64 @@ Debe contener como mínimo:
 
 - metadata;
 - Function;
-- comportamiento actual;
-- trigger;
-- dependencias;
-- configuración;
-- relaciones;
-- testabilidad;
-- tests existentes;
-- tests propuestos;
-- compatibilidad Node.js 24;
-- Programming Model;
-- Durable role cuando aplique;
-- refactor requerido;
-- `requiredActions`;
-- deuda técnica;
-- optimizaciones observadas;
-- riesgos;
+- behavior;
+- dependencies;
+- sharedResources;
+- currentArchitecture;
+- targetArchitecture;
+- architectureGap;
+- configuration;
+- relationships;
+- testability;
+- existingTests;
+- proposedTests;
+- node24Compatibility;
+- programmingModel;
+- durableRole;
+- requiredActions;
+- technicalDebt;
+- optimization;
+- risks;
 - unknowns;
-- evidencia.
-
-No incluir secretos.
+- evidence.
 
 ## analysis.md
 
-Debe permitir responder rápidamente:
+Debe explicar:
 
-- qué hace la Function;
+- qué hace;
 - de qué depende;
+- cómo está estructurada hoy;
+- qué gap arquitectónico existe;
 - qué comportamiento debe preservarse;
-- qué tan testeable es;
 - qué tests necesita;
-- qué refactor mínimo requiere;
-- qué riesgos existen con Node.js 24;
-- si necesita migración de Programming Model;
-- qué acciones concretas deben ejecutarse;
-- qué deuda queda fuera del alcance.
+- qué acciones necesita;
+- qué recursos compartidos consume;
+- qué riesgos permanecen.
 
-No debe ser una copia del JSON.
+## Lecciones
 
-## Lecciones aprendidas
+Crear:
 
-Aplicar:
+`.migration/lessons/analyze-function/<FunctionName>.json`
 
-`../_shared/lessons-policy.md`
+`.migration/lessons/analyze-function/<FunctionName>.md`
 
-Registrar únicamente aprendizaje útil de esta ejecución.
+Aplicar `lessons-policy.md`.
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- la Function fue identificada;
-- se analizó únicamente el slice necesario;
 - el comportamiento actual fue documentado;
-- las dependencias relevantes fueron identificadas;
-- la configuración fue registrada sin valores;
-- las relaciones relevantes fueron documentadas;
-- la testabilidad fue evaluada;
-- los tests mínimos fueron propuestos;
-- el refactor mínimo fue identificado;
-- la compatibilidad potencial con Node.js 24 fue evaluada;
-- Programming Model fue considerado;
-- Durable fue considerado cuando correspondía;
-- `requiredActions` fue generado;
-- deuda y optimización quedaron separadas del trabajo obligatorio;
+- arquitectura actual y target fueron comparadas;
+- recursos compartidos fueron confirmados;
+- testabilidad fue evaluada;
+- tests fueron propuestos;
+- compatibilidad Node.js 24 fue evaluada;
+- requiredActions fueron generadas;
+- el catálogo individual fue creado;
+- deuda y optimización quedaron separadas;
 - se generaron analysis y lessons.
 
 ## Fuera de alcance
@@ -446,16 +386,13 @@ El skill termina cuando:
 Este skill no debe:
 
 - modificar código;
-- agregar tests;
+- crear tests;
+- aplicar arquitectura;
 - actualizar dependencias;
-- cambiar Node.js;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;
-- aplicar refactor;
-- implementar arquitectura nueva;
-- resolver deuda técnica no bloqueante;
-- optimizar código.
+- optimizar.
 
 El siguiente skill sugerido es:
 
