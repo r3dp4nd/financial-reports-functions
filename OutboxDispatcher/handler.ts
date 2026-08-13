@@ -1,4 +1,4 @@
-import {AzureFunction, Context} from "@azure/functions";
+import {InvocationContext} from "@azure/functions";
 
 import {DispatchOutboxUseCase} from "./application/dispatch-outbox.use-case";
 import {OutboxDocument} from "./outbox-document.types";
@@ -7,13 +7,11 @@ export interface OutboxDispatcherDependencies {
   useCase: DispatchOutboxUseCase;
 }
 
-export function createOutboxDispatcherHandler(dependencies: OutboxDispatcherDependencies): AzureFunction {
+export function createOutboxDispatcherHandler(dependencies: OutboxDispatcherDependencies) {
 
-  return async function (context: Context, documents: unknown[]): Promise<void> {
+  return async function (documents: unknown[], context: InvocationContext): Promise<void> {
 
-    const outboxDocuments = documents
-      .filter((document): document is OutboxDocument => typeof document === "object" &&
-        document !== null && "docType" in document && document.docType === "OUTBOX");
+    const outboxDocuments: OutboxDocument[] = documents.filter(isOutboxDocument);
 
     const result = await dependencies.useCase.execute(outboxDocuments);
 
@@ -24,4 +22,8 @@ export function createOutboxDispatcherHandler(dependencies: OutboxDispatcherDepe
       ignored: result.ignored
     });
   };
+}
+
+function isOutboxDocument(document: unknown): document is OutboxDocument {
+  return (typeof document === "object" && document !== null && "docType" in document && document.docType === "OUTBOX");
 }
