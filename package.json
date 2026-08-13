@@ -9,6 +9,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit -p tsconfig.prod.json",
     "build": "npm run build:prod",
     "build:dev": "npm run clean && tsc -p tsconfig.json",
     "build:prod": "npm run clean && tsc -p tsconfig.prod.json",

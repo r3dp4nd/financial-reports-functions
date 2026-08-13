@@ -21,7 +21,7 @@ jobs:
       - script: npm ci
         displayName: Install dependencies
 
-      - script: npx tsc --noEmit -p tsconfig.prod.json
+      - script: npm run typecheck
         displayName: Validate TypeScript compilation
 
       - task: SonarQubePrepare@8
