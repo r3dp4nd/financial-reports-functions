@@ -6,9 +6,18 @@ jobs:
       vmImage: 'ubuntu-latest'
 
     steps:
+      # --------------------------------------------------------
+      # Source
+      # --------------------------------------------------------
+
       - checkout: self
         clean: true
         fetchDepth: 0
+
+
+      # --------------------------------------------------------
+      # Node.js
+      # --------------------------------------------------------
 
       - task: UseNode@1
         displayName: Use Node.js 24
@@ -18,33 +27,62 @@ jobs:
           checkLatest: false
           force32bit: false
 
+
+      # --------------------------------------------------------
+      # Dependencies
+      # --------------------------------------------------------
+
       - script: npm ci
         displayName: Install dependencies
 
+
+      # --------------------------------------------------------
+      # TypeScript
+      # --------------------------------------------------------
+
       - script: npm run typecheck
         displayName: Validate TypeScript compilation
+
+
+      # --------------------------------------------------------
+      # SonarQube
+      # --------------------------------------------------------
 
       - task: SonarQubePrepare@8
         displayName: Prepare SonarQube analysis
 
         inputs:
           SonarQube: '<SONAR-SERVICE-CONNECTION>'
+
           scannerMode: 'cli'
+
           configMode: 'manual'
-          cliProjectKey: '<SONAR-PROJECT-KEY>'
-          cliProjectName: '<SONAR-PROJECT-NAME>'
+
+          cliProjectKey: 'financial-reports-functions'
+
+          cliProjectName: 'Financial Reports Functions'
+
           cliSources: '.'
 
           extraProperties: |
-            sonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts,**/*.test.ts
-            sonar.javascript.lcov.reportPaths=coverage/lcov.info
             sonar.qualitygate.wait=true
+
+
+      # --------------------------------------------------------
+      # Tests + Coverage
+      # --------------------------------------------------------
 
       - script: npm run test:coverage
         displayName: Run tests with coverage
 
+
+      # --------------------------------------------------------
+      # SonarQube Analysis
+      # --------------------------------------------------------
+
       - task: SonarQubeAnalyze@8
         displayName: Run SonarQube analysis
+
 
       - task: SonarQubePublish@8
         displayName: Publish SonarQube Quality Gate
