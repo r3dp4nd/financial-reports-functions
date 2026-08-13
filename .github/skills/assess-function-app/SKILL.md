@@ -1,19 +1,23 @@
 ---
 name: assess-function-app
-description: Evalúa una Azure Function App descubierta previamente y determina qué dimensiones necesitan migración o validación para alcanzar Node.js 24, Azure Functions Runtime v4 y Programming Model v4 sin modificar código.
+description: Evalúa una Azure Function App descubierta previamente y determina qué dimensiones técnicas, arquitectónicas y de recursos compartidos requieren cambio o validación para alcanzar el target sin modificar código.
 ---
 
 # Assess Function App
 
 ## Objetivo
 
-Determinar el estado técnico de la Function App frente al target de migración.
+Determinar el estado técnico global de la Function App frente al target de migración.
 
 El assessment debe responder qué dimensiones:
 
 - ya cumplen;
 - requieren cambio;
-- requieren validación.
+- requieren validación;
+- presentan una brecha arquitectónica global;
+- presentan riesgos por recursos compartidos.
+
+Este skill no analiza comportamiento detallado por Function.
 
 ## Políticas
 
@@ -22,6 +26,7 @@ Aplicar:
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
+- `../_shared/architecture-policy.md`
 
 ## Precondición
 
@@ -29,19 +34,29 @@ Debe existir:
 
 `.migration/repository/inventory.json`
 
-Si el inventario es insuficiente o contradictorio, registrar el problema.
+Debe existir también la fotografía inicial:
 
-No reconstruir discovery desde cero.
+`.migration/catalog/current-state.md`
+
+Si el inventario es insuficiente o contradictorio:
+
+- registrar el problema;
+- no reconstruir discovery desde cero;
+- usar `REQUIRES_VALIDATION` cuando corresponda.
 
 ## Entradas
 
 Consumir primero:
 
-`.migration/repository/inventory.json`
+- `.migration/repository/inventory.json`;
+- `.migration/catalog/current-state.md`;
+- shared resource candidates detectados.
 
-Consultar el repositorio únicamente cuando falte evidencia concreta.
+Consultar el repositorio únicamente cuando falte evidencia concreta necesaria para evaluar una dimensión.
 
-## Estado objetivo
+No cargar source completo.
+
+## Target
 
 Evaluar frente a:
 
@@ -49,11 +64,13 @@ Evaluar frente a:
 - Azure Functions Runtime v4;
 - Programming Model v4;
 - dependencias compatibles;
-- capacidad de ejecutar tests y validaciones requeridas.
+- capacidad de build y test;
+- arquitectura objetivo definida en `architecture-policy.md`;
+- shared resources con ownership y límites coherentes.
 
-El target no implica optimización ni rediseño.
+El target no implica optimización.
 
-## Dimensiones
+## Dimensiones técnicas
 
 Evaluar independientemente:
 
@@ -66,7 +83,7 @@ Evaluar independientemente:
 - tooling de tests;
 - capacidad global de validación.
 
-No inferir que una dimensión necesita migración porque otra esté desactualizada.
+No inferir que una dimensión necesita cambio porque otra esté desactualizada.
 
 ## Acción
 
@@ -75,18 +92,6 @@ Para cada dimensión usar:
 - `REQUIRED`
 - `NOT_REQUIRED`
 - `REQUIRES_VALIDATION`
-
-### REQUIRED
-
-Se necesita cambio para alcanzar el target.
-
-### NOT_REQUIRED
-
-La dimensión ya cumple y debe preservarse.
-
-### REQUIRES_VALIDATION
-
-No existe evidencia suficiente para decidir.
 
 ## Node.js
 
@@ -97,9 +102,9 @@ Determinar:
 - necesidad de actualización;
 - riesgos globales conocidos.
 
-No considerar que cambiar `engines.node` demuestra compatibilidad del código.
+No considerar cambio de `engines.node` como evidencia de compatibilidad del source.
 
-La compatibilidad detallada del source se analiza posteriormente Function por Function.
+La compatibilidad detallada se analiza Function por Function.
 
 ## Azure Functions Runtime
 
@@ -107,9 +112,11 @@ Determinar la versión actual cuando exista evidencia suficiente.
 
 No confundir Runtime con Programming Model.
 
-Cuando dependa de infraestructura externa no disponible:
+Si depende de infraestructura externa no observable:
 
 `REQUIRES_VALIDATION`
+
+No inspeccionar CI/CD protegido para resolverlo.
 
 ## Programming Model
 
@@ -117,66 +124,199 @@ Si está confirmado v4:
 
 `NOT_REQUIRED`
 
-No recomendar una nueva migración.
-
 Si está confirmado legacy:
 
-evaluar necesidad de migración.
+`REQUIRED`
 
-Si existen evidencias legacy y v4:
+cuando el target exige v4.
+
+Si existe mezcla o contradicción:
 
 `REQUIRES_VALIDATION`
 
+No asumir que toda Function App requiere remigración.
+
 ## Durable Functions
 
-Si no está presente:
+Si no existe evidencia Durable:
 
 `NOT_APPLICABLE`
 
-Si está presente, evaluar:
+Si existe:
+
+evaluar globalmente:
 
 - versión del paquete;
-- relación con Programming Model;
-- necesidad de migración especializada.
+- compatibilidad esperada con target;
+- necesidad de migración especializada;
+- presencia de workflows.
 
-No analizar todavía el workflow en profundidad.
+El análisis de cada workflow pertenece a etapas posteriores.
 
 ## Dependencias
 
-Evaluar solamente dependencias relevantes para:
+Evaluar únicamente dependencias relevantes para:
 
 - Node.js 24;
 - Azure Functions;
 - Durable Functions;
 - Azure SDK;
-- compilación;
-- runtime.
+- build;
+- tests;
+- shared infrastructure.
 
-No recomendar actualización únicamente porque una dependencia sea antigua.
-
-No elegir una versión target sin evidencia oficial.
+No recomendar actualización solo por antigüedad.
 
 ## TypeScript
 
 Determinar:
 
 - versión actual;
-- compatibilidad relevante;
-- necesidad de actualización.
+- necesidad de actualización;
+- riesgos relevantes para target.
 
 No modificar configuración.
 
-## Testabilidad global
+## Testing global
 
-Registrar señales globales únicamente cuando sean útiles, por ejemplo:
+Registrar:
 
-- Jest ya configurado;
-- ausencia total de tests;
-- uso extendido de `process.env`;
-- construcción directa de SDKs;
-- estructura legacy.
+- framework existente;
+- scripts;
+- cobertura observable;
+- ausencia o presencia general de tests;
+- capacidad de ejecutar baseline.
 
-La testabilidad detallada pertenece a `analyze-function`.
+No analizar todavía tests específicos por Function.
+
+## Architecture assessment
+
+Evaluar el estado arquitectónico global observable comparándolo con:
+
+`../_shared/architecture-policy.md`
+
+La evaluación debe ser global, no Function por Function.
+
+## Dimensiones arquitectónicas
+
+Evaluar cuando exista evidencia:
+
+- ubicación de Azure adapters;
+- mezcla general entre runtime y lógica funcional;
+- organización por capability;
+- dependencia directa de SDKs desde lógica;
+- aislamiento de configuración;
+- existencia de contratos internos;
+- infraestructura compartida;
+- ownership de shared resources.
+
+## Estado arquitectónico
+
+Usar:
+
+- `ALIGNED`
+- `PARTIALLY_ALIGNED`
+- `CHANGE_REQUIRED`
+- `REQUIRES_VALIDATION`
+
+### ALIGNED
+
+La estructura observable ya sigue suficientemente la arquitectura objetivo.
+
+### PARTIALLY_ALIGNED
+
+Existen elementos correctos y otros que deberán revisarse Function por Function.
+
+### CHANGE_REQUIRED
+
+Existe una brecha global clara.
+
+Ejemplos:
+
+- toda la lógica vive dentro de Azure entrypoints;
+- infraestructura transversal está mezclada sin límites;
+- no existe separación observable entre runtime y comportamiento.
+
+### REQUIRES_VALIDATION
+
+La evidencia global no es suficiente.
+
+## Importante
+
+El assessment arquitectónico no debe decidir todavía exactamente:
+
+- qué archivo mover;
+- qué interfaz crear;
+- qué capability modificar;
+- qué carpetas crear.
+
+Eso pertenece a `analyze-function` y al plan.
+
+## Shared resources assessment
+
+Consumir los candidatos detectados durante discovery.
+
+Evaluar globalmente:
+
+- cantidad;
+- tipo;
+- consumidores;
+- ownership observable;
+- riesgo de cambio transversal;
+- compatibilidad técnica relevante.
+
+## Estado por shared resource
+
+Usar cuando corresponda:
+
+- `CONFIRMED`
+- `INFERRED`
+- `UNKNOWN`
+- `NOT_APPLICABLE`
+
+Y acción:
+
+- `REQUIRED`
+- `NOT_REQUIRED`
+- `REQUIRES_VALIDATION`
+
+## Ejemplo
+
+Un repository Cosmos utilizado por tres Functions puede resultar:
+
+    {
+      "resourceId": "SR-COSMOS-REPORTS",
+      "status": "CONFIRMED",
+      "ownership": "CAPABILITY",
+      "action": "REQUIRES_VALIDATION"
+    }
+
+si todavía no se conoce si la implementación necesita cambio para Node.js 24.
+
+## No consolidar prematuramente
+
+Dos recursos que utilizan la misma tecnología no son necesariamente el mismo shared resource.
+
+Ejemplo:
+
+- `CustomerRepository` con Cosmos;
+- `ReportRepository` con Cosmos.
+
+No fusionarlos por compartir SDK.
+
+## Riesgos globales
+
+Registrar riesgos como:
+
+- dependencia compartida con muchos consumidores;
+- cliente SDK construido en múltiples lugares;
+- configuración transversal acoplada;
+- workflow Durable extenso;
+- estructura mixta legacy/v4;
+- ausencia de baseline;
+- arquitectura altamente acoplada.
+
+No convertir automáticamente cada riesgo en blocker.
 
 ## Salidas
 
@@ -198,17 +338,19 @@ Debe contener como mínimo:
 
 - metadata;
 - target;
-- dimensiones;
-- estado actual;
-- acciones requeridas;
-- riesgos globales;
+- technicalDimensions;
+- architectureAssessment;
+- sharedResourcesAssessment;
+- testingAssessment;
+- risks;
 - unknowns;
-- evidencia oficial.
+- externalEvidence;
+- status.
 
 Ejemplo conceptual:
 
     {
-      "dimensions": {
+      "technicalDimensions": {
         "node": {
           "current": "20",
           "action": "REQUIRED"
@@ -221,23 +363,66 @@ Ejemplo conceptual:
           "current": "v4",
           "action": "NOT_REQUIRED"
         }
+      },
+      "architectureAssessment": {
+        "status": "PARTIALLY_ALIGNED"
       }
     }
 
 ## assessment.md
 
-Debe explicar:
+Debe explicar brevemente:
 
-- qué ya cumple;
+- qué plataforma ya cumple;
 - qué debe cambiar;
 - qué necesita validación;
-- riesgos globales;
-- unknowns;
-- evidencia relevante.
+- estado arquitectónico global;
+- shared resources relevantes;
+- riesgos;
+- unknowns.
 
-No debe producir el plan de implementación.
+No debe generar el plan.
 
-## Lecciones aprendidas
+## Catálogo
+
+No reescribir:
+
+`.migration/catalog/current-state.md`
+
+para introducir conclusiones futuras.
+
+El catálogo conserva la fotografía inicial.
+
+El assessment puede referenciarlo.
+
+## Estado general
+
+Usar:
+
+- `READY_FOR_ANALYSIS`
+- `PARTIAL`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+### READY_FOR_ANALYSIS
+
+Existe evidencia suficiente para comenzar análisis Function por Function.
+
+No significa que la migración esté lista para ejecutarse.
+
+### PARTIAL
+
+Algunas dimensiones permanecen inciertas, pero es seguro continuar con análisis independientes.
+
+### BLOCKED
+
+Falta evidencia imprescindible incluso para realizar análisis seguro.
+
+### REQUIRES_REVIEW
+
+Existen contradicciones globales que necesitan evaluación humana.
+
+## Lecciones
 
 Aplicar:
 
@@ -247,12 +432,13 @@ Aplicar:
 
 El skill termina cuando:
 
-- `inventory.json` fue consumido;
-- cada dimensión fue evaluada independientemente;
-- lo ya cumplido quedó como `NOT_REQUIRED`;
-- lo pendiente quedó como `REQUIRED`;
-- las incertidumbres quedaron visibles;
-- las afirmaciones de soporte tienen evidencia suficiente;
+- inventory y catálogo fueron consumidos;
+- dimensiones técnicas fueron evaluadas independientemente;
+- arquitectura global fue evaluada;
+- shared resources candidatos fueron considerados;
+- lo ya satisfecho quedó como `NOT_REQUIRED`;
+- lo desconocido permanece explícito;
+- los riesgos globales fueron registrados;
 - no se modificó código;
 - se generaron assessment y lessons.
 
@@ -261,15 +447,17 @@ El skill termina cuando:
 Este skill no debe:
 
 - modificar código;
+- generar plan de migración;
+- analizar comportamiento detallado por Function;
+- decidir estructura concreta por Function;
+- crear contracts;
+- mover shared resources;
 - agregar tests;
-- refactorizar;
 - actualizar dependencias;
-- migrar Node.js;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;
-- optimizar;
-- generar planes por Function.
+- optimizar.
 
 El siguiente skill sugerido es:
 

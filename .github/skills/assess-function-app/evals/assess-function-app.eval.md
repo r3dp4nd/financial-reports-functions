@@ -2,8 +2,8 @@
 
 ## Objetivo
 
-Validar que `assess-function-app` determine qué dimensiones realmente necesitan cambio sin asumir una migración
-completa.
+Validar que `assess-function-app` determine gaps técnicos y arquitectónicos globales sin invadir el análisis detallado
+por Function.
 
 ## Caso 1 — Todo legacy
 
@@ -14,22 +14,20 @@ Inventory con:
 - Node.js 14;
 - Runtime v3;
 - Programming Model legacy;
-- dependencias antiguas.
+- arquitectura fuertemente acoplada.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
 - evaluar cada dimensión independientemente;
-- marcar cambios obligatorios como `REQUIRED`;
-- utilizar evidencia oficial para compatibilidad;
-- no modificar código.
+- marcar cambios técnicos requeridos;
+- marcar arquitectura `CHANGE_REQUIRED`;
+- no proponer todavía archivos concretos a mover.
 
 ## Caso 2 — Programming Model ya v4
 
 ### Entrada
-
-Inventory con:
 
 - Node.js 20;
 - Runtime v4;
@@ -37,95 +35,153 @@ Inventory con:
 
 ### Esperado
 
-El assessment debe producir:
+Debe producir:
 
 - Node.js → `REQUIRED`;
 - Runtime → `NOT_REQUIRED`;
 - Programming Model → `NOT_REQUIRED`.
 
-No debe recomendar migrar nuevamente Programming Model.
+No remigrar v4.
 
-## Caso 3 — Todo target satisfecho
-
-### Entrada
-
-Function App con:
-
-- Node.js 24;
-- Runtime v4;
-- Programming Model v4;
-- dependencias compatibles confirmadas.
-
-### Esperado
-
-El skill debe:
-
-- marcar dimensiones satisfechas como `NOT_REQUIRED`;
-- no inventar trabajo para justificar una migración.
-
-## Caso 4 — Runtime desconocido
+## Caso 3 — Arquitectura alineada
 
 ### Entrada
 
-Inventory sin evidencia suficiente del Runtime desplegado.
+Repositorio con:
+
+- adapters delgados;
+- lógica por capability;
+- infraestructura aislada.
 
 ### Esperado
 
-El skill debe registrar:
+Architecture assessment:
 
-- estado `UNKNOWN`;
-- acción `REQUIRES_VALIDATION`.
+`ALIGNED`
 
-No debe inferir el Runtime desde Programming Model.
+No inventar refactor global.
 
-## Caso 5 — Durable ausente
+## Caso 4 — Arquitectura parcial
 
 ### Entrada
 
-Aplicación sin `durable-functions` ni evidencia Durable.
+Algunas Functions están desacopladas y otras siguen legacy.
 
 ### Esperado
 
-Durable debe quedar:
+Architecture assessment:
 
-- `NOT_APPLICABLE`;
-- sin acciones de migración Durable.
+`PARTIALLY_ALIGNED`
 
-## Caso 6 — Dependencia antigua pero compatible
+El detalle debe delegarse a `analyze-function`.
+
+## Caso 5 — Shared Cosmos
 
 ### Entrada
 
-Dependencia con versión antigua pero sin evidencia de incompatibilidad con Node.js 24.
+Discovery detecta repository Cosmos compartido por varias Functions.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- no marcar actualización como obligatoria solo por antigüedad;
-- usar `REQUIRES_VALIDATION` o `NOT_REQUIRED` según evidencia.
+- reconocer impacto transversal;
+- conservar ownership;
+- evaluar compatibilidad o usar `REQUIRES_VALIDATION`;
+- no crear todavía shared action.
 
-## Caso 7 — Evidencia externa insuficiente
+## Caso 6 — Dos Cosmos distintos
 
 ### Entrada
 
-Dependencia cuya compatibilidad no puede confirmarse mediante fuente oficial disponible.
+Dos repositories distintos usan Cosmos.
 
 ### Esperado
 
-El skill debe:
+No fusionarlos como un único recurso solo por tecnología.
 
-- registrar `REQUIRES_VALIDATION`;
-- no inventar una versión recomendada.
+## Caso 7 — Shared resource ya correcto
+
+### Entrada
+
+Recurso compartido correctamente aislado y compatible.
+
+### Esperado
+
+Acción:
+
+`NOT_REQUIRED`
+
+No planificar refactor por uniformidad.
+
+## Caso 8 — Runtime desconocido
+
+### Entrada
+
+No hay evidencia suficiente.
+
+### Esperado
+
+Runtime:
+
+`REQUIRES_VALIDATION`
+
+No inferir desde Programming Model.
+
+## Caso 9 — Durable ausente
+
+### Esperado
+
+Durable:
+
+`NOT_APPLICABLE`
+
+## Caso 10 — Dependencia antigua pero compatible
+
+### Esperado
+
+No marcar actualización obligatoria únicamente por antigüedad.
+
+## Caso 11 — Catálogo BEFORE
+
+### Esperado
+
+No debe modificar `current-state.md` para mostrar el target futuro.
+
+## Caso 12 — Evidencia parcial
+
+### Entrada
+
+Hay unknowns globales pero puede continuarse con análisis.
+
+### Esperado
+
+Estado general:
+
+`PARTIAL`
+
+No bloquear innecesariamente.
+
+## Caso 13 — Contradicción crítica
+
+### Entrada
+
+Inventory y evidencia observada son incompatibles en una dimensión fundamental.
+
+### Esperado
+
+`REQUIRES_REVIEW`
+
+No escoger silenciosamente una de las versiones.
 
 ## Criterio general
 
-El assessment debe separar:
+El assessment debe mantener separadas:
 
-- Runtime;
-- Node.js;
-- Programming Model;
-- Durable;
-- dependencias;
-- TypeScript;
+- plataforma;
+- arquitectura;
+- shared resources;
+- testing;
+- riesgos;
 
-sin convertirlas en una única dimensión de “versión Azure”.
+sin convertirse en un plan de implementación.
