@@ -58,7 +58,7 @@ Cuando corresponda:
 
 1. instalación;
 2. runtime;
-3. dependency baseline;
+3. dependency targets;
 4. typecheck;
 5. build global;
 6. tests;
@@ -82,14 +82,6 @@ Todo check individual usa:
 - `NOT_APPLICABLE`
 - `REQUIRES_REVIEW`
 
-Ejemplo:
-
-    {
-      "build": {
-        "status": "PASS"
-      }
-    }
-
 ## Evidence status
 
 Si un hallazgo describe certeza y no resultado de ejecución:
@@ -98,14 +90,7 @@ usar:
 
 `evidenceStatus`
 
-Ejemplo:
-
-    {
-      "function": "RequestReport",
-      "evidenceStatus": "CONFIRMED"
-    }
-
-No usar `PASS` para representar simplemente que algo fue observado.
+No usar `PASS` como certeza.
 
 ## Target
 
@@ -116,39 +101,73 @@ Usar:
 
 No cambiar el target durante verification.
 
-## Dependency baseline
+## Dependency verification
 
-Consumir la baseline referenciada por el plan.
+Consumir los dependency targets aprobados por el plan.
 
-No consultar `latest` para determinar el resultado esperado.
+No comparar contra `latest`.
 
-Verificar únicamente packages relevantes para la migración.
-
-Para cada dependencia target registrar cuando corresponda:
+Para cada package esperado registrar:
 
 - package;
 - expectedVersion;
 - installedVersion;
-- baselineId;
+- recommendationSource;
+- recommendationStatus previo cuando exista;
+- baselineId cuando corresponda;
 - status.
 
 Ejemplo:
 
     {
-      "package": "@azure/functions",
-      "expectedVersion": "4.16.2",
-      "installedVersion": "4.16.2",
-      "baselineId": "node24-azure-functions-v4",
+      "package": "uuid",
+      "expectedVersion": "x.y.z",
+      "installedVersion": "x.y.z",
+      "recommendationSource": "LEARNED_BASELINE",
       "status": "PASS"
     }
 
-Una versión diferente no debe evaluarse automáticamente contra npm latest.
+Una versión diferente puede resultar en:
 
-Clasificar según el contrato aprobado:
+- `FAIL`;
+- `REQUIRES_REVIEW`;
+- `NOT_APPLICABLE`;
 
-- `FAIL` si contradice un target obligatorio;
-- `REQUIRES_REVIEW` si existe una desviación no aprobada cuya equivalencia debe decidirse;
-- `NOT_APPLICABLE` cuando el package no aplica.
+según el contrato del plan.
+
+## Dependency learning evidence
+
+Cuando una dependencia cuya recomendación era:
+
+`PROPOSED`
+
+fue realmente utilizada y todos los gates obligatorios relacionados terminaron satisfactoriamente:
+
+registrar evidencia suficiente para que lessons y review puedan evaluar promoción.
+
+Verification no cambia:
+
+`recommendationStatus`
+
+dentro de `dependency-baseline.json`.
+
+Puede registrar por ejemplo:
+
+    {
+      "package": "uuid",
+      "targetVersion": "x.y.z",
+      "recommendationSource": "EXTERNAL_RESEARCH",
+      "migrationOutcome": "PASS",
+      "eligibleForLearningReview": true
+    }
+
+Esto significa:
+
+`puede ser revisado`
+
+no:
+
+`queda automáticamente aprobado`.
 
 ## Node.js
 
@@ -160,7 +179,7 @@ Registrar:
 - runtime utilizado para build;
 - runtime utilizado para tests.
 
-Si el target exige Node.js 24 y no fue utilizado en gates relevantes:
+Si target exige Node.js 24 y no fue utilizado en gates relevantes:
 
 no declarar `VERIFIED`.
 
@@ -168,90 +187,51 @@ no declarar `VERIFIED`.
 
 Usar el mecanismo reproducible del proyecto.
 
-Ejemplo cuando corresponda:
-
-`npm ci`
-
-No actualizar dependencias.
+No actualizar dependencias durante verification.
 
 ## Typecheck
 
-Ejecutar comando real del proyecto cuando exista o sea parte del plan.
-
-Registrar:
-
-`status`
-
-y evidencia.
+Ejecutar el comando real cuando corresponda.
 
 ## Build global
 
-Ejecutar después de completar todas las adaptaciones requeridas.
+Ejecutar después de completar las adaptaciones requeridas.
 
-Es gate final cuando el proyecto necesita build.
+Un fallo obligatorio implica:
 
-Un fallo implica:
-
-`status final = BLOCKED`
-
-salvo que el build sea explícitamente `NOT_APPLICABLE`.
+`BLOCKED`
 
 ## Tests
 
-Ejecutar la baseline requerida.
+Ejecutar los tests requeridos.
 
 Los mismos comportamientos protegidos antes de migración deben continuar verdes.
-
-Un test obligatorio en `FAIL`:
-
-bloquea cierre.
 
 ## Coverage
 
 Verificar únicamente si forma parte del contrato acordado.
 
-No crear thresholds nuevos.
-
 ## Azure Functions Host
 
-Ejecutar únicamente cuando exista configuración sanitizada y aprobada.
+Ejecutar únicamente con configuración sanitizada y aprobada.
 
-Si aplicaba pero no puede ejecutarse:
+No leer:
 
-    {
-      "status": "NOT_EXECUTED",
-      "reason": "No approved sanitized configuration available."
-    }
-
-No leer `local.settings.json`.
+`local.settings.json`
 
 ## Functions
 
 Comparar:
 
 - Functions BEFORE;
-- Functions esperadas por el plan;
-- Functions detectadas AFTER.
+- Functions esperadas;
+- Functions AFTER.
 
-Registrar:
-
-- missing;
-- unexpected;
-- renamed;
-- trigger changes;
-- binding changes.
+Registrar cambios relevantes.
 
 ## Programming Model
 
 Verificar por Function cuando corresponda.
-
-Una Function que debía migrar y sigue legacy:
-
-blocker.
-
-Una Function que ya era v4 y continúa v4:
-
-correcta sin remigración.
 
 ## Durable
 
@@ -267,24 +247,11 @@ Comprobar cuando aplique:
 - tests;
 - shared dependencies.
 
-No afirmar compatibilidad productiva de instancias activas sin evidencia.
-
 ## Arquitectura
 
 Verificar obligaciones reales del plan.
 
-Puede comprobar:
-
-- Azure adapters;
-- capability boundaries;
-- infrastructure isolation;
-- configuration isolation;
-- contracts necesarios;
-- absence of planned coupling.
-
 No verificar arquitectura por cantidad de carpetas.
-
-La ausencia de una capa opcional no es fallo.
 
 ## Shared resources
 
@@ -297,16 +264,6 @@ Verificar:
 - shared action completion;
 - duplications.
 
-Una duplicación puede clasificarse como:
-
-- `BLOCKING`
-- `TECHNICAL_DEBT`
-- `UNKNOWN`
-
-según impacto.
-
-No bloquear por preferencias estéticas de ubicación.
-
 ## Legacy scan
 
 Clasificar hallazgos como:
@@ -316,42 +273,31 @@ Clasificar hallazgos como:
 - `EXPECTED`
 - `UNKNOWN`
 
-Esta clasificación no debe reutilizar el campo principal `status` si representa tipo de hallazgo.
-
 Preferir:
 
 `classification`
 
-Ejemplo:
-
-    {
-      "path": "...",
-      "classification": "TECHNICAL_DEBT"
-    }
+y no reutilizar el status principal.
 
 ## Packaging
 
 Verificar cuando corresponda:
 
-- `dist`;
+- dist;
 - package metadata;
 - lockfile;
 - runtime dependencies;
-- `host.json`;
+- host.json;
 - `.funcignore`.
-
-Comprobar exclusión de artefactos no runtime cuando corresponda.
 
 ## Deuda
 
-Separar claramente:
+Separar:
 
 - blockers;
 - technical debt;
 - optimizations;
 - unknowns.
-
-No convertir deuda no bloqueante en blocker.
 
 ## Salida estructurada
 
@@ -361,83 +307,69 @@ Crear:
 
 Debe contener:
 
-- `schemaVersion`;
-- `status`;
-- `target`;
-- `references`;
-- `runtime`;
-- `dependencyBaseline`;
-- `dependencies`;
-- `installation`;
-- `typecheck`;
-- `build`;
-- `tests`;
-- `coverage`;
-- `host`;
-- `functions`;
-- `programmingModel`;
-- `durable`;
-- `architecture`;
-- `sharedResources`;
-- `legacyScan`;
-- `packaging`;
-- `blockers`;
-- `technicalDebt`;
-- `optimizationOpportunities`;
-- `risks`;
-- `unknowns`.
+- schemaVersion;
+- status;
+- target;
+- references;
+- runtime;
+- dependencyBaseline;
+- dependencies;
+- dependencyLearningCandidates;
+- installation;
+- typecheck;
+- build;
+- tests;
+- coverage;
+- host;
+- functions;
+- programmingModel;
+- durable;
+- architecture;
+- sharedResources;
+- legacyScan;
+- packaging;
+- blockers;
+- technicalDebt;
+- optimizationOpportunities;
+- risks;
+- unknowns.
 
 ## Estado final
 
-El campo principal:
-
-`status`
-
-usa exclusivamente:
+Usar:
 
 - `VERIFIED`
 - `VERIFIED_WITH_DEBT`
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-No usar otro vocabulario.
-
 ## VERIFIED
 
 Requiere:
 
 - target obligatorio alcanzado;
-- dependency baseline obligatoria satisfecha;
-- gates aplicables en `PASS`;
+- dependency targets obligatorios satisfechos;
+- gates aplicables en PASS;
 - build global exitoso cuando aplica;
-- tests requeridos verdes;
+- tests verdes;
 - Functions esperadas presentes;
 - Programming Model correcto;
 - Durable correcto cuando aplica;
-- arquitectura planificada satisfecha;
+- arquitectura satisfecha;
 - shared resources consistentes;
 - ausencia de blockers.
 
 ## VERIFIED_WITH_DEBT
 
-Igual que `VERIFIED`, pero quedan hallazgos clasificados exclusivamente como deuda no bloqueante.
+Igual que VERIFIED, con deuda no bloqueante.
 
 ## BLOCKED
 
-Existe un impedimento técnico conocido.
-
-Ejemplos:
-
-- dependency target obligatorio incorrecto;
-- build fail;
-- tests obligatorios fail;
-- Function faltante;
-- Programming Model incorrecto;
-- workflow Durable incompleto.
+Existe impedimento técnico conocido.
 
 ## REQUIRES_REVIEW
 
-La evidencia obtenida no permite cerrar sin decisión humana.
+La evidencia no permite cerrar sin decisión humana.
 
 ## Salida humana
 
@@ -465,20 +397,23 @@ Crear:
 
 `.migration/lessons/verify-function-app/lessons.md`
 
+Las lessons pueden registrar dependency learning candidates.
+
+No modifican baseline.
+
 ## Criterio de cierre
 
 El skill termina cuando:
 
 - BEFORE, PLAN y AFTER fueron comparados;
-- dependency baseline aprobada fue verificada;
-- no se comparó contra `latest`;
+- dependency targets fueron verificados;
+- provenance de recomendaciones fue preservada;
+- candidatos de aprendizaje quedaron registrados cuando correspondía;
 - gates aplicables fueron ejecutados;
-- estados de checks usan vocabulario común;
-- evidencia usa `evidenceStatus`;
-- classifications no abusan de `status`;
 - blockers/debt/unknowns están separados;
 - se emitió estado final;
-- no se realizaron correcciones.
+- no se realizaron correcciones;
+- no se modificó dependency baseline.
 
 ## Fuera de alcance
 
@@ -486,11 +421,11 @@ No debe:
 
 - corregir código;
 - modificar tests;
-- seleccionar nuevas dependency versions;
+- seleccionar nuevas versiones;
+- promover recommendations;
+- modificar baseline;
 - refactorizar;
 - actualizar dependencias;
 - migrar;
-- eliminar legacy;
-- modificar pipelines;
 - desplegar;
 - optimizar.

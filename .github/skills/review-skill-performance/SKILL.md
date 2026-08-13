@@ -7,7 +7,12 @@ description: Revisa el desempeño real de uno o más skills a partir de lessons,
 
 ## Objetivo
 
-Analizar evidencia real de ejecución para identificar problemas, simplificaciones y mejoras posibles en los skills.
+Analizar evidencia real de ejecución para identificar:
+
+- problemas;
+- simplificaciones;
+- mejoras posibles;
+- conocimiento reutilizable sobre dependencias.
 
 Este capability está fuera del flujo operativo de migración.
 
@@ -17,7 +22,8 @@ No modifica automáticamente:
 - scripts;
 - evals;
 - policies;
-- templates.
+- templates;
+- dependency baseline.
 
 ## Políticas
 
@@ -28,9 +34,10 @@ Aplicar:
 - `../_shared/lessons-policy.md`
 - `../_shared/status-policy.md`
 
-Consultar cuando el hallazgo corresponda:
+Consultar cuando corresponda:
 
 - `../_shared/architecture-policy.md`
+- `../_shared/dependency-baseline.json`
 
 ## Entradas
 
@@ -40,10 +47,11 @@ Consumir primero:
 - estados de ejecución;
 - blockers;
 - reviews;
-- artefactos producidos;
+- verification;
+- artefactos relevantes;
 - evals relacionados.
 
-Leer el `SKILL.md`, scripts o policies únicamente cuando sea necesario para explicar un hallazgo.
+Leer SKILL, scripts, policies o baseline únicamente cuando sea necesario para explicar un finding.
 
 No cargar todo el toolkit por defecto.
 
@@ -51,13 +59,12 @@ No cargar todo el toolkit por defecto.
 
 La unidad principal es un skill.
 
-Puede analizarse:
+También puede revisarse:
 
 - una ejecución;
 - varias ejecuciones;
 - varios casos relacionados;
-
-cuando exista evidencia suficiente.
+- evidencia acumulada de una dependencia.
 
 ## Principio
 
@@ -73,39 +80,31 @@ Aplicar:
 
 `../_shared/status-policy.md`
 
-Al revisar artefactos, distinguir correctamente:
+Distinguir:
 
 - `evidenceStatus`;
 - `actionStatus`;
 - `status`;
 - check `status`;
-- `classification`.
+- `classification`;
+- `recommendationStatus`.
 
-Un uso incorrecto de estos campos puede generar un finding.
-
-Ejemplos:
-
-- usar `status: CONFIRMED` para evidencia;
-- usar `PASS` como evidencia;
-- usar `NOT_APPLICABLE` donde corresponde `NOT_REQUIRED`;
-- usar `REQUIRES_REVIEW` como sinónimo de `UNKNOWN`.
+`recommendationStatus` pertenece exclusivamente al conocimiento de dependencias.
 
 ## Convención de IDs
 
 Validar cuando corresponda:
 
-- `GLOBAL-*` para acciones globales;
-- `FN-<FUNCTION>-NNN` para acciones por Function;
-- `SR-*` para recursos compartidos;
-- `SR-ACTION-*` para acciones sobre recursos compartidos.
+- `GLOBAL-*`;
+- `FN-<FUNCTION>-NNN`;
+- `SR-*`;
+- `SR-ACTION-*`.
 
-Detectar referencias antiguas como:
+Detectar referencias antiguas:
 
 `REQ-*`
 
 cuando el contrato actual exige `FN-*`.
-
-No cambiar IDs históricos de artefactos ya cerrados solo por estética.
 
 ## Tipos de findings
 
@@ -125,60 +124,6 @@ Usar:
 - `SIMPLIFICATION`
 - `AUTOMATION_CANDIDATE`
 
-## FALSE_POSITIVE
-
-El skill identificó un problema o acción que no correspondía.
-
-## FALSE_NEGATIVE
-
-El skill no identificó un problema real que debía detectar.
-
-## UNHANDLED_CASE
-
-Existe un escenario real no cubierto por el contrato actual.
-
-## AMBIGUOUS_RULE
-
-Una instrucción admite interpretaciones inconsistentes.
-
-## OVERGENERALIZATION
-
-Una observación local se convirtió en una regla demasiado amplia.
-
-## OVERCONSTRAINT
-
-Una regla restringe casos válidos sin necesidad.
-
-## REDUNDANT_WORK
-
-El skill repite trabajo ya resuelto por otro artefacto o capability.
-
-## EXCESS_CONTEXT
-
-El skill carga más contexto del necesario.
-
-## MISSING_EVAL
-
-Un comportamiento relevante no está protegido por eval.
-
-## SCRIPT_GAP
-
-Una tarea determinista repetida debería mejorar o incorporarse a un script.
-
-## SKILL_GAP
-
-La responsabilidad actual del skill no cubre correctamente una necesidad real.
-
-## SIMPLIFICATION
-
-Existe una forma más pequeña y clara de mantener el mismo contrato.
-
-## AUTOMATION_CANDIDATE
-
-Existe trabajo repetitivo y determinista que podría automatizarse.
-
-No implica que deba automatizarse inmediatamente.
-
 ## Recurrencia
 
 Clasificar:
@@ -187,22 +132,6 @@ Clasificar:
 - `REPEATED`
 - `SYSTEMIC`
 - `UNKNOWN`
-
-### ISOLATED
-
-Una única ejecución conocida.
-
-### REPEATED
-
-Aparece en varias ejecuciones o casos.
-
-### SYSTEMIC
-
-La causa pertenece al contrato, arquitectura o herramienta y puede afectar ampliamente.
-
-### UNKNOWN
-
-No existe evidencia suficiente para clasificar recurrencia.
 
 ## Impacto
 
@@ -213,14 +142,6 @@ Usar:
 - `HIGH`
 - `CRITICAL`
 
-`CRITICAL` debe reservarse para problemas como:
-
-- seguridad;
-- pérdida de comportamiento;
-- corrupción de artefactos;
-- migración incorrecta;
-- incumplimiento sistemático de gates esenciales.
-
 ## Costo del cambio
 
 Usar:
@@ -229,36 +150,28 @@ Usar:
 - `MEDIUM`
 - `HIGH`
 
-Evaluar cualitativamente:
-
-- archivos afectados;
-- riesgo;
-- complejidad;
-- evals necesarias;
-- scripts involucrados.
-
 ## Revisión de arquitectura
 
-Cuando el finding esté relacionado con refactor o estructura, contrastar con:
+Cuando corresponda, contrastar con:
 
 `../_shared/architecture-policy.md`
 
 Detectar por ejemplo:
 
-- lógica funcional introducida nuevamente en Azure adapters;
-- capas vacías creadas por convención;
-- shared convertido en carpeta genérica;
+- lógica funcional en adapters;
+- capas vacías;
+- shared genérico;
 - ownership duplicado;
-- infraestructura acoplada innecesariamente.
+- infraestructura innecesariamente acoplada.
 
 ## Revisión de shared resources
 
 Detectar:
 
-- mismo recurso modificado por varios owners;
-- acciones `SR-ACTION-*` duplicadas;
-- recursos fusionados únicamente por tecnología;
-- consumidores no registrados;
+- mismo recurso con varios owners;
+- acciones duplicadas;
+- consolidación incorrecta;
+- consumidores ausentes;
 - ownership contradictorio.
 
 ## Revisión de artefactos
@@ -267,21 +180,10 @@ Buscar inconsistencias entre owners.
 
 Ejemplos:
 
-`inventory.json`
-
-dice que una Function existe pero el plan no la considera.
-
-`analysis.json`
-
-contiene una acción `FN-*` que el plan ignora sin justificación.
-
-`shared-resources.json`
-
-declara un owner distinto al utilizado durante preparation.
-
-`verification.json`
-
-declara `VERIFIED` con un gate obligatorio en `FAIL`.
+- inventory vs plan;
+- analysis vs plan;
+- shared resources vs preparation;
+- verification vs gates.
 
 ## Responsabilidad
 
@@ -290,24 +192,26 @@ Detectar responsibility leakage.
 Ejemplos:
 
 - discovery proponiendo refactors;
-- assessment generando pasos concretos;
-- analyze modificando código;
-- planning reanalizando toda la App;
+- assessment modificando código;
+- analysis ejecutando cambios;
+- planning reanalizando todo;
 - preparation migrando Programming Model;
 - migration rediseñando arquitectura;
 - verification corrigiendo fallos.
 
 ## Scripts
 
-Cuando un problema:
+Cuando un problema sea:
 
-- sea repetido;
-- sea determinista;
-- pueda detectarse sin razonamiento complejo;
+- repetido;
+- determinista;
+- detectable sin razonamiento complejo;
 
-evaluar si corresponde un `SCRIPT_GAP`.
+evaluar:
 
-No mover automáticamente lógica hacia scripts.
+`SCRIPT_GAP`
+
+No implementar automáticamente.
 
 ## Evals
 
@@ -317,13 +221,11 @@ crear finding:
 
 `MISSING_EVAL`
 
-La propuesta debe indicar el escenario mínimo que debería agregarse.
-
 ## Simplificación
 
 Preferir:
 
-- regla más clara;
+- reglas claras;
 - menos instrucciones;
 - owner único;
 - menos artefactos;
@@ -331,7 +233,144 @@ Preferir:
 
 sobre agregar excepciones acumulativas.
 
-## Propuestas
+# Dependency learning
+
+## Objetivo
+
+Revisar experiencia real de migración para determinar si una recomendación de dependencia puede reutilizarse en
+repositorios futuros.
+
+No modifica automáticamente:
+
+`../_shared/dependency-baseline.json`
+
+## Fuentes
+
+Consumir únicamente cuando corresponda:
+
+- dependency assessment;
+- migration plan;
+- preparation;
+- verification;
+- lessons;
+- dependency baseline actual.
+
+## Candidato de aprendizaje
+
+Una dependencia puede considerarse candidata cuando:
+
+1. existió una recomendación explícita;
+2. la versión fue realmente utilizada;
+3. los gates aplicables terminaron correctamente;
+4. no existe evidencia de regresión asociada;
+5. la experiencia puede ser reutilizable.
+
+## Azure package
+
+Un Azure package investigado mediante fuentes oficiales puede proponerse para:
+
+`azurePackages`
+
+cuando:
+
+- no existía previamente;
+- su target fue revisado;
+- fue utilizado;
+- verification fue satisfactoria;
+- sigue siendo compatible con el target de campaña.
+
+## Third-party package
+
+Un package no Azure puede proponerse para:
+
+`learnedPackages`
+
+cuando exista evidencia de uso real.
+
+Ejemplo:
+
+    {
+      "package": "uuid",
+      "targetVersion": "x.y.z",
+      "validatedAgainst": {
+        "node": "24",
+        "azureFunctionsRuntime": "v4"
+      },
+      "successfulMigrations": 1,
+      "recommendationStatus": "VALIDATED"
+    }
+
+## Recommendation status
+
+Usar:
+
+- `PROPOSED`
+- `VALIDATED`
+- `REPEATED`
+- `APPROVED`
+
+### PROPOSED
+
+Existe investigación pero aún no validación completa.
+
+### VALIDATED
+
+Existe al menos una migración independiente verificada.
+
+### REPEATED
+
+La recomendación fue validada en más de una migración independiente.
+
+Múltiples Functions dentro de la misma Function App no cuentan como múltiples migraciones.
+
+### APPROVED
+
+Existe aprobación humana explícita para reutilizarla como conocimiento del toolkit.
+
+## Promoción
+
+Puede generar una propuesta:
+
+    {
+      "type": "DEPENDENCY_KNOWLEDGE_PROMOTION",
+      "package": "uuid",
+      "targetSection": "learnedPackages",
+      "proposedRecommendationStatus": "APPROVED"
+    }
+
+La propuesta debe incluir:
+
+- package;
+- version;
+- target environment;
+- migrations reviewed;
+- evidence;
+- known limitations;
+- risk;
+- recommendation.
+
+## Aprobación
+
+Modificar la baseline requiere revisión humana.
+
+Este capability:
+
+- propone;
+- no aplica.
+
+## Invalidación del conocimiento
+
+También puede proponer degradar o retirar una recomendación cuando:
+
+- aparece incompatibilidad nueva;
+- deja de existir soporte;
+- cambia Node target;
+- cambia Azure Functions target;
+- nuevas migraciones contradicen la experiencia anterior.
+
+El conocimiento aprendido no es permanente.
+
+## Propuestas generales
 
 Cada propuesta debe registrar:
 
@@ -358,22 +397,6 @@ Usar:
 - `P2`
 - `P3`
 
-### P0
-
-Seguridad o fallo crítico.
-
-### P1
-
-Problema importante y reproducible que afecta corrección.
-
-### P2
-
-Robustez, mantenibilidad o eficiencia.
-
-### P3
-
-Mejora menor.
-
 ## Recommendation
 
 Usar:
@@ -382,22 +405,6 @@ Usar:
 - `MONITOR`
 - `REJECT`
 - `NEEDS_MORE_EVIDENCE`
-
-### RECOMMEND
-
-Existe evidencia suficiente y la mejora está justificada.
-
-### MONITOR
-
-El problema existe pero todavía no justifica cambio.
-
-### REJECT
-
-La propuesta añadiría complejidad o no resuelve un problema real.
-
-### NEEDS_MORE_EVIDENCE
-
-La evidencia actual no permite decidir.
 
 ## Salidas
 
@@ -427,13 +434,18 @@ Debe contener:
 - ID inconsistencies;
 - architecture findings;
 - shared resource findings;
+- dependency learning candidates;
 - unknowns.
 
 ## improvement-plan.json
 
 Debe contener propuestas priorizadas.
 
-No debe modificar los archivos objetivo.
+Puede incluir:
+
+`DEPENDENCY_KNOWLEDGE_PROMOTION`
+
+No modifica los archivos objetivo.
 
 ## Criterio de cierre
 
@@ -442,21 +454,23 @@ El capability termina cuando:
 - se revisó evidencia real;
 - cada finding tiene soporte;
 - recurrencia e impacto fueron evaluados;
-- inconsistencias semánticas fueron identificadas;
-- propuestas son proporcionales al problema;
-- evals faltantes fueron señaladas;
-- no se modificó automáticamente el toolkit.
+- propuestas son proporcionales;
+- dependency learning candidates fueron evaluados;
+- no se promovió conocimiento automáticamente;
+- no se modificó toolkit ni baseline.
 
 ## Fuera de alcance
 
 No debe:
 
-- aplicar las propuestas;
+- aplicar propuestas;
 - editar skills;
 - editar scripts;
 - editar evals;
 - cambiar policies;
 - cambiar templates;
-- inventar problemas para justificar mejoras.
+- modificar dependency baseline;
+- inventar problemas;
+- convertir una migración exitosa aislada en verdad universal.
 
 El siguiente paso después de una propuesta es revisión humana.

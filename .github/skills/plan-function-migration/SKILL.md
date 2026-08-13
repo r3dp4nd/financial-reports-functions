@@ -88,16 +88,40 @@ No volver a consultar `latest`.
 
 No modificar una versión target aprobada durante planning.
 
-El plan global debe conservar una referencia explícita a la baseline utilizada.
+El plan global debe conservar:
+
+- baselineId;
+- path;
+- targets utilizados;
+- provenance de recomendaciones.
+
+## Recommendation provenance
+
+Toda acción de dependencia debe preservar de dónde provino su target cuando corresponda.
+
+Valores esperados:
+
+- `BASELINE`
+- `OFFICIAL_RESEARCH`
+- `LEARNED_BASELINE`
+- `EXTERNAL_RESEARCH`
 
 Ejemplo:
 
     {
-      "dependencyBaseline": {
-        "id": "node24-azure-functions-v4",
-        "path": ".github/skills/_shared/dependency-baseline.json"
-      }
+      "id": "GLOBAL-003",
+      "type": "REQUIRED_DEPENDENCY",
+      "package": "uuid",
+      "from": "^8.3.2",
+      "to": "x.y.z",
+      "recommendationSource": "LEARNED_BASELINE"
     }
+
+Planning no modifica:
+
+`recommendationStatus`
+
+ni promueve conocimiento.
 
 ## Dependency actions
 
@@ -107,38 +131,17 @@ Una dependencia puede requerir trabajo en distintos scopes.
 
 Cuando el package pertenece a toda la Function App.
 
-Ejemplo:
-
-    {
-      "id": "GLOBAL-002",
-      "type": "REQUIRED_DEPENDENCY",
-      "package": "@azure/functions",
-      "from": "^1.2.3",
-      "to": "4.16.2"
-    }
-
 ### Shared resource
 
-Cuando el cambio pertenece a una infraestructura compartida.
-
-Ejemplo:
-
-    {
-      "id": "SR-ACTION-001",
-      "type": "REQUIRED_DEPENDENCY",
-      "resourceId": "SR-COSMOS-REPORTS",
-      "package": "@azure/cosmos",
-      "from": "^3.10.5",
-      "to": "4.10.0"
-    }
+Cuando el cambio pertenece a infraestructura compartida.
 
 ### Function
 
 Cuando un consumidor necesita adaptación local.
 
-Usar la acción `FN-*` proveniente de analysis.
+Usar las acciones `FN-*` provenientes de analysis.
 
-No duplicar los tres niveles cuando no sean necesarios.
+No duplicar trabajo cuando una única acción propietaria es suficiente.
 
 ## Fase 1 — Shared resources
 
@@ -153,7 +156,7 @@ Crear cuando aplique:
 
 `.migration/resources/shared-resources.md`
 
-Estos artefactos describen el estado consolidado observado.
+Estos artefactos describen estado consolidado observado.
 
 No son migration plans.
 
@@ -169,10 +172,6 @@ Ejemplos:
 - `SR-SERVICEBUS-OUTBOX`
 - `SR-SQL-CUSTOMERS`
 
-Los IDs representan recursos persistentes.
-
-No representan acciones.
-
 ## shared-resources.json
 
 Cada recurso debe separar:
@@ -180,33 +179,11 @@ Cada recurso debe separar:
 - `evidenceStatus`;
 - `actionStatus`.
 
-Ejemplo:
-
-    {
-      "id": "SR-COSMOS-REPORTS",
-      "name": "ReportRepository",
-      "type": "COSMOS_DB",
-      "ownership": {
-        "scope": "CAPABILITY",
-        "owner": "Reports"
-      },
-      "consumers": [
-        "RequestReport",
-        "GenerateReport"
-      ],
-      "configurationKeys": [
-        "COSMOS_DATABASE"
-      ],
-      "evidenceStatus": "CONFIRMED",
-      "actionStatus": "REQUIRES_VALIDATION",
-      "evidence": []
-    }
-
-No usar:
+No utilizar:
 
 `status: CONFIRMED`
 
-para representar evidencia.
+para evidencia.
 
 ## Ownership
 
@@ -217,11 +194,9 @@ Scopes:
 - `CAPABILITY`
 - `WORKFLOW`
 
-Si no puede confirmarse ownership:
+Si no puede confirmarse:
 
 mantenerlo desconocido.
-
-No inventar un owner para completar el artefacto.
 
 ## Consolidación
 
@@ -243,10 +218,6 @@ IDs:
 - `SR-ACTION-001`
 - `SR-ACTION-002`
 
-La acción pertenece al plan.
-
-El recurso pertenece al catálogo.
-
 ## Global actions
 
 Usar:
@@ -254,27 +225,17 @@ Usar:
 - `GLOBAL-001`
 - `GLOBAL-002`
 
-Ejemplo:
-
-    {
-      "id": "GLOBAL-001",
-      "type": "REQUIRED_NODE",
-      "action": "Actualizar target Node.js a 24."
-    }
-
 ## Function actions
 
-Los planes individuales referencian las acciones:
+Los planes individuales referencian:
 
 `FN-*`
 
-producidas por `analyze-function`.
-
-No renombrarlas durante planning.
+No renombrarlas.
 
 ## Categorías
 
-Mantener la misma taxonomía de acciones definida en analysis:
+Usar:
 
 - `REQUIRED_PLATFORM`
 - `REQUIRED_NODE`
@@ -284,11 +245,9 @@ Mantener la misma taxonomía de acciones definida en analysis:
 - `TECHNICAL_DEBT`
 - `OPTIMIZATION`
 
-Planning no debe crear una taxonomy diferente.
-
 ## Orden de dependencias
 
-Cuando un SDK compartido requiera adaptación, representar cuando corresponda:
+Cuando corresponda:
 
     global dependency preparation
         ↓
@@ -300,7 +259,7 @@ Cuando un SDK compartido requiera adaptación, representar cuando corresponda:
         ↓
     platform migration
 
-Utilizar IDs reales mediante `dependsOn`.
+Representar dependencias mediante IDs.
 
 ## Plan global
 
@@ -316,11 +275,7 @@ Usar:
 
 ## Estado del plan
 
-El campo principal:
-
-`status`
-
-usa únicamente:
+Usar únicamente:
 
 - `READY`
 - `PARTIAL`
@@ -345,14 +300,6 @@ Debe contener:
 - unknowns;
 - verificationCriteria;
 - evidence.
-
-Debe referenciar:
-
-`.migration/resources/shared-resources.json`
-
-cuando exista.
-
-No copiar el catálogo completo de recursos.
 
 ## Plan por Function
 
@@ -386,40 +333,17 @@ Debe contener:
 - risks;
 - unknowns.
 
-`requiredActions` debe referenciar IDs:
-
-`FN-*`
-
-No copiar nuevamente las acciones completas salvo que sea indispensable para ejecución humana.
-
-## Dependencias
-
-Usar IDs existentes.
-
-Ejemplo:
-
-    {
-      "dependsOn": [
-        "GLOBAL-001",
-        "SR-ACTION-001"
-      ]
-    }
-
-No generar dependencias implícitas únicamente por orden textual.
-
 ## Function ya v4
 
 Si Programming Model ya es v4:
 
 no crear migration step de Programming Model.
 
-Puede existir preparación arquitectónica o de testabilidad.
-
 ## Durable
 
 Mantener planes por Function para detalle.
 
-Coordinar el cambio de plataforma como workflow cuando aplique.
+Coordinar el workflow como unidad cuando aplique.
 
 ## Orden
 
@@ -435,48 +359,31 @@ Secuencia preferida:
 8. global build;
 9. verification.
 
-Omitir acciones no necesarias.
-
 ## Build
 
 El build global completo pertenece a verification.
-
-No convertirlo en gate por Function.
 
 ## Unknowns
 
 Un unknown bloquea únicamente acciones dependientes.
 
-Usar `PARTIAL` cuando trabajo independiente pueda continuar.
-
 ## Revisión humana
 
-Si una acción requiere decisión humana:
+Si una dependencia tiene:
 
-registrar explícitamente:
+`recommendationStatus = PROPOSED`
 
-`REQUIRES_REVIEW`
+y requiere decisión antes de ejecución:
 
-sobre el elemento afectado o riesgo.
+registrar `REQUIRES_REVIEW` sobre el elemento afectado.
 
-El plan global se mantiene:
-
-- `PARTIAL`;
-- o `BLOCKED`;
-
-según impacto.
+No convertir la recomendación en `APPROVED`.
 
 ## Neutralidad del ejecutor
 
-Las acciones deben describir resultados técnicos.
+Describir resultados técnicos.
 
-Evitar:
-
-`El agente debe...`
-
-Preferir:
-
-`Extraer la lógica funcional del Azure adapter hacia la capability Reports.`
+No depender del agente que ejecuta.
 
 ## Salidas
 
@@ -511,23 +418,17 @@ Crear:
 El skill termina cuando:
 
 - inventory, assessment y analyses fueron consumidos;
-- dependency baseline del assessment fue preservada;
+- baseline fue preservada;
+- provenance de recomendaciones fue preservada;
 - versiones target no fueron redefinidas;
 - shared resources fueron consolidados;
-- `evidenceStatus` y `actionStatus` se usan correctamente;
-- dependency actions usan `REQUIRED_DEPENDENCY`;
 - cada shared change tiene una acción propietaria;
-- global actions usan `GLOBAL-*`;
-- shared actions usan `SR-ACTION-*`;
-- Function actions conservan `FN-*`;
+- acciones usan IDs correctos;
 - existe plan global;
 - cada Function incluida tiene plan;
-- no existen acciones duplicadas;
-- arquitectura está reflejada;
 - Durable está coordinado;
 - riesgos y unknowns permanecen visibles;
-- planes son neutrales respecto del ejecutor;
-- se generaron plans y lessons.
+- no se modificó dependency knowledge.
 
 ## Fuera de alcance
 
@@ -535,13 +436,12 @@ No debe:
 
 - modificar código;
 - instalar dependencias;
-- consultar `latest`;
-- cambiar versiones target aprobadas;
+- investigar nuevas versiones;
+- actualizar baseline;
+- promover learned packages;
 - agregar tests;
 - refactorizar;
-- actualizar dependencias;
 - migrar;
-- resolver unknowns mediante suposiciones;
 - optimizar.
 
 Siguiente skill sugerido:

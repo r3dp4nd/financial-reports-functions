@@ -13,25 +13,14 @@ const SKIP_DIRECTORIES = new Set(['.git', '.idea', '.vscode', '.migration', '.sk
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.ts', '.cts', '.mts']);
 
-/**
- * Azure SDKs conocidos por discovery.
- *
- * Este mapa no pretende representar todo el ecosistema Azure.
- * Solo permite agregar señales deterministas para dependencias
- * directamente relevantes al flujo de migración soportado.
- *
- * Las dependencias que no aparezcan aquí siguen siendo
- * inventariadas normalmente desde package.json.
- */
-const KNOWN_AZURE_PACKAGES = {
-  '@azure/functions': 'AZURE_FUNCTIONS',
-  'durable-functions': 'DURABLE_FUNCTIONS',
+const KNOWN_AZURE_RESOURCE_PACKAGES = {
   '@azure/cosmos': 'COSMOS_DB',
   '@azure/service-bus': 'SERVICE_BUS',
   '@azure/storage-blob': 'BLOB_STORAGE',
-  '@azure/event-hubs': 'EVENT_HUB',
-  '@azure/identity': 'AZURE_IDENTITY'
+  '@azure/event-hubs': 'EVENT_HUB'
 };
+
+const AZURE_PLATFORM_PACKAGES = new Set(['@azure/functions', 'durable-functions']);
 
 const AZURE_REGISTRATION_METHODS = {
   http: 'httpTrigger',
@@ -115,6 +104,10 @@ function safeReadJson(filePath, warnings) {
   }
 }
 
+function isAzurePackage(packageName) {
+  return (packageName.startsWith('@azure/') || AZURE_PLATFORM_PACKAGES.has(packageName));
+}
+
 function isEnvFile(name) {
   return (name === '.env' || name.startsWith('.env.') || name === 'local.settings.json');
 }
@@ -173,18 +166,6 @@ function recordProtectedFile(filePath, protectedFiles, category) {
   });
 }
 
-function detectGitHubWorkflowsMetadata(githubDirectory, protectedFiles) {
-  const workflowsDirectory = path.join(githubDirectory, 'workflows');
-
-  const stat = safeStat(workflowsDirectory);
-
-  if (!stat || !stat.isDirectory()) {
-    return;
-  }
-
-  walkProtectedTree(workflowsDirectory, protectedFiles, 'CI_CD');
-}
-
 function walkProtectedTree(directory, protectedFiles, category) {
   const entries = safeReadDir(directory);
 
@@ -201,6 +182,18 @@ function walkProtectedTree(directory, protectedFiles, category) {
       recordProtectedFile(fullPath, protectedFiles, category);
     }
   });
+}
+
+function detectGitHubWorkflowsMetadata(githubDirectory, protectedFiles) {
+  const workflowsDirectory = path.join(githubDirectory, 'workflows');
+
+  const stat = safeStat(workflowsDirectory);
+
+  if (!stat || !stat.isDirectory()) {
+    return;
+  }
+
+  walkProtectedTree(workflowsDirectory, protectedFiles, 'CI_CD');
 }
 
 function walkRepository(directory, files, protectedFiles) {
@@ -328,13 +321,13 @@ function dependencyList(packageInfo) {
 
   Object.keys(packageInfo.dependencies || {}).forEach(function (name) {
     result.push({
-      name: name, version: packageInfo.dependencies[name], scope: 'RUNTIME'
+      name: name, version: packageInfo.dependencies[name], scope: 'RUNTIME', azurePackage: isAzurePackage(name)
     });
   });
 
   Object.keys(packageInfo.devDependencies || {}).forEach(function (name) {
     result.push({
-      name: name, version: packageInfo.devDependencies[name], scope: 'DEVELOPMENT'
+      name: name, version: packageInfo.devDependencies[name], scope: 'DEVELOPMENT', azurePackage: isAzurePackage(name)
     });
   });
 
@@ -496,55 +489,6 @@ function parseDurableRegistrations(filePath, content) {
   return registrations;
 }
 
-function scanSources(appSourceFiles, warnings) {
-  const v4Registrations = [];
-  const durableRegistrations = [];
-  const environmentUsage = {};
-  const azurePackageUsage = {};
-
-  appSourceFiles.forEach(function (filePath) {
-    const content = safeReadText(filePath, warnings);
-
-    if (content === null) {
-      return;
-    }
-
-    parseV4Registrations(filePath, content).forEach(function (registration) {
-      v4Registrations.push(registration);
-    });
-
-    parseDurableRegistrations(filePath, content).forEach(function (registration) {
-      durableRegistrations.push(registration);
-    });
-
-    extractEnvironmentKeys(content).forEach(function (key) {
-      if (!environmentUsage[key]) {
-        environmentUsage[key] = [];
-      }
-
-      environmentUsage[key].push(normalizeRelative(filePath));
-    });
-
-    Object.keys(KNOWN_AZURE_PACKAGES).forEach(function (packageName) {
-      if (sourceReferencesPackage(content, packageName)) {
-        if (!azurePackageUsage[packageName]) {
-          azurePackageUsage[packageName] = [];
-        }
-
-        azurePackageUsage[packageName].push(normalizeRelative(filePath));
-      }
-    });
-  });
-
-  return {
-    v4Registrations: deduplicateObjects(v4Registrations, function (entry) {
-      return (entry.name + '|' + entry.registrationMethod + '|' + entry.file);
-    }), durableRegistrations: deduplicateObjects(durableRegistrations, function (entry) {
-      return (entry.name + '|' + entry.registrationMethod + '|' + entry.file);
-    }), environmentUsage: normalizeUsageMap(environmentUsage), azurePackageUsage: normalizeUsageMap(azurePackageUsage)
-  };
-}
-
 function sourceReferencesPackage(content, packageName) {
   const escaped = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -578,6 +522,61 @@ function deduplicateObjects(values, keyFunction) {
     seen.add(key);
     return true;
   });
+}
+
+function scanSources(appSourceFiles, warnings) {
+  const v4Registrations = [];
+  const durableRegistrations = [];
+  const environmentUsage = {};
+  const azureResourcePackageUsage = {};
+
+  appSourceFiles.forEach(function (filePath) {
+    const content = safeReadText(filePath, warnings);
+
+    if (content === null) {
+      return;
+    }
+
+    parseV4Registrations(filePath, content).forEach(function (registration) {
+      v4Registrations.push(registration);
+    });
+
+    parseDurableRegistrations(filePath, content).forEach(function (registration) {
+      durableRegistrations.push(registration);
+    });
+
+    extractEnvironmentKeys(content).forEach(function (key) {
+      if (!environmentUsage[key]) {
+        environmentUsage[key] = [];
+      }
+
+      environmentUsage[key].push(normalizeRelative(filePath));
+    });
+
+    Object.keys(KNOWN_AZURE_RESOURCE_PACKAGES).forEach(function (packageName) {
+      if (sourceReferencesPackage(content, packageName)) {
+        if (!azureResourcePackageUsage[packageName]) {
+          azureResourcePackageUsage[packageName] = [];
+        }
+
+        azureResourcePackageUsage[packageName].push(normalizeRelative(filePath));
+      }
+    });
+  });
+
+  return {
+    v4Registrations: deduplicateObjects(v4Registrations, function (entry) {
+      return (entry.name + '|' + entry.registrationMethod + '|' + entry.file);
+    }),
+
+    durableRegistrations: deduplicateObjects(durableRegistrations, function (entry) {
+      return (entry.name + '|' + entry.registrationMethod + '|' + entry.file);
+    }),
+
+    environmentUsage: normalizeUsageMap(environmentUsage),
+
+    azureResourcePackageUsage: normalizeUsageMap(azureResourcePackageUsage)
+  };
 }
 
 function packageMajor(version) {
@@ -702,20 +701,13 @@ function buildConfigurationKeys(environmentUsage) {
     });
 }
 
-/**
- * Crea únicamente candidatos derivados de SDKs Azure conocidos.
- *
- * El resultado sigue siendo INFERRED porque varios archivos
- * importando el mismo SDK no demuestran que utilicen el mismo
- * recurso funcional o infraestructura concreta.
- */
-function buildSharedResourceCandidates(azurePackageUsage) {
+function buildSharedResourceCandidates(azureResourcePackageUsage) {
   const candidates = [];
 
-  Object.keys(azurePackageUsage)
+  Object.keys(azureResourcePackageUsage)
     .sort()
     .forEach(function (packageName) {
-      const files = azurePackageUsage[packageName];
+      const files = azureResourcePackageUsage[packageName];
 
       if (files.length < 2) {
         return;
@@ -726,12 +718,11 @@ function buildSharedResourceCandidates(azurePackageUsage) {
           .replace(/^@/, '')
           .replace(/[^A-Za-z0-9]+/g, '-')
           .toUpperCase(),
-        type: KNOWN_AZURE_PACKAGES[packageName],
-        package: packageName,
-        paths: files,
-        consumers: [],
-        ownership: null,
-        evidenceStatus: 'INFERRED',
+
+        type: KNOWN_AZURE_RESOURCE_PACKAGES[packageName],
+
+        package: packageName, paths: files, consumers: [], ownership: null, evidenceStatus: 'INFERRED',
+
         evidence: [{
           type: 'PACKAGE_USAGE', package: packageName, paths: files
         }]
@@ -743,6 +734,7 @@ function buildSharedResourceCandidates(azurePackageUsage) {
 
 function buildFunctionApp(candidate, files, warnings) {
   const appRoot = candidate.directory;
+
   const appFiles = filesUnderRoot(files, appRoot);
 
   const packageInfo = packageMetadata(appRoot, warnings);
@@ -759,10 +751,10 @@ function buildFunctionApp(candidate, files, warnings) {
 
   const durable = determineDurable(packageInfo, legacyFunctions, sourceScan.durableRegistrations);
 
-  const dependencies = dependencyList(packageInfo);
-
   return {
-    root: normalizeRelative(appRoot) || '.', evidenceStatus: determineAppConfidence(packageInfo),
+    root: normalizeRelative(appRoot) || '.',
+
+    evidenceStatus: determineAppConfidence(packageInfo),
 
     host: hostInfo,
 
@@ -771,6 +763,7 @@ function buildFunctionApp(candidate, files, warnings) {
     platform: {
       node: {
         declared: packageInfo.engines && packageInfo.engines.node ? packageInfo.engines.node : null,
+
         evidenceStatus: packageInfo.engines && packageInfo.engines.node ? 'CONFIRMED' : 'UNKNOWN'
       },
 
@@ -783,15 +776,15 @@ function buildFunctionApp(candidate, files, warnings) {
 
     durable: durable,
 
-    dependencies: dependencies,
+    dependencies: dependencyList(packageInfo),
 
     functions: legacyFunctions.concat(v4Functions),
 
     configurationKeys: buildConfigurationKeys(sourceScan.environmentUsage),
 
-    azurePackageUsage: sourceScan.azurePackageUsage,
+    azureResourcePackageUsage: sourceScan.azureResourcePackageUsage,
 
-    sharedResourceCandidates: buildSharedResourceCandidates(sourceScan.azurePackageUsage)
+    sharedResourceCandidates: buildSharedResourceCandidates(sourceScan.azureResourcePackageUsage)
   };
 }
 
@@ -809,13 +802,23 @@ function createInventory() {
   });
 
   return {
-    schemaVersion: '1', tool: {
+    schemaVersion: '1',
+
+    tool: {
       name: 'inventory', runtimeCompatibility: 'node>=14'
-    }, repository: {
+    },
+
+    repository: {
       root: ROOT
-    }, functionApps: functionApps, sensitiveFilesDetected: protectedFiles.sort(function (a, b) {
+    },
+
+    functionApps: functionApps,
+
+    sensitiveFilesDetected: protectedFiles.sort(function (a, b) {
       return a.path.localeCompare(b.path);
-    }), warnings: warnings
+    }),
+
+    warnings: warnings
   };
 }
 
@@ -839,6 +842,7 @@ module.exports = {
   createInventory: createInventory,
   classifyProtectedFile: classifyProtectedFile,
   isCiCdFile: isCiCdFile,
+  isAzurePackage: isAzurePackage,
   extractEnvironmentKeys: extractEnvironmentKeys,
   determineProgrammingModel: determineProgrammingModel,
   buildSharedResourceCandidates: buildSharedResourceCandidates
