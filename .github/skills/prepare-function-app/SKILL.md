@@ -1,26 +1,25 @@
 ---
 name: prepare-function-app
-description: Prepara de forma mínima una Azure Function App para su migración a Node.js 24, Azure Functions Runtime v4 y Programming Model v4, aplicando únicamente cambios globales previamente planificados y preservando configuraciones válidas existentes.
+description: Prepara la base técnica global de una Azure Function App para su migración aplicando únicamente cambios previamente planificados y preservando configuraciones válidas existentes.
 ---
 
 # Prepare Function App
 
 ## Objetivo
 
-Preparar la base técnica global de una Azure Function App para ejecutar posteriormente la preparación y migración de sus
-Functions.
+Preparar la infraestructura técnica global necesaria para la migración.
 
-Este skill puede modificar archivos globales del proyecto.
+Este skill puede modificar configuración global del proyecto.
 
-Debe aplicar únicamente cambios respaldados por:
+No modifica comportamiento funcional de Functions.
 
-`.migration/repository/assessment.json`
+## Políticas
 
-y:
+Aplicar:
 
-`.migration/plans/migration-plan.json`
-
-No debe migrar todavía el comportamiento de Functions individuales.
+- `../_shared/evidence-policy.md`
+- `../_shared/security-policy.md`
+- `../_shared/lessons-policy.md`
 
 ## Precondiciones
 
@@ -30,123 +29,88 @@ Deben existir:
 - `.migration/repository/assessment.json`
 - `.migration/plans/migration-plan.json`
 
-El plan debe estar en estado:
-
-- `READY`
-
-o permitir explícitamente preparación parcial segura.
-
-Si una decisión necesaria está marcada como `REQUIRES_VALIDATION`, no inventar una solución.
+El plan debe permitir iniciar preparación.
 
 ## Principio
 
-Preparar únicamente lo necesario.
-
-No reemplazar configuraciones válidas por configuraciones estándar solo por uniformidad.
+Aplicar solamente el delta necesario.
 
 Antes de modificar un archivo:
 
-1. identificar su estado actual;
-2. comprobar si ya satisface el objetivo;
-3. aplicar únicamente el delta necesario.
+1. comprobar su estado actual;
+2. determinar si ya cumple el target;
+3. preservar lo válido;
+4. modificar solo lo necesario.
 
-Preferir cambios pequeños y reversibles.
+No reemplazar configuraciones válidas por plantillas estándar.
 
-## Alcance global
+## Alcance
 
-Evaluar y modificar únicamente cuando el plan lo requiera:
+Modificar únicamente cuando el plan lo requiera:
 
 - `package.json`;
-- `package-lock.json`;
-- Node.js target;
-- dependencias globales;
+- lockfile;
+- Node.js declarado;
+- dependencias;
 - TypeScript;
-- configuración de build;
-- configuración de tests;
+- Jest;
 - coverage;
+- build;
 - estructura `src/`;
 - `host.json`;
 - `.funcignore`;
-- configuración de análisis estático preparada;
 - scripts npm;
-- otros archivos globales expresamente incluidos en el plan.
-
-No modificar todavía lógica funcional.
+- configuración técnica global necesaria.
 
 ## Node.js
 
-Si el assessment indica:
+Actualizar la declaración del target únicamente cuando el assessment indique `REQUIRED`.
 
-`action = REQUIRED`
+Si ya cumple:
 
-actualizar la declaración del runtime objetivo según el plan.
+no modificar.
 
-Ejemplo conceptual:
+Este cambio no demuestra compatibilidad funcional.
 
-`Node.js 24`
+## Runtime
 
-No asumir que esta modificación demuestra compatibilidad del código.
+Modificar configuración de Runtime únicamente cuando:
 
-La compatibilidad funcional seguirá siendo validada por los tests y skills posteriores.
+- esté bajo control del repositorio;
+- exista evidencia;
+- el plan lo requiera.
 
-Si Node.js ya cumple el target:
-
-`NOT_REQUIRED`
-
-y no modificarlo.
-
-## Azure Functions Runtime
-
-Modificar configuración relacionada con Azure Functions Runtime únicamente cuando esté bajo control del repositorio y el
-plan lo requiera.
-
-No asumir valores de infraestructura externa que no estén disponibles como evidencia segura.
-
-No leer pipelines, secretos ni infraestructura sensible para deducir runtime desplegado.
-
-Cuando el runtime real dependa de infraestructura externa no accesible:
-
-registrar la validación pendiente.
+No deducir infraestructura leyendo archivos protegidos.
 
 ## Programming Model
 
-Este skill no migra Functions al Programming Model v4.
+No migrar Functions.
 
-Puede preparar dependencias y estructura necesarias únicamente cuando el plan lo requiera.
+Puede preparar:
 
-La transformación de registros y handlers pertenece a:
+- dependencia `@azure/functions`;
+- entrypoint global;
+- estructura necesaria;
 
-`migrate-programming-model-v4`
+cuando el plan lo requiera.
 
-Si la aplicación ya usa Programming Model v4, preservar esa configuración.
+La conversión de Functions legacy pertenece a otro skill.
 
 ## Dependencias
 
-Actualizar únicamente dependencias cuya modificación esté aprobada en el plan.
+Actualizar únicamente dependencias autorizadas por el assessment y plan.
 
-Distinguir:
+No actualizar por antigüedad.
 
-- runtime dependencies;
-- development dependencies;
-- Azure SDK;
-- Azure Functions;
-- Durable Functions;
-- TypeScript;
-- Jest y tooling.
+No introducir paquetes sin necesidad concreta.
 
-No actualizar dependencias solo porque exista una versión más reciente.
-
-No introducir paquetes sin una necesidad concreta.
+Mantener lockfile consistente.
 
 ## Package manager
 
 Preservar el package manager existente cuando sea válido.
 
-Si existe `package-lock.json`, mantener npm salvo decisión explícita contraria.
-
-Después de cambios de dependencias, mantener lockfile consistente.
-
-No cambiar npm por yarn, pnpm u otro package manager sin necesidad demostrada.
+No migrar entre npm, yarn o pnpm sin decisión explícita.
 
 ## Scripts npm
 
@@ -156,189 +120,95 @@ Mantener scripts:
 - legibles;
 - multiplataforma.
 
-Evitar cuando sea práctico:
+Evitar cuando sea práctico comandos shell específicos como:
 
 - `rm -rf`;
 - `cp`;
 - `mv`;
-- `mkdir -p`;
-- sintaxis de variables de entorno dependiente del shell.
+- `mkdir -p`.
 
-Preferir herramientas Node.js multiplataforma cuando sean necesarias.
-
-No convertir scripts npm en un framework de automatización.
+Preferir herramientas Node multiplataforma cuando se necesiten.
 
 ## TypeScript
 
-Si el proyecto utiliza TypeScript, preparar únicamente las configuraciones necesarias.
+Cuando corresponda, preparar configuración para:
 
-Cuando aplique, separar:
+- desarrollo;
+- producción;
+- tests.
 
-- configuración de desarrollo;
-- configuración de producción;
-- configuración de tests.
-
-Ejemplo conceptual:
-
-- `tsconfig.json`
-- `tsconfig.prod.json`
-- `tsconfig.spec.json`
-
-No introducir esta separación si el proyecto ya dispone de una estructura equivalente válida.
+No introducir archivos adicionales si la configuración existente ya resuelve estas necesidades.
 
 ## Build
 
-La configuración debe permitir distinguir:
+Preparar scripts y configuración necesaria para:
 
-- validación de tipos;
-- build de desarrollo;
-- build de producción.
+- typecheck;
+- build;
+- tests.
 
-El build de producción no debe incluir tests cuando estos vivan dentro de `src/`.
-
-No asumir que cada Function debe poder compilarse de forma independiente durante la migración parcial.
-
-La compilación final se ejecutará cuando las adaptaciones necesarias de la Function App estén completas.
+El build global final no es requerido después de cada Function durante estados intermedios.
 
 ## Tests
 
-Si el plan requiere preparar Jest:
+Preparar Jest y tooling global cuando el plan lo requiera.
 
-configurar únicamente la infraestructura global necesaria.
+No crear tests de Functions.
 
-Ejemplos:
-
-- Jest;
-- ts-jest;
-- tipos;
-- coverage;
-- reporters requeridos.
-
-No crear todavía tests de Functions.
-
-Eso pertenece a:
-
-`prepare-function`
-
-Preservar configuraciones Jest existentes que ya sean válidas.
+Eso pertenece a `prepare-function`.
 
 ## Coverage
 
-Configurar coverage sobre código con comportamiento ejecutable.
+Configurar únicamente exclusiones justificadas.
 
-Excluir únicamente archivos cuya exclusión tenga justificación.
-
-No utilizar patrones de archivo para ocultar lógica real de coverage.
-
-Las exclusiones temporales legacy deben quedar identificables para su eliminación posterior.
+No excluir lógica productiva para satisfacer thresholds.
 
 ## Estructura
 
-Si el plan requiere reorganización hacia `src/`, preparar la estructura mínima necesaria.
+Cuando el plan requiera reorganización, favorecer:
 
-Preferir:
+- `src/functions/` para adapters Azure;
+- `src/<Capability>/` para implementación funcional.
 
-`src/functions/`
-
-para adapters o composition roots de Azure Functions.
-
-Y:
-
-`src/<Capability>/`
-
-para implementación funcional cuando sea apropiado.
-
-No crear automáticamente:
-
-- domain;
-- application;
-- infrastructure;
-- ports;
-- adapters;
-
-para cada Function.
-
-La arquitectura interna se decide según la complejidad observada.
+No crear capas artificiales.
 
 ## host.json
 
-Preservar configuración existente válida.
+Preservar configuración válida existente.
 
-Modificar únicamente propiedades requeridas por el target o por dependencias confirmadas.
-
-No eliminar configuración desconocida solo porque no sea utilizada por este skill.
+Modificar únicamente lo requerido por el target.
 
 ## .funcignore
 
-Asegurar que el paquete de despliegue no incluya artefactos innecesarios cuando corresponda.
+Asegurar cuando corresponda que deployment excluya artefactos no runtime, como:
 
-Considerar exclusión de:
-
-- código fuente si el deployment usa `dist`;
-- tests;
-- coverage;
-- resultados de tests;
 - `.migration`;
+- coverage;
+- test-results;
+- tests;
 - archivos locales;
-- documentación;
-- artefactos de desarrollo.
+- documentación de desarrollo.
 
-Nunca excluir archivos runtime requeridos sin evidencia.
+No excluir contenido necesario para runtime.
 
-## Configuración sensible
-
-No leer ni modificar automáticamente:
-
-- `local.settings.json`;
-- `.env`;
-- secretos;
-- certificados;
-- archivos CI/CD sensibles;
-- configuración de infraestructura protegida.
-
-Si una validación posterior necesita settings, usar únicamente una copia sanitizada o expresamente aprobada.
-
-## Sonar y CI/CD
-
-La preparación de archivos de ejemplo puede realizarse únicamente si está incluida en el plan.
-
-No activar integraciones externas.
+## CI/CD y Sonar
 
 No modificar pipelines reales.
 
-No asumir service connections, tokens, proyectos o infraestructura.
+Archivos de ejemplo pueden prepararse únicamente si el plan los contempla.
 
-CI/CD y Sonar preparados como ejemplo no deben convertirse en requisitos para cerrar la migración salvo decisión
-explícita del proyecto.
+No convertir Sonar o CI/CD en gate obligatorio de migración salvo decisión explícita.
 
-## Cambios permitidos
+## Validación
 
-Los cambios aplicados deben corresponder únicamente a:
-
-- `REQUIRED_PLATFORM`
-- `REQUIRED_NODE`
-- `REQUIRED_TESTABILITY`
-- `STRUCTURAL`
-
-`TECHNICAL_DEBT` solo se modifica si bloquea alguno de los anteriores.
-
-`OPTIMIZATION` está fuera de alcance.
-
-## Verificación durante preparación
-
-Después de cambios globales, ejecutar únicamente validaciones que sean razonables en el estado actual.
-
-Ejemplos:
+Ejecutar las validaciones posibles en el estado actual, por ejemplo:
 
 - JSON válido;
-- configuración TypeScript válida;
-- instalación de dependencias cuando sea posible;
-- typecheck global únicamente cuando el estado parcial lo permita;
+- instalación de dependencias;
+- TypeScript config;
 - validaciones estáticas.
 
-No interpretar fallos esperables de Functions aún no migradas como fracaso definitivo de la preparación.
-
-Registrar las validaciones realizadas y sus resultados.
+No interpretar automáticamente fallos causados por Functions aún no adaptadas como fracaso final.
 
 ## Salidas
 
@@ -356,82 +226,57 @@ Y:
 
 ## preparation.json
 
-Debe registrar como mínimo:
+Registrar:
 
-- metadata;
 - archivos modificados;
 - cambios aplicados;
 - cambios omitidos por ya estar satisfechos;
-- decisiones pendientes;
-- validaciones ejecutadas;
+- validaciones;
 - resultados;
 - riesgos;
-- unknowns;
-- evidencia del plan utilizada.
-
-No almacenar secretos ni contenidos sensibles.
+- unknowns.
 
 ## preparation.md
 
-Debe explicar brevemente:
+Explicar:
 
-- qué se modificó;
+- qué cambió;
 - por qué;
 - qué se preservó;
-- qué ya estaba correcto;
+- qué estaba ya correcto;
 - qué quedó pendiente;
-- qué validaciones pasaron o fallaron;
-- qué debe revisar el desarrollador antes de continuar.
-
-No debe ser un diff completo.
+- qué validaciones se ejecutaron.
 
 ## Lecciones aprendidas
 
-Registrar únicamente observaciones útiles sobre:
+Aplicar:
 
-- configuración ya válida que el skill evitó reemplazar;
-- caso no contemplado;
-- dependencia inesperada;
-- script no multiplataforma;
-- configuración difícil de preservar;
-- cambio innecesario detectado;
-- validación que produjo falso fallo;
-- oportunidad de simplificar;
-- posible mejora del skill.
-
-No modificar automáticamente el skill.
-
-Toda mejora requiere revisión humana.
+`../_shared/lessons-policy.md`
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- se consumió el plan aprobado;
-- únicamente se aplicaron cambios globales autorizados;
-- configuraciones válidas existentes fueron preservadas;
-- las dependencias globales requeridas quedaron preparadas;
-- el entorno TypeScript/build/test quedó preparado cuando correspondía;
+- se consumió el plan;
+- solo se aplicaron cambios globales autorizados;
+- se preservó configuración válida;
+- las bases técnicas necesarias quedaron preparadas;
 - no se modificó comportamiento funcional;
-- no se leyeron archivos sensibles;
-- las validaciones posibles fueron ejecutadas;
-- los resultados fueron registrados;
+- se ejecutaron las validaciones razonables;
 - se generaron preparation y lessons.
 
 ## Fuera de alcance
 
 Este skill no debe:
 
-- cambiar comportamiento de negocio;
-- migrar handlers individuales;
+- modificar lógica funcional;
 - crear tests de una Function;
-- migrar registros `app.*`;
-- migrar workflows Durable;
-- aplicar Clean Architecture a Functions;
-- resolver deuda técnica no bloqueante;
-- optimizar código;
+- migrar registros legacy;
+- migrar Durable;
+- resolver deuda no bloqueante;
+- optimizar;
 - modificar pipelines reales;
-- desplegar la Function App.
+- desplegar.
 
 El siguiente skill sugerido es:
 
