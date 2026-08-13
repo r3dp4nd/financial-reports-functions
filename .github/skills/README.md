@@ -25,6 +25,14 @@ La ejecución puede realizarse:
 
 No existe orquestación autónoma obligatoria.
 
+## Uso
+
+La ejecución principal se realiza desde GitHub Copilot Chat.
+
+Ver:
+
+[Uso rápido con GitHub Copilot Chat](#uso-rápido-con-github-copilot-chat)
+
 ## Principio
 
 Trabajar desde evidencia hacia cambios.
@@ -1225,3 +1233,167 @@ La IA puede:
 - proponer aprendizaje.
 
 La IA no puede convertir por sí sola una recomendación nueva en estándar permanente del toolkit.
+
+# Uso rápido con GitHub Copilot Chat
+
+El toolkit se ejecuta de forma guiada desde GitHub Copilot Chat dentro del repositorio objetivo.
+
+El developer conserva el control sobre cada etapa.
+
+## Flujo
+
+```mermaid
+flowchart LR
+  A[Discover] --> B[Assess]
+  B --> C[Analyze Functions]
+  C --> D[Plan]
+  D --> E[Prepare]
+  E --> F[Migrate]
+  F --> G[Verify]
+  G --> H[Review Lessons]
+```
+
+Cada etapa consume los artefactos generados por la anterior.
+
+No es necesario ejecutar una etapa cuando el target correspondiente ya está satisfecho.
+
+## Inicio
+
+Copiar el bundle `.github/` del toolkit al repositorio objetivo.
+
+Abrir el repositorio en un entorno compatible con GitHub Copilot Chat.
+
+Después iniciar el flujo indicando explícitamente el skill.
+
+Ejemplo:
+
+```text
+Usa el skill discover-function-app para analizar este repositorio.
+
+Trabaja desde la raíz actual.
+Respeta las políticas de seguridad.
+No leas archivos sensibles ni CI/CD protegido.
+Genera los artefactos definidos por el skill.
+```
+
+## Assessment
+
+Después de revisar el inventory:
+
+```text
+Usa assess-function-app.
+
+Consume los artefactos existentes en .migration.
+Evalúa la Function App contra el target de la campaña.
+Usa dependency-baseline.json.
+No modifiques código.
+```
+
+## Análisis por Function
+
+Ejecutar por cada Function o unidad funcional relevante:
+
+```text
+Usa analyze-function para RequestReport.
+
+Consume inventory y assessment.
+Analiza únicamente el slice necesario.
+No modifiques código.
+```
+
+Repetir para las Functions necesarias.
+
+## Plan
+
+Cuando los análisis requeridos estén disponibles:
+
+```text
+Usa plan-function-migration.
+
+Consume inventory, assessment y los analyses existentes.
+Consolida shared resources cuando corresponda.
+Genera el plan global y los planes por Function.
+No modifiques código.
+```
+
+## Preparación
+
+Primero preparar la Function App:
+
+```text
+Usa prepare-function-app.
+
+Ejecuta únicamente las acciones GLOBAL-* y SR-ACTION-* aprobadas por el plan.
+No selecciones nuevas versiones.
+```
+
+Después preparar cada Function:
+
+```text
+Usa prepare-function para RequestReport.
+
+Ejecuta únicamente las acciones FN-* aprobadas.
+Preserva comportamiento.
+Agrega los tests requeridos.
+```
+
+## Migración
+
+Para Programming Model:
+
+```text
+Usa migrate-programming-model-v4 para RequestReport.
+
+Consume el plan y la preparación existentes.
+Migra únicamente el Azure adapter.
+```
+
+Para Durable:
+
+```text
+Usa migrate-durable-functions-v4 para GenerateReportWorkflow.
+
+Trata el workflow como una unidad.
+Preserva comportamiento y determinismo.
+```
+
+## Verificación
+
+Cuando todas las adaptaciones estén completas:
+
+```text
+Usa verify-function-app.
+
+Compara BEFORE, PLAN y AFTER.
+Ejecuta los gates finales.
+No corrijas automáticamente los fallos.
+```
+
+## Mejora del toolkit
+
+Después de una o varias migraciones:
+
+```text
+Usa review-skill-performance.
+
+Revisa lessons, verification y findings.
+Propón mejoras o dependency knowledge reutilizable.
+No modifiques automáticamente los skills ni la baseline.
+```
+
+## Regla de trabajo
+
+La interacción recomendada es:
+
+```text
+skill
+→ resultado
+→ revisión del developer
+→ siguiente skill
+```
+
+El developer decide cuándo avanzar.
+
+GitHub Copilot Chat es el punto de interacción.
+
+Los scripts internos son herramientas del skill, no una interfaz pública del toolkit.
