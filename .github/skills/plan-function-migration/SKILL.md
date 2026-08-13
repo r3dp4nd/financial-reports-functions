@@ -1,26 +1,31 @@
 ---
 name: plan-function-migration
-description: Construye el plan de migración de una Azure Function App a partir del inventario, assessment y análisis individuales de sus Functions. Define qué debe cambiar, qué debe preservarse, el orden recomendado y las verificaciones necesarias, sin modificar código.
+description: Consolida el inventario, assessment y análisis individuales para construir un único plan global de migración de una Azure Function App, definiendo orden, dependencias, riesgos y criterios de ejecución sin volver a analizar código ni modificar el repositorio.
 ---
 
 # Plan Function Migration
 
 ## Objetivo
 
-Construir un plan de migración ejecutable y trazable para una Azure Function App.
+Construir un único plan global de migración para una Azure Function App.
 
-El plan debe consolidar evidencia ya producida y determinar:
+El plan debe coordinar las acciones ya identificadas por:
 
-- qué cambios son obligatorios;
-- qué dimensiones ya cumplen el objetivo;
-- qué Functions necesitan preparación;
-- qué Functions necesitan migración de Programming Model;
-- qué workflows Durable requieren tratamiento especializado;
-- qué orden reduce riesgos;
-- qué comportamiento debe preservarse;
-- qué verificaciones deben ejecutarse posteriormente.
+- discovery;
+- assessment;
+- análisis Function por Function.
 
-Este skill no modifica código.
+Este skill no vuelve a diseñar cada Function.
+
+No modifica código.
+
+## Políticas
+
+Aplicar:
+
+- `../_shared/evidence-policy.md`
+- `../_shared/security-policy.md`
+- `../_shared/lessons-policy.md`
 
 ## Precondiciones
 
@@ -30,21 +35,21 @@ Deben existir:
 
 `.migration/repository/assessment.json`
 
-y los análisis requeridos:
+y los:
 
 `.migration/functions/<FunctionName>/analysis.json`
 
-El plan no debe construirse como definitivo si faltan análisis necesarios.
+necesarios.
 
-Si falta información crítica:
+Si faltan análisis críticos:
 
-- registrar el gap;
-- marcar el plan como incompleto;
-- no inventar decisiones.
+- registrar qué falta;
+- no inventar acciones;
+- marcar el plan como `PARTIAL` o `BLOCKED`.
 
 ## Entradas
 
-Consumir primero:
+Consumir:
 
 - `inventory.json`;
 - `assessment.json`;
@@ -52,22 +57,37 @@ Consumir primero:
 
 No volver a analizar el repositorio por defecto.
 
-Consultar código únicamente si existe una contradicción que no pueda resolverse mediante los artefactos existentes.
+Cada `analysis.json` debe aportar sus propias:
+
+`requiredActions`
+
+Este skill las coordina, no las vuelve a descubrir.
 
 ## Principio
 
-Este skill planifica a partir de evidencia.
+El plan global debe responder:
 
-No debe convertir:
+- qué cambios globales son necesarios;
+- qué Functions requieren preparación;
+- qué Functions necesitan migración de Programming Model;
+- qué workflows Durable existen;
+- qué dependencias existen entre acciones;
+- qué orden reduce riesgo;
+- qué verificaciones deberán cerrar la migración.
 
-- deuda técnica;
-- preferencias arquitectónicas;
-- optimizaciones;
-- modernizaciones opcionales;
+No generar un segundo análisis técnico de las Functions.
 
-en requisitos obligatorios de migración.
+## Estado objetivo
 
-Mantener separadas las categorías:
+Usar el target definido por `assessment.json`.
+
+No redefinir versiones target.
+
+No asumir que todas las dimensiones necesitan cambios.
+
+## Categorías
+
+Preservar las categorías provenientes de los análisis:
 
 - `REQUIRED_PLATFORM`
 - `REQUIRED_NODE`
@@ -76,325 +96,351 @@ Mantener separadas las categorías:
 - `TECHNICAL_DEBT`
 - `OPTIMIZATION`
 
-## Estado objetivo
+El plan operativo debe priorizar únicamente cambios requeridos.
 
-Usar el target confirmado por `assessment.json`.
+`TECHNICAL_DEBT` se documenta salvo que bloquee migración o testabilidad.
 
-Normalmente:
+`OPTIMIZATION` queda fuera de alcance.
 
-- Node.js 24;
-- Azure Functions Runtime v4;
-- Programming Model v4;
-- dependencias compatibles;
-- tests requeridos para proteger comportamiento;
-- estructura suficiente para mantener testabilidad y migración segura.
+## Cambios globales
 
-No asumir que todas las dimensiones necesitan cambios.
-
-## Cobertura del plan
-
-El plan debe contener dos niveles:
-
-1. plan global de la Function App;
-2. plan específico por Function o unidad funcional.
-
-## Plan global
-
-Determinar únicamente los cambios transversales necesarios.
+Consolidar únicamente cambios transversales respaldados por el assessment o los análisis.
 
 Ejemplos:
 
-- versión Node.js;
+- Node.js;
 - Azure Functions Runtime;
 - dependencias compartidas;
 - TypeScript;
-- configuración de tests;
-- estructura base;
+- Jest;
+- coverage;
 - build;
-- configuración necesaria para validación;
-- preparación de Programming Model v4;
-- Durable Functions cuando aplique.
+- estructura base;
+- `host.json`;
+- `.funcignore`;
+- configuración necesaria para validación.
 
-No incluir cambios globales que no estén respaldados por assessment o análisis.
+No incluir cambios globales por simple preferencia.
 
-## Plan por Function
+## Acciones por Function
 
-Para cada Function analizada, definir:
+No generar archivos de plan por Function.
 
-- comportamiento a preservar;
-- tests necesarios;
-- refactor mínimo requerido;
-- cambios de Node.js relevantes;
-- cambio de Programming Model cuando aplique;
-- dependencias afectadas;
-- relaciones relevantes;
-- riesgos;
-- criterios de validación.
+Consumir directamente:
 
-No volver a describir todo el análisis.
+`analysis.json -> requiredActions`
 
-El plan debe convertir hallazgos en acciones concretas.
+El plan global puede referenciar esas acciones para construir el orden de ejecución.
 
-## Functions ya en Programming Model v4
+Ejemplo conceptual:
+
+    {
+      "function": "RequestReport",
+      "actions": [
+        "REQ-REQUEST-001",
+        "REQ-REQUEST-002"
+      ]
+    }
+
+La descripción detallada permanece en:
+
+`.migration/functions/RequestReport/analysis.json`
+
+## Functions ya en v4
 
 Si una Function ya utiliza Programming Model v4:
 
-- marcar migración del modelo como `NOT_REQUIRED`;
-- preservar su registro actual salvo necesidad demostrada;
-- incluir únicamente refactor, tests, compatibilidad Node.js u otros cambios realmente necesarios.
-
-No ejecutar ni planificar una migración innecesaria del modelo.
+- no incluir migración del modelo;
+- conservar únicamente acciones realmente requeridas;
+- permitir refactor/testabilidad/Node compatibility cuando corresponda.
 
 ## Functions legacy
 
-Si una Function utiliza Programming Model legacy y el assessment requiere v4:
+Cuando el análisis contenga una acción:
 
-incluir una acción `REQUIRED_PLATFORM`.
+`REQUIRED_PLATFORM`
 
-El plan debe identificar los puntos relevantes que posteriormente deberán transformarse, por ejemplo:
+para migrar Programming Model, incluirla en el orden global.
 
-- `function.json`;
-- `context`;
-- `context.bindings`;
-- `context.res`;
-- bindings declarativos;
-- entrypoint legacy.
-
-No generar todavía el código v4.
+No generar nuevamente los detalles técnicos de conversión.
 
 ## Durable Functions
 
-Los workflows Durable deben planificarse como unidades coherentes.
+Los workflows Durable deben coordinarse como unidades coherentes.
 
-Cuando exista:
+Identificar usando evidencia disponible:
 
-- starter;
+- starter/client;
 - orchestrator;
 - activities;
+- sub-orchestrators cuando existan.
 
-identificar el workflow y sus dependencias.
+Las acciones de sus Functions pueden permanecer en sus respectivos `analysis.json`, pero el plan global debe agrupar la
+ejecución del workflow cuando exista dependencia.
 
-No planificar la migración de cada Activity de forma desconectada si pertenece al mismo flujo.
+No planificar Activities como migraciones independientes si pertenecen al mismo workflow.
 
-El plan puede contener acciones por Function, pero debe preservar el orden y coherencia del workflow Durable.
+## Preparación
 
-## Tests y preparación
+Ordenar cuando corresponda:
 
-Los tests identificados por `analyze-function` deben planificarse antes de cambios que puedan alterar comportamiento
-cuando sea posible.
+1. preparación global;
+2. preparación de Functions;
+3. baseline de tests;
+4. migración de plataforma;
+5. migración Durable;
+6. verificación global.
 
-Secuencia preferida:
+No exigir este orden cuando la evidencia demuestre que una etapa es `NOT_APPLICABLE`.
 
-1. refactor mínimo para testabilidad, cuando sea necesario;
-2. agregar tests de caracterización o unitarios;
-3. obtener baseline verde;
-4. aplicar cambios de migración;
-5. ejecutar los mismos tests;
-6. verificar comportamiento preservado.
+## Tests
 
-No inventar tests adicionales sin evidencia.
+Los tests definidos en cada análisis deben ejecutarse durante `prepare-function`.
+
+El plan global debe asegurar que la baseline exista antes de cambios que puedan afectar comportamiento cuando sea
+posible.
+
+No duplicar en este archivo el detalle de todos los tests.
+
+Referenciar el análisis correspondiente.
 
 ## Dependencias
 
-Usar las conclusiones del assessment.
-
-Para una dependencia:
-
-- `REQUIRED` → incluir actualización;
-- `NOT_REQUIRED` → preservar;
-- `REQUIRES_VALIDATION` → incluir validación antes del cambio.
-
-No elegir versiones nuevas sin evidencia oficial previamente confirmada.
-
-Si la versión target todavía es desconocida, el plan debe registrar:
-
-`REQUIRES_VALIDATION`
-
-en lugar de inventarla.
-
-## Orden de ejecución
-
-Construir un orden que minimice estados inconsistentes.
-
-Considerar:
-
-- dependencias compartidas;
-- configuración global;
-- Functions independientes;
-- workflows Durable;
-- tests;
-- Programming Model;
-- build global.
-
-No asumir que cada Function puede compilar de forma aislada durante una migración parcial.
-
-La compilación final de la Function App se realiza cuando las adaptaciones necesarias de la aplicación están
-completadas.
-
-Validaciones estáticas o selectivas intermedias pueden ejecutarse cuando aporten evidencia útil.
-
-## Riesgos
-
-Consolidar únicamente riesgos ya identificados.
+Resolver dependencias de ejecución entre acciones.
 
 Ejemplos:
 
-- dependencia sin compatibilidad confirmada;
-- workflow Durable;
-- fuerte acoplamiento;
-- comportamiento sin tests;
-- configuración local faltante;
-- Programming Model mixto;
-- runtime desconocido.
+- configuración Jest antes de crear tests;
+- actualización global de una dependencia antes de adaptar imports;
+- preparación de una Function antes de migrar su adapter;
+- preparación del workflow antes de migrar Durable.
 
-Cada riesgo debe tener una acción de mitigación o validación.
+No inventar dependencias basadas únicamente en nombres.
+
+## Orden de ejecución
+
+Construir el orden global mínimo necesario.
+
+Preferir pasos con responsabilidad clara.
+
+Ejemplo conceptual:
+
+1. preparar Function App;
+2. preparar Functions independientes;
+3. preparar workflow Durable;
+4. migrar Functions legacy no Durable;
+5. migrar workflow Durable;
+6. ejecutar verificación global.
+
+Dentro de cada grupo, referenciar las Functions afectadas.
+
+No convertir el plan en una lista de modificaciones línea por línea.
+
+## Build
+
+No requerir build completo después de cada Function.
+
+Durante estados intermedios pueden existir incompatibilidades temporales entre:
+
+- dependencias;
+- Programming Models;
+- configuración;
+- Functions aún pendientes.
+
+Permitir validaciones estáticas o selectivas intermedias.
+
+Usar el build completo como gate final una vez completadas las adaptaciones planificadas de la Function App.
+
+## Riesgos
+
+Consolidar los riesgos ya identificados.
+
+Cada riesgo debe indicar:
+
+- origen;
+- impacto;
+- acción de mitigación o validación;
+- si bloquea alguna etapa.
+
+No inventar nuevos riesgos sin evidencia.
 
 ## Unknowns
 
-Los unknowns no desaparecen al planificar.
+Los unknowns deben permanecer visibles.
 
 Cada unknown debe:
 
-- permanecer explícito;
-- indicar qué evidencia falta;
-- bloquear únicamente la acción que dependa de él.
+- indicar evidencia faltante;
+- señalar qué acción depende de resolverlo.
 
-No bloquear toda la migración si el unknown afecta solo una parte independiente.
+Un unknown local no debe bloquear automáticamente toda la migración.
 
-## Salidas
+## Estado del plan
 
-Crear:
-
-`.migration/plans/migration-plan.json`
-
-`.migration/plans/migration-plan.md`
-
-Crear además, para cada Function analizada:
-
-`.migration/functions/<FunctionName>/migration-plan.json`
-
-`.migration/functions/<FunctionName>/migration-plan.md`
-
-Y las lecciones:
-
-`.migration/lessons/plan-function-migration/lessons.json`
-
-`.migration/lessons/plan-function-migration/lessons.md`
-
-Crear únicamente las carpetas necesarias.
-
-## migration-plan.json global
-
-Debe contener como mínimo:
-
-- metadata;
-- target;
-- estado del plan;
-- precondiciones;
-- cambios globales;
-- orden recomendado;
-- Functions incluidas;
-- workflows Durable;
-- riesgos;
-- unknowns;
-- criterios de verificación;
-- evidencia de origen.
-
-Estados sugeridos del plan:
+Usar:
 
 - `READY`
 - `PARTIAL`
 - `BLOCKED`
 
-`READY` no significa que la migración haya sido ejecutada.
+### READY
 
-Significa que existe evidencia suficiente para iniciar las acciones planificadas.
+Existe evidencia suficiente para iniciar las acciones planificadas.
 
-## migration-plan.md global
+### PARTIAL
 
-Debe explicar al desarrollador:
+El plan permite avanzar parcialmente, pero faltan análisis o decisiones que afectan etapas posteriores.
+
+### BLOCKED
+
+Falta información crítica que impide iniciar de forma segura las acciones necesarias.
+
+## Salidas
+
+Crear únicamente:
+
+`.migration/plans/migration-plan.json`
+
+`.migration/plans/migration-plan.md`
+
+Y:
+
+`.migration/lessons/plan-function-migration/lessons.json`
+
+`.migration/lessons/plan-function-migration/lessons.md`
+
+No crear:
+
+`.migration/functions/<FunctionName>/migration-plan.json`
+
+ni:
+
+`.migration/functions/<FunctionName>/migration-plan.md`
+
+## migration-plan.json
+
+Debe contener como mínimo:
+
+- metadata;
+- target;
+- estado;
+- precondiciones;
+- cambios globales;
+- Functions incluidas;
+- referencias a `requiredActions`;
+- workflows Durable;
+- dependencias entre acciones;
+- orden recomendado;
+- riesgos;
+- unknowns;
+- criterios de verificación;
+- evidencia de origen.
+
+Ejemplo conceptual:
+
+    {
+      "status": "READY",
+      "executionOrder": [
+        {
+          "step": 1,
+          "skill": "prepare-function-app"
+        },
+        {
+          "step": 2,
+          "skill": "prepare-function",
+          "functions": [
+            "RequestReport",
+            "CompleteReport"
+          ]
+        },
+        {
+          "step": 3,
+          "skill": "migrate-programming-model-v4",
+          "functions": [
+            "RequestReport",
+            "CompleteReport"
+          ]
+        },
+        {
+          "step": 4,
+          "skill": "migrate-durable-functions-v4",
+          "workflows": [
+            "GenerateReport"
+          ]
+        },
+        {
+          "step": 5,
+          "skill": "verify-function-app"
+        }
+      ]
+    }
+
+El ejemplo no define un schema exhaustivo.
+
+## migration-plan.md
+
+Debe explicar brevemente:
 
 - punto de partida;
 - objetivo;
 - qué ya está cumplido;
 - qué cambios globales son necesarios;
+- qué Functions requieren trabajo;
+- qué workflows Durable requieren tratamiento especializado;
 - orden recomendado;
-- Functions que requieren trabajo;
-- workflows especiales;
 - riesgos;
 - unknowns;
-- condiciones antes de comenzar implementación.
+- condiciones para iniciar.
 
-Debe ser breve y accionable.
+No copiar los `analysis.md`.
 
-No copiar los análisis completos.
-
-## Plan por Function
-
-Cada `migration-plan.json` por Function debe incluir como mínimo:
-
-- Function;
-- comportamiento a preservar;
-- preparación requerida;
-- tests requeridos;
-- cambios obligatorios;
-- cambios estructurales;
-- deuda técnica fuera de alcance;
-- pasos recomendados;
-- criterios de verificación;
-- riesgos;
-- unknowns.
-
-El Markdown correspondiente debe ser la explicación humana de esas acciones.
+No repetir detalle técnico Function por Function.
 
 ## Lecciones aprendidas
 
-Registrar únicamente observaciones útiles para mejorar la planificación:
+Aplicar:
 
-- dependencias entre Functions no contempladas;
-- orden incorrecto;
+`../_shared/lessons-policy.md`
+
+Registrar especialmente:
+
 - acciones duplicadas;
-- información faltante en análisis previos;
-- categorías insuficientes;
-- planificación demasiado detallada;
-- oportunidad de simplificación;
-- decisiones que deberían resolverse en otro skill.
-
-No modificar automáticamente el skill.
-
-Toda mejora requiere revisión humana.
+- dependencia no contemplada;
+- análisis faltante;
+- orden inadecuado;
+- planificación innecesariamente detallada;
+- oportunidad de simplificación.
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- inventory y assessment fueron consumidos;
+- inventory fue consumido;
+- assessment fue consumido;
 - los análisis disponibles fueron consolidados;
-- se identificaron análisis faltantes;
+- las `requiredActions` fueron referenciadas;
+- los análisis faltantes están visibles;
 - los cambios globales fueron definidos;
-- cada Function incluida tiene un plan;
-- los workflows Durable fueron tratados como unidades coherentes;
-- las dimensiones ya satisfechas no tienen acciones innecesarias;
-- deuda técnica y optimización permanecen separadas;
-- riesgos y unknowns están visibles;
-- existe un orden recomendado;
-- se generaron los artefactos globales;
-- se generaron los artefactos por Function;
-- se generaron las lecciones aprendidas.
+- los workflows Durable fueron agrupados correctamente;
+- las dimensiones ya satisfechas no generan trabajo innecesario;
+- riesgos y unknowns permanecen explícitos;
+- existe un orden global recomendado;
+- se generaron migration-plan y lessons.
 
 ## Fuera de alcance
 
 Este skill no debe:
 
 - modificar código;
+- volver a analizar Functions;
+- crear planes individuales por Function;
 - agregar tests;
 - actualizar dependencias;
-- cambiar configuración;
-- ejecutar migraciones;
 - resolver unknowns mediante suposiciones;
-- aplicar Clean Architecture;
+- aplicar arquitectura;
 - resolver deuda técnica no bloqueante;
-- optimizar código.
+- ejecutar migraciones;
+- optimizar.
 
 El siguiente skill sugerido es:
 
