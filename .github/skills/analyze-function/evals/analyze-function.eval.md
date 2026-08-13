@@ -1,32 +1,29 @@
 # Evals — Analyze Function
 
+## Objetivo
+
+Validar que el skill comprenda una Function concreta y produzca acciones útiles sin modificar código.
+
 ## Caso 1 — Function simple y testeable
 
 ### Entrada
 
-Function HTTP con:
+Function v4 con:
 
-- Programming Model v4.
-- handler pequeño.
-- lógica delegada a un servicio.
-- dependencias inyectables.
-- unit tests existentes.
-- sin Durable Functions.
+- handler pequeño;
+- servicio separado;
+- dependencias sustituibles;
+- sin tests.
 
 ### Esperado
 
 El skill debe:
 
-- identificar el comportamiento principal;
 - clasificar testabilidad como `HIGH`;
-- detectar que Programming Model v4 ya está cumplido;
-- no proponer migración del Programming Model;
-- no proponer Clean Architecture adicional;
-- identificar únicamente los tests faltantes si existe un gap observable;
-- clasificar Durable Functions como `NOT_APPLICABLE`;
-- mantener el refactor requerido como `NONE` cuando no exista necesidad real.
-
----
+- proponer tests;
+- mantener refactor como `NONE`;
+- no generar `REQUIRED_PLATFORM`;
+- no introducir arquitectura adicional.
 
 ## Caso 2 — Handler acoplado a Azure SDK
 
@@ -34,254 +31,173 @@ El skill debe:
 
 Function que:
 
-- crea `CosmosClient` dentro del handler;
-- lee `process.env` directamente;
-- contiene validación y lógica de negocio;
+- construye `CosmosClient` dentro del handler;
+- usa `process.env` directamente;
+- contiene lógica funcional;
 - no tiene tests.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- identificar el comportamiento actual antes de proponer cambios;
-- registrar creación directa del cliente SDK;
-- registrar uso directo de configuración;
-- clasificar testabilidad como `LOW` o `MEDIUM` con justificación;
-- proponer tests de caracterización o unitarios para preservar comportamiento;
-- clasificar el refactor como `MINIMAL` cuando baste con aislar configuración, cliente y lógica;
-- clasificar esos cambios como `REQUIRED_TESTABILITY`;
-- no convertir automáticamente el caso en una arquitectura completa por capas;
-- no modificar código.
+- identificar baja o media testabilidad con justificación;
+- proponer refactor mínimo;
+- generar `REQUIRED_TESTABILITY`;
+- proponer tests mínimos;
+- no proponer un rediseño completo.
 
----
-
-## Caso 3 — Function legacy que requiere Programming Model v4
+## Caso 3 — Function legacy
 
 ### Entrada
 
 Function con:
 
 - `function.json`;
-- handler basado en `context`;
-- Programming Model legacy confirmado;
-- lógica de negocio mezclada con el adapter Azure.
+- `context`;
+- lógica mezclada con adapter Azure.
 
 ### Esperado
 
-El skill debe:
+Debe generar al menos:
 
-- identificar Programming Model legacy;
-- registrar los puntos de acoplamiento relevantes con Azure Functions;
-- indicar que la migración del Programming Model será necesaria posteriormente;
-- no ejecutar la transformación;
-- proponer únicamente el refactor mínimo requerido para testabilidad;
-- diferenciar `REQUIRED_PLATFORM` de `REQUIRED_TESTABILITY`;
-- preservar el comportamiento actual como referencia para tests.
+- acción `REQUIRED_PLATFORM`;
+- acciones `REQUIRED_TESTABILITY` cuando correspondan;
+- comportamiento a preservar;
+- tests propuestos.
 
----
+No debe migrar la Function.
 
-## Caso 4 — Function ya en Programming Model v4
+## Caso 4 — Function ya v4
 
 ### Entrada
 
-Function registrada mediante `app.http`, `app.timer`, `app.serviceBusQueue` u otro registro v4.
-
-La Function presenta problemas de testabilidad o estructura interna.
+Function registrada con `app.http`.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- registrar Programming Model v4 como ya satisfecho;
-- no proponer `migrate-programming-model-v4`;
-- analizar igualmente testabilidad, dependencias y compatibilidad Node.js 24;
-- permitir refactor cuando esté justificado;
-- separar claramente modernización estructural de migración de plataforma.
-
----
+- registrar Programming Model satisfecho;
+- no generar acción de migración del modelo;
+- continuar evaluando Node.js, testabilidad y dependencias.
 
 ## Caso 5 — Durable Orchestrator
 
 ### Entrada
 
-Orchestrator Durable que:
-
-- llama varias Activities;
-- contiene decisiones de flujo;
-- utiliza APIs de Durable Functions;
-- forma parte de un workflow con starter y activities.
+Orchestrator que invoca varias Activities.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- identificar el rol `orchestrator`;
-- analizarlo dentro del contexto mínimo de su workflow;
-- identificar las Activities invocadas cuando exista evidencia;
-- no tratar las Activities como lógica totalmente independiente cuando el comportamiento dependa del orchestrator;
-- revisar restricciones de determinismo relevantes;
-- proponer tests centrados en decisiones y secuencia observable;
-- no migrar Durable Functions;
-- no analizar toda la Function App si no es necesario.
+- identificar rol;
+- considerar contexto mínimo del workflow;
+- detectar restricciones relevantes de determinismo;
+- no migrar Durable.
 
----
-
-## Caso 6 — Durable Activity
+## Caso 6 — Activity simple
 
 ### Entrada
 
-Activity Durable que:
+Activity con:
 
-- recibe datos del orchestrator;
-- usa un repositorio;
-- devuelve un resultado;
-- no contiene decisiones complejas.
+- input;
+- repositorio;
+- output;
+- poco comportamiento.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- identificar el rol `activity`;
-- comprender el contrato de entrada y salida;
-- analizar únicamente las relaciones necesarias con el workflow;
-- no cargar todo el grafo Durable si no es necesario;
-- proponer unit tests sobre su comportamiento;
-- evitar sobrearquitectura si la Activity ya está correctamente aislada.
+- no sobrearquitecturar;
+- proponer unit tests;
+- mantener refactor `NONE` o `MINIMAL` según evidencia.
 
----
-
-## Caso 7 — Compatibilidad Node.js 24 no confirmable
+## Caso 7 — Node.js 24 desconocido
 
 ### Entrada
 
-Function que utiliza:
-
-- una dependencia legacy;
-- una API Node.js cuya compatibilidad con Node.js 24 no puede confirmarse con la evidencia disponible.
+Código que usa una API o dependencia cuya compatibilidad no está confirmada.
 
 ### Esperado
 
-El skill debe:
+Debe registrar:
 
-- no afirmar compatibilidad;
-- no afirmar incompatibilidad sin evidencia;
-- registrar `REQUIRES_VALIDATION`;
-- indicar qué evidencia oficial o validación falta;
-- mantener la incertidumbre visible en `analysis.json`;
-- no usar compilación exitosa como prueba suficiente de compatibilidad runtime.
+`REQUIRES_VALIDATION`
 
----
+No debe asumir compatibilidad por build o TypeScript.
 
-## Caso 8 — Dependencia compatible pero antigua
+## Caso 8 — Deuda no bloqueante
 
 ### Entrada
 
-Function que usa una librería antigua, pero no existe evidencia de que bloquee Node.js 24 ni la migración.
+Código con duplicación o naming pobre que no impide migración ni tests.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- no clasificar automáticamente la antigüedad como `CHANGE_REQUIRED`;
-- registrar como `TECHNICAL_DEBT` cuando corresponda;
-- separar deuda técnica de cambio obligatorio;
-- no recomendar actualización solo por disponer de una versión más reciente.
+- clasificar como `TECHNICAL_DEBT`;
+- no generar una acción obligatoria de migración.
 
----
-
-## Caso 9 — Optimización detectada durante el análisis
+## Caso 9 — Optimización
 
 ### Entrada
 
-Function donde se observa:
-
-- posibilidad de cache;
-- batching;
-- paralelización;
-- mejora de queries;
-- reducción potencial de llamadas externas.
+Código donde podría aplicarse batching o caching.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- registrar la observación como `OPTIMIZATION`;
-- mantenerla fuera del alcance de la migración;
-- no convertirla en requisito;
-- no modificar comportamiento para aplicarla.
+- clasificarlo como `OPTIMIZATION`;
+- mantenerlo fuera de `requiredActions` obligatorias.
 
----
-
-## Caso 10 — Slice demasiado grande
-
-### Entrada
-
-Function que depende de varias carpetas, pero solo una parte del código es necesaria para comprender su comportamiento.
-
-### Esperado
-
-El skill debe:
-
-- aplicar progressive disclosure;
-- leer primero el entrypoint y dependencias directas;
-- ampliar el contexto únicamente cuando exista una razón;
-- no cargar toda la Function App por defecto;
-- registrar una lección si fue necesario leer contexto innecesario debido a una limitación del skill.
-
----
-
-## Caso 11 — Inconsistencia con inventory
-
-### Entrada
-
-`inventory.json` indica Programming Model legacy, pero el código analizado presenta evidencia directa de registro v4.
-
-### Esperado
-
-El skill debe:
-
-- no sobrescribir silenciosamente el inventario;
-- registrar la inconsistencia;
-- marcar la conclusión correspondiente como `UNKNOWN` o pendiente de validación;
-- recomendar refrescar `discover-function-app` cuando la evidencia indique que el inventario está desactualizado;
-- no continuar basándose en una premisa contradictoria.
-
----
-
-## Caso 12 — Sin tests, pero código ya aislado
+## Caso 10 — requiredActions
 
 ### Entrada
 
 Function con:
 
-- handler delgado;
-- lógica separada;
-- dependencias sustituibles;
-- cero tests.
+- acoplamiento de testabilidad;
+- Programming Model legacy;
+- deuda técnica no bloqueante.
 
 ### Esperado
 
-El skill debe:
+`analysis.json` debe diferenciar acciones como:
 
-- distinguir ausencia de tests de baja testabilidad;
-- poder clasificar testabilidad como `HIGH`;
-- proponer tests mínimos;
-- no proponer refactor innecesario;
-- mantener `refactor = NONE` cuando la estructura ya permite probar el comportamiento.
+- `REQUIRED_TESTABILITY`;
+- `REQUIRED_PLATFORM`;
 
----
+y no mezclar la deuda técnica como trabajo obligatorio.
 
-# Criterio general de éxito
+## Caso 11 — Slice amplio
 
-Para todos los casos, el skill debe:
+### Entrada
 
-- distinguir hechos, inferencias y unknowns;
-- preservar el comportamiento actual como referencia;
-- separar cambios obligatorios de deuda técnica y optimización;
-- no modificar código;
-- no leer valores sensibles;
-- consumir primero `inventory.json` y `assessment.json`;
-- generar `analysis.json`;
-- generar `analysis.md`;
-- generar lecciones aprendidas;
-- evitar análisis global innecesario.
+Function que depende de múltiples componentes.
+
+### Esperado
+
+Debe:
+
+- comenzar por dependencias directas;
+- ampliar contexto solo cuando sea necesario;
+- no cargar toda la App automáticamente.
+
+## Caso 12 — Inventory contradictorio
+
+### Entrada
+
+Inventory indica legacy pero el source muestra registro v4.
+
+### Esperado
+
+Debe:
+
+- registrar contradicción;
+- no sobrescribir silenciosamente evidencia anterior;
+- utilizar `UNKNOWN` o `REQUIRES_REVIEW`.
