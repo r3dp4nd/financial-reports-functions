@@ -1,26 +1,38 @@
-import {AzureFunction, Context} from "@azure/functions";
-
 import {MarkReportFailedUseCase} from "../GenerateReport/application/mark-report-failed.use-case";
-
-export interface MarkReportFailedActivityInput {
-    reportId: string;
-    failedAt: string;
-    failureCode: string;
-    failureReason: string;
-}
+import {MarkReportFailedCommand} from "../GenerateReport/application/mark-report-failed.command";
 
 export interface MarkReportFailedHandlerDependencies {
-    useCase: MarkReportFailedUseCase;
+  useCase: MarkReportFailedUseCase;
 }
 
-export function createMarkReportFailedHandler(dependencies: MarkReportFailedHandlerDependencies): AzureFunction {
+export function createMarkReportFailedHandler(dependencies: MarkReportFailedHandlerDependencies) {
 
-    return async function (context: Context): Promise<unknown> {
+  return async function (input: unknown): Promise<unknown> {
 
-        const input = context.bindings.input as MarkReportFailedActivityInput;
+    const command: MarkReportFailedCommand = parseActivityInput(input);
 
-        return dependencies
-            .useCase
-            .execute(input);
-    };
+    return dependencies
+      .useCase
+      .execute(command);
+  };
+}
+
+function parseActivityInput(input: unknown): MarkReportFailedCommand {
+
+  if (typeof input !== "object" || input === null) {
+    throw new Error("MarkReportFailed activity input is invalid");
+  }
+
+  const candidate = input as Partial<MarkReportFailedCommand>;
+
+  if (typeof candidate.reportId !== "string" || typeof candidate.failedAt !== "string" || typeof candidate.failureCode !== "string" || typeof candidate.failureReason !== "string") {
+    throw new Error("MarkReportFailed activity input is invalid");
+  }
+
+  return {
+    reportId: candidate.reportId,
+    failedAt: candidate.failedAt,
+    failureCode: candidate.failureCode,
+    failureReason: candidate.failureReason
+  };
 }

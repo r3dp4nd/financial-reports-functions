@@ -1,24 +1,37 @@
-import {AzureFunction, Context} from "@azure/functions";
-
 import {GenerateExcelUseCase} from "../GenerateReport/application/generate-excel.use-case";
-import {GenerateExcelActivityInput} from "../ReportOrchestrator/report-orchestration.types";
+import {GenerateExcelCommand} from "../GenerateReport/application/generate-excel.command";
 
 export interface GenerateExcelHandlerDependencies {
-    useCase: GenerateExcelUseCase;
+  useCase: GenerateExcelUseCase;
 }
 
-export function createGenerateExcelHandler(dependencies: GenerateExcelHandlerDependencies): AzureFunction {
+export function createGenerateExcelHandler(dependencies: GenerateExcelHandlerDependencies) {
 
-    return async function (context: Context): Promise<unknown> {
+  return async function (input: unknown): Promise<unknown> {
 
-        const input = context.bindings.input as GenerateExcelActivityInput;
+    const command: GenerateExcelCommand = parseActivityInput(input);
 
-        return dependencies
-            .useCase
-            .execute({
-                reportId: input.reportId,
-                customerId: input.customerId,
-                data: input.data
-            });
-    };
+    return dependencies
+      .useCase
+      .execute(command);
+  };
+}
+
+function parseActivityInput(input: unknown): GenerateExcelCommand {
+
+  if (typeof input !== "object" || input === null) {
+    throw new Error("GetCustomers activity input is invalid");
+  }
+
+  const candidate = input as Partial<GenerateExcelCommand>;
+
+  if (typeof candidate.customerId !== "string" || typeof candidate.reportId !== "string" || typeof candidate.data !== "object") {
+    throw new Error("GetCustomers activity input is invalid");
+  }
+
+  return {
+    customerId: candidate.customerId,
+    data: candidate.data,
+    reportId: candidate.reportId,
+  };
 }
