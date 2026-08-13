@@ -38,6 +38,7 @@ jobs:
           extraProperties: |
             sonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts,**/*.test.ts
             sonar.javascript.lcov.reportPaths=coverage/lcov.info
+            sonar.qualitygate.wait=true
 
       - script: npm run test:coverage
         displayName: Run tests with coverage
@@ -47,3 +48,6 @@ jobs:
 
       - task: SonarQubePublish@8
         displayName: Publish SonarQube Quality Gate
+
+        inputs:
+          pollingTimeoutSec: '300'
