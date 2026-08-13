@@ -24,4 +24,6 @@ stages:
           azureServiceConnection: '<SERVICE-CONNECTION-PRD>'
           functionAppName: '<FUNCTION-APP-PRD>'
           artifactSource: 'release'
+          artifactName: 'function-app'
+          packageFileName: 'function-app.zip'
           publishArtifact: false

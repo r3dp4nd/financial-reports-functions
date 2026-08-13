@@ -13,10 +13,12 @@ resources:
 
 
 stages:
+
   - stage: Deploy_UAT
     displayName: Deploy UAT
 
     jobs:
+
       - template: ../templates/deploy.yml
 
         parameters:
@@ -24,4 +26,6 @@ stages:
           azureServiceConnection: '<SERVICE-CONNECTION-UAT>'
           functionAppName: '<FUNCTION-APP-UAT>'
           artifactSource: 'release'
+          artifactName: 'function-app'
+          packageFileName: 'function-app.zip'
           publishArtifact: true

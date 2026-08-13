@@ -11,9 +11,20 @@ parameters:
   - name: artifactSource
     type: string
 
+  - name: artifactName
+    type: string
+    default: 'function-app'
+
+  - name: packageFileName
+    type: string
+    default: 'function-app.zip'
+
+  - name: publishArtifact
+    type: boolean
+    default: false
+
 
 jobs:
-
   - deployment: Deploy
     displayName: Deploy Azure Function App
 
@@ -28,13 +39,15 @@ jobs:
         deploy:
           steps:
 
+            # Evita la descarga automática de todos los artifacts.
             - download: none
 
 
+            # Artifact generado dentro del mismo pipeline.
             - ${{ if eq(parameters.artifactSource, 'current') }}:
 
                 - download: current
-                  artifact: function-app
+                  artifact: ${{ parameters.artifactName }}
 
 
                 - task: AzureFunctionApp@2
@@ -47,16 +60,28 @@ jobs:
 
                     appName: ${{ parameters.functionAppName }}
 
-                    package: '$(Pipeline.Workspace)/function-app/function-app.zip'
+                    package: '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
 
                     deploymentMethod: 'auto'
 
 
+                - ${{ if eq(parameters.publishArtifact, true) }}:
+
+                    - task: PublishPipelineArtifact@1
+                      displayName: Promote release artifact
+
+                      inputs:
+                        targetPath: '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
+
+                        artifact: ${{ parameters.artifactName }}
+
+
+            # Artifact procedente del pipeline anterior.
             - ${{ if ne(parameters.artifactSource, 'current') }}:
 
                 - download: ${{ parameters.artifactSource }}
 
-                  artifact: function-app
+                  artifact: ${{ parameters.artifactName }}
 
 
                 - task: AzureFunctionApp@2
@@ -69,6 +94,17 @@ jobs:
 
                     appName: ${{ parameters.functionAppName }}
 
-                    package: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/function-app/function-app.zip'
+                    package: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
 
                     deploymentMethod: 'auto'
+
+
+                - ${{ if eq(parameters.publishArtifact, true) }}:
+
+                    - task: PublishPipelineArtifact@1
+                      displayName: Promote release artifact
+
+                      inputs:
+                        targetPath: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
+
+                        artifact: ${{ parameters.artifactName }}

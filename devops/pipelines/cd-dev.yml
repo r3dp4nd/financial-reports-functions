@@ -14,6 +14,7 @@ stages:
     displayName: Build release
 
     jobs:
+
       - template: ../templates/build.yml
 
 
@@ -26,11 +27,14 @@ stages:
     condition: succeeded()
 
     jobs:
+
       - template: ../templates/deploy.yml
 
         parameters:
           environmentName: '<ENVIRONMENT-DEV>'
           azureServiceConnection: '<SERVICE-CONNECTION-DEV>'
           functionAppName: '<FUNCTION-APP-DEV>'
-
           artifactSource: 'current'
+          artifactName: 'function-app'
+          packageFileName: 'function-app.zip'
+          publishArtifact: false

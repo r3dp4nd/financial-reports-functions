@@ -24,4 +24,6 @@ stages:
           azureServiceConnection: '<SERVICE-CONNECTION-STG>'
           functionAppName: '<FUNCTION-APP-STG>'
           artifactSource: 'release'
+          artifactName: 'function-app'
+          packageFileName: 'function-app.zip'
           publishArtifact: true
