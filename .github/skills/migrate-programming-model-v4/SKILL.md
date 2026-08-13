@@ -1,366 +1,193 @@
 ---
 name: migrate-programming-model-v4
-description: Migra una Function legacy de Azure Functions Node.js al Programming Model v4, transformando únicamente su integración con el runtime y preservando el comportamiento protegido por tests.
+description: Migra una Function legacy de Azure Functions Node.js al Programming Model v4 transformando su integración con Azure Functions y preservando el comportamiento protegido por tests.
 ---
 
 # Migrate Programming Model v4
 
 ## Objetivo
 
-Migrar una Function legacy al Azure Functions Node.js Programming Model v4.
+Transformar una Function legacy hacia Programming Model v4.
 
-Este skill puede modificar:
+El cambio debe concentrarse en el adapter Azure.
 
-- entrypoint Azure;
-- registro de trigger;
-- bindings;
-- tipos Azure Functions;
-- adaptación de request, context y response;
-- archivos `function.json` legacy relacionados.
+No modificar comportamiento funcional intencionalmente.
 
-No debe modificar comportamiento funcional intencionalmente.
+## Políticas
+
+Aplicar:
+
+- `../_shared/evidence-policy.md`
+- `../_shared/security-policy.md`
+- `../_shared/lessons-policy.md`
 
 ## Precondiciones
 
-Deben existir:
-
-`.migration/functions/<FunctionName>/analysis.json`
-
-`.migration/functions/<FunctionName>/migration-plan.json`
+Debe existir:
 
 `.migration/functions/<FunctionName>/preparation.json`
 
-La Function debe estar en estado:
+La Function debe estar:
 
 `READY_FOR_MIGRATION`
 
-La baseline de tests requerida debe estar verde.
-
-La preparación global necesaria de la Function App debe haberse realizado previamente.
+La baseline requerida debe estar verde.
 
 ## Aplicabilidad
 
-Consultar primero el estado del Programming Model registrado en los artefactos previos.
+Si ya utiliza Programming Model v4:
 
-Si la Function ya utiliza Programming Model v4:
+`NOT_APPLICABLE`
 
-- registrar `NOT_APPLICABLE`;
-- no modificar su registro;
-- no migrarla nuevamente.
+Si el modelo es desconocido:
 
-Si el estado es `UNKNOWN`:
+`REQUIRES_REVIEW`
 
-- no iniciar la transformación;
-- registrar `REQUIRES_REVIEW`.
+Si pertenece a un workflow Durable que requiere migración especializada:
 
-Si la Function pertenece a un workflow Durable que requiere migración especializada:
+delegar a:
 
-- no migrarla aisladamente;
-- delegar al skill `migrate-durable-functions-v4`.
+`migrate-durable-functions-v4`
 
 ## Principio
 
 Transformar:
 
-`adapter Azure legacy`
+`adapter legacy`
 
 en:
 
-`adapter Azure Programming Model v4`
+`adapter Programming Model v4`
 
 preservando:
 
-- comportamiento;
-- entrada;
+- trigger;
+- inputs;
 - validaciones;
-- decisiones;
-- efectos secundarios;
 - salida;
-- manejo de errores;
-- contratos relevantes.
+- errores;
+- efectos secundarios;
+- nombres lógicos;
+- contratos externos.
 
-No aprovechar esta migración para rediseñar la lógica interna.
+## requiredActions
 
-## Evidencia previa
+Ejecutar las acciones `REQUIRED_PLATFORM` correspondientes registradas en `analysis.json`.
 
-Consumir primero:
-
-- inventory;
-- assessment;
-- analysis;
-- migration plan;
-- preparation.
-
-No volver a analizar toda la Function App.
-
-Leer únicamente los archivos necesarios para realizar la transformación.
-
-Si el código actual contradice los artefactos previos:
-
-- detener la transformación afectada;
-- registrar la inconsistencia;
-- marcar `REQUIRES_REVIEW`.
+No redescubrir el alcance técnico completo.
 
 ## Registro v4
 
-Transformar la configuración declarativa legacy en registro mediante las APIs correspondientes del Programming Model v4.
-
-Ejemplos de registros pueden incluir:
+Usar la API oficial correspondiente al trigger real, por ejemplo:
 
 - `app.http`;
 - `app.timer`;
 - `app.serviceBusQueue`;
 - `app.serviceBusTopic`;
-- registros de Cosmos DB;
-- otros triggers o bindings soportados.
+- registros Cosmos;
+- otros bindings documentados.
 
-Usar la API específica documentada oficialmente para el trigger o binding real.
-
-No inventar propiedades de configuración.
-
-## Nombre de Function
-
-Preservar el nombre lógico existente cuando sea posible.
-
-Un cambio de nombre puede afectar:
-
-- invocaciones;
-- monitoring;
-- Durable workflows;
-- infraestructura;
-- consumidores externos.
-
-No renombrar una Function únicamente por convenciones de código.
+No inventar equivalencias.
 
 ## function.json
 
-Para una Function legacy migrada correctamente al modelo v4:
+Tras una migración correcta:
 
-- trasladar al registro en código la configuración necesaria;
-- eliminar el `function.json` correspondiente únicamente cuando deje de ser necesario.
+- trasladar configuración necesaria al código;
+- eliminar únicamente el `function.json` correspondiente cuando deje de ser necesario.
 
-No eliminar todos los `function.json` de la aplicación de forma indiscriminada.
+No eliminar artefactos legacy globalmente.
 
-La limpieza final de artefactos legacy debe verificarse a nivel Function App.
-
-## HTTP Functions
-
-Cuando corresponda, transformar el contrato legacy basado en elementos como:
-
-- `context`;
-- `context.req`;
-- `context.res`;
-- `context.bindings`;
-
-hacia las APIs del Programming Model v4.
+## HTTP
 
 Preservar:
 
-- métodos HTTP;
+- methods;
 - route;
 - auth level;
-- status codes;
+- status;
 - headers;
 - body;
-- comportamiento de errores.
+- manejo de errores.
 
-No cambiar contratos HTTP durante la migración salvo que el plan lo requiera explícitamente.
-
-## Timer Functions
+## Timer
 
 Preservar:
 
 - schedule;
 - configuración relevante;
-- comportamiento del handler.
-
-No alterar la expresión de schedule por motivos de estilo.
+- comportamiento.
 
 ## Service Bus
 
-Preservar cuando corresponda:
+Preservar:
 
-- queue o topic;
+- queue/topic;
 - subscription;
-- nombre de connection setting;
+- connection setting name;
 - cardinalidad;
-- metadata relevante;
-- comportamiento de procesamiento.
+- metadata relevante.
 
-No leer el valor de la connection string.
-
-Registrar únicamente el nombre de la configuración.
+Nunca leer la connection string.
 
 ## Cosmos DB
 
-Preservar cuando corresponda:
+Preservar configuración relevante del binding:
 
 - database;
 - container;
 - connection setting;
-- lease configuration;
-- demás opciones relevantes al binding.
-
-No leer secretos ni connection strings.
-
-## Bindings
-
-Migrar cada binding basándose en documentación oficial vigente.
-
-Distinguir:
-
-- trigger;
-- input binding;
-- output binding.
-
-No asumir que todos los bindings legacy tienen una traducción idéntica.
-
-Cuando la equivalencia no pueda confirmarse:
-
-`REQUIRES_REVIEW`
+- lease options cuando apliquen.
 
 ## context
 
-No realizar reemplazos mecánicos globales de `context`.
+No hacer reemplazos globales mecánicos.
 
-Analizar qué responsabilidades utiliza realmente la Function.
-
-Ejemplos:
+Adaptar solamente los usos reales:
 
 - logging;
-- invocation metadata;
-- bindings;
 - response;
-- trigger metadata.
-
-Adaptar únicamente esas responsabilidades a las APIs disponibles en v4.
-
-## Logging
-
-Preservar el comportamiento observable de logging cuando sea razonable.
-
-No convertir esta migración en una iniciativa de observabilidad.
-
-Cambiar logging únicamente cuando el Programming Model lo requiera.
+- bindings;
+- metadata.
 
 ## Código funcional
 
-Preferir que la lógica preparada previamente permanezca sin cambios.
+Preferir no modificar la implementación funcional preparada previamente.
 
-Ejemplo conceptual:
-
-`v4 adapter -> application behavior`
-
-La migración debería concentrarse principalmente en el adapter Azure.
-
-Si es necesario modificar lógica interna para que compile:
+Si un cambio interno resulta inevitable:
 
 - justificarlo;
-- clasificar el cambio;
-- comprobar que los tests siguen protegiendo comportamiento.
+- mantenerlo mínimo;
+- volver a ejecutar tests.
 
 ## Estructura
 
-Cuando la Function App utilice la estructura objetivo acordada, los registros Azure pueden ubicarse bajo:
+Cuando ya esté preparada:
 
-`src/functions/`
+- `src/functions/` contiene adapters Azure;
+- `src/<Capability>/` contiene implementación.
 
-Ejemplo:
-
-`src/functions/request-report.function.ts`
-
-La implementación funcional puede permanecer bajo:
-
-`src/<Capability>/`
-
-No mover nuevamente archivos si la estructura ya fue preparada.
-
-## package.json
-
-El Programming Model v4 utiliza el entrypoint configurado para cargar los módulos que registran Functions.
-
-Verificar que la configuración preparada globalmente permita cargar los registros migrados.
-
-No realizar cambios globales adicionales si `prepare-function-app` ya dejó esta configuración correcta.
-
-## Mezcla de modelos
-
-No considerar segura una Function App parcialmente mezclada sin validación explícita.
-
-Si durante la migración aparecen simultáneamente artefactos legacy y registros v4 activos:
-
-- registrar el estado;
-- no asumir que ambos modelos funcionarán de forma independiente;
-- completar las adaptaciones planificadas antes del gate final de la Function App.
-
-No usar un estado intermedio como evidencia de producción.
-
-## Durable Functions
-
-Este skill no realiza migración Durable especializada.
-
-Si se detectan:
-
-- `orchestrationTrigger`;
-- `activityTrigger`;
-- Durable client;
-- starter;
-- orchestrator;
-- activities;
-
-seguir el plan del workflow y utilizar:
-
-`migrate-durable-functions-v4`
-
-cuando corresponda.
-
-No migrar Activities aisladamente si pertenecen a una migración Durable coordinada.
-
-## Cambios permitidos
-
-Este skill ejecuta principalmente cambios:
-
-`REQUIRED_PLATFORM`
-
-Puede realizar ajustes `STRUCTURAL` mínimos cuando sean necesarios para registrar correctamente la Function.
-
-No ejecutar:
-
-- `OPTIMIZATION`;
-- deuda técnica no bloqueante;
-- refactors funcionales no planificados.
+No mover archivos nuevamente sin necesidad.
 
 ## Tests
 
-Después de la transformación ejecutar los mismos tests establecidos durante `prepare-function`.
+Ejecutar la misma baseline utilizada antes de migrar.
 
-Los tests deben continuar verdes.
+Debe continuar verde.
 
-No reescribir tests únicamente para adaptarlos a un comportamiento nuevo introducido accidentalmente.
+Un fallo debe investigarse como posible cambio de comportamiento.
 
-Si un test falla:
-
-1. identificar si el adapter cambió comportamiento;
-2. corregir la migración;
-3. preservar la expectativa existente cuando representa comportamiento confirmado.
-
-Si el test estaba incorrecto o la baseline era incompleta:
-
-- registrar la evidencia;
-- marcar `REQUIRES_REVIEW`.
-
-## Validación estática
+## Validación
 
 Ejecutar cuando corresponda:
 
-- tests de la Function;
+- tests;
 - typecheck selectivo;
-- validaciones estáticas relevantes.
+- validaciones estáticas.
 
-No exigir todavía el build final de toda la Function App cuando otras Functions permanezcan legacy o en estado
-intermedio.
+El build global final pertenece al cierre de la Function App.
 
-## Registro de migración
+## Salidas
 
 Crear:
 
@@ -374,108 +201,74 @@ Y:
 
 `.migration/lessons/migrate-programming-model-v4/<FunctionName>.md`
 
-## migration.json
+## Estados
 
-Debe registrar como mínimo:
-
-- metadata;
-- Function;
-- Programming Model anterior;
-- Programming Model resultante;
-- trigger migrado;
-- bindings migrados;
-- archivos modificados;
-- artefactos legacy eliminados;
-- tests ejecutados;
-- validaciones;
-- resultados;
-- comportamiento preservado;
-- riesgos;
-- unknowns;
-- evidencia.
-
-No incluir secretos.
-
-## migration.md
-
-Debe explicar brevemente:
-
-- qué se migró;
-- qué configuración legacy fue reemplazada;
-- qué se preservó;
-- qué tests fueron ejecutados;
-- resultado de las validaciones;
-- qué quedó pendiente;
-- si la Function está lista para verificación global.
-
-No debe ser un diff completo.
-
-## Lecciones aprendidas
-
-Registrar únicamente observaciones útiles para mejorar futuras migraciones:
-
-- binding no contemplado;
-- diferencia inesperada entre modelos;
-- adaptación repetitiva;
-- falso supuesto;
-- código legacy especialmente acoplado;
-- migración más sencilla de lo previsto;
-- patrón potencialmente automatizable;
-- documentación ambigua;
-- contexto innecesario;
-- oportunidad de simplificar el skill.
-
-No modificar automáticamente este skill.
-
-Toda mejora requiere revisión humana.
-
-## Estados de salida
-
-La Function debe quedar en uno de estos estados:
+Usar:
 
 - `MIGRATED`
 - `NOT_APPLICABLE`
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-`MIGRATED` significa que la transformación de Programming Model terminó y sus validaciones locales correspondientes
-pasaron.
+## migration.json
 
-No significa todavía que la Function App completa esté lista para deployment.
+Registrar:
+
+- Function;
+- modelo anterior;
+- modelo resultante;
+- trigger;
+- bindings;
+- archivos modificados;
+- artefactos legacy tratados;
+- tests;
+- validaciones;
+- resultados;
+- riesgos;
+- unknowns.
+
+## migration.md
+
+Explicar:
+
+- qué se migró;
+- qué configuración legacy fue reemplazada;
+- qué comportamiento se preservó;
+- tests ejecutados;
+- resultado;
+- pendientes.
+
+## Lecciones aprendidas
+
+Aplicar:
+
+`../_shared/lessons-policy.md`
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
 - se verificó aplicabilidad;
-- la baseline previa estaba disponible;
-- el registro legacy fue transformado a v4 cuando correspondía;
+- el adapter fue migrado;
 - trigger y bindings fueron preservados;
-- el comportamiento funcional no fue modificado intencionalmente;
-- los artefactos legacy de esa Function fueron tratados correctamente;
-- los mismos tests continúan verdes;
-- las validaciones posibles fueron ejecutadas;
-- Durable fue delegado cuando corresponde;
+- los tests continúan verdes;
+- no se modificó comportamiento intencionalmente;
 - no se aplicaron optimizaciones;
-- no se leyeron secretos;
 - se generaron migration y lessons.
 
 ## Fuera de alcance
 
 Este skill no debe:
 
-- migrar una Function que ya esté en v4;
-- migrar Durable Functions de forma aislada;
+- migrar Functions ya v4;
+- migrar workflows Durable;
 - modificar lógica de negocio;
-- agregar nuevas funcionalidades;
-- aplicar optimizaciones;
-- resolver deuda técnica no bloqueante;
+- optimizar;
+- resolver deuda no bloqueante;
 - actualizar dependencias no planificadas;
-- modificar pipelines;
-- desplegar;
-- certificar la Function App completa.
+- desplegar.
 
-El siguiente skill sugerido depende del caso:
+El siguiente skill depende del caso:
 
 - `migrate-durable-functions-v4`
 - `verify-function-app`
