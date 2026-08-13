@@ -1,16 +1,27 @@
 ---
 name: assess-function-app
-description: Evalúa una Azure Function App descubierta previamente y determina qué dimensiones necesitan migración o validación para alcanzar Node.js 24, Azure Functions Runtime v4 y Programming Model v4, sin modificar código.
+description: Evalúa una Azure Function App descubierta previamente y determina qué dimensiones necesitan migración o validación para alcanzar Node.js 24, Azure Functions Runtime v4 y Programming Model v4 sin modificar código.
 ---
 
 # Assess Function App
 
 ## Objetivo
 
-Evaluar el estado técnico de una Azure Function App y determinar qué cambios son realmente necesarios antes de
-planificar o modificar código.
+Determinar el estado técnico de la Function App frente al target de migración.
 
-Este skill no debe asumir que todas las dimensiones necesitan migración.
+El assessment debe responder qué dimensiones:
+
+- ya cumplen;
+- requieren cambio;
+- requieren validación.
+
+## Políticas
+
+Aplicar:
+
+- `../_shared/evidence-policy.md`
+- `../_shared/security-policy.md`
+- `../_shared/lessons-policy.md`
 
 ## Precondición
 
@@ -18,336 +29,248 @@ Debe existir:
 
 `.migration/repository/inventory.json`
 
-generado y revisado por `discover-function-app`.
+Si el inventario es insuficiente o contradictorio, registrar el problema.
 
-Si el inventario es insuficiente o contradictorio, registrar el problema y recomendar volver a ejecutar discovery
-únicamente cuando sea necesario.
+No reconstruir discovery desde cero.
 
 ## Entradas
 
-Usar primero:
+Consumir primero:
 
 `.migration/repository/inventory.json`
 
-Consultar el repositorio solo de forma selectiva cuando el inventario no contenga evidencia suficiente.
-
-Usar documentación oficial vigente para evaluar:
-
-- Node.js.
-- Azure Functions Runtime.
-- Programming Model.
-- Durable Functions.
-- dependencias relevantes.
-- compatibilidad de plataforma.
-
-## Principio de evaluación
-
-Evaluar independientemente:
-
-- Node.js.
-- Azure Functions Runtime.
-- Programming Model.
-- Durable Functions.
-- dependencias.
-- TypeScript.
-- testabilidad observable.
-- configuración necesaria para validación.
-- compatibilidad potencial con Node.js 24.
-
-No inferir que una dimensión necesita migración porque otra esté desactualizada.
+Consultar el repositorio únicamente cuando falte evidencia concreta.
 
 ## Estado objetivo
 
-Evaluar la aplicación frente a:
+Evaluar frente a:
 
-- Node.js 24.
-- Azure Functions Runtime v4.
-- Programming Model v4.
-- dependencias compatibles.
-- capacidad de ejecutar las validaciones y tests requeridos.
+- Node.js 24;
+- Azure Functions Runtime v4;
+- Programming Model v4;
+- dependencias compatibles;
+- capacidad de ejecutar tests y validaciones requeridas.
 
-El estado objetivo no implica optimización ni rediseño arquitectónico.
+El target no implica optimización ni rediseño.
 
-## Clasificación
+## Dimensiones
 
-Para cada dimensión registrar un estado de evidencia:
+Evaluar independientemente:
 
-- `CONFIRMED`
-- `INFERRED`
-- `UNKNOWN`
-- `NOT_APPLICABLE`
+- Node.js;
+- Azure Functions Runtime;
+- Programming Model;
+- Durable Functions;
+- dependencias;
+- TypeScript;
+- tooling de tests;
+- capacidad global de validación.
 
-Y una acción requerida:
+No inferir que una dimensión necesita migración porque otra esté desactualizada.
+
+## Acción
+
+Para cada dimensión usar:
 
 - `REQUIRED`
 - `NOT_REQUIRED`
 - `REQUIRES_VALIDATION`
 
-`NOT_REQUIRED` significa que esa dimensión ya cumple el objetivo y no debe modificarse innecesariamente.
+### REQUIRED
 
-## Evaluación de Node.js
+Se necesita cambio para alcanzar el target.
+
+### NOT_REQUIRED
+
+La dimensión ya cumple y debe preservarse.
+
+### REQUIRES_VALIDATION
+
+No existe evidencia suficiente para decidir.
+
+## Node.js
 
 Determinar:
 
-- versión actual.
-- evidencia utilizada.
-- necesidad de actualización.
-- compatibilidad conocida con el target.
-- riesgos que requieran análisis posterior.
+- versión declarada actual;
+- target;
+- necesidad de actualización;
+- riesgos globales conocidos.
 
-No asumir que actualizar `engines.node` garantiza compatibilidad del código.
+No considerar que cambiar `engines.node` demuestra compatibilidad del código.
 
-La compatibilidad de APIs, sintaxis y comportamiento del código con Node.js 24 se profundizará posteriormente durante
-`analyze-function`.
+La compatibilidad detallada del source se analiza posteriormente Function por Function.
 
 ## Azure Functions Runtime
 
-Determinar:
+Determinar la versión actual cuando exista evidencia suficiente.
 
-- versión actual cuando exista evidencia.
-- compatibilidad con el target.
-- necesidad de migración.
+No confundir Runtime con Programming Model.
 
-No confundir Azure Functions Runtime con Programming Model.
+Cuando dependa de infraestructura externa no disponible:
 
-Si la versión no puede confirmarse con evidencia suficiente:
-
-- `status = UNKNOWN`
-- `action = REQUIRES_VALIDATION`
+`REQUIRES_VALIDATION`
 
 ## Programming Model
 
-Determinar:
+Si está confirmado v4:
 
-- modelo actual.
-- evidencia utilizada.
-- si Programming Model v4 ya está cumplido.
+`NOT_REQUIRED`
 
-Si ya está en v4:
+No recomendar una nueva migración.
 
-- `action = NOT_REQUIRED`
+Si está confirmado legacy:
 
-No recomendar ni ejecutar nuevamente una migración del Programming Model.
+evaluar necesidad de migración.
 
-Si existe evidencia legacy y v4 simultáneamente:
+Si existen evidencias legacy y v4:
 
-- `status = UNKNOWN`
-- `action = REQUIRES_VALIDATION`
-
-hasta resolver el estado real.
+`REQUIRES_VALIDATION`
 
 ## Durable Functions
 
-Si Durable Functions no está presente:
+Si no está presente:
 
-- `status = NOT_APPLICABLE`
-- `action = NOT_REQUIRED`
+`NOT_APPLICABLE`
 
 Si está presente, evaluar:
 
-- versión del paquete.
-- Programming Model utilizado.
-- compatibilidad documentada.
-- necesidad de migración específica.
+- versión del paquete;
+- relación con Programming Model;
+- necesidad de migración especializada.
 
-No analizar todavía el workflow Function por Function.
+No analizar todavía el workflow en profundidad.
 
 ## Dependencias
 
-Evaluar únicamente dependencias relevantes para:
+Evaluar solamente dependencias relevantes para:
 
-- Node.js 24.
-- Azure Functions.
-- Durable Functions.
-- Azure SDK.
-- compilación.
+- Node.js 24;
+- Azure Functions;
+- Durable Functions;
+- Azure SDK;
+- compilación;
 - runtime.
 
-Clasificar cada dependencia según corresponda como:
+No recomendar actualización únicamente porque una dependencia sea antigua.
 
-- compatible confirmada.
-- requiere actualización.
-- requiere validación.
-- no relevante para esta etapa.
-
-No actualizar dependencias.
-
-No recomendar una versión concreta sin evidencia oficial vigente.
+No elegir una versión target sin evidencia oficial.
 
 ## TypeScript
 
-Determinar cuando corresponda:
+Determinar:
 
-- versión actual.
-- compatibilidad con el target.
+- versión actual;
+- compatibilidad relevante;
 - necesidad de actualización.
-- posibles restricciones conocidas.
 
-No modificar todavía configuración ni código TypeScript.
+No modificar configuración.
 
-## Testabilidad
+## Testabilidad global
 
-Registrar únicamente señales globales observables, por ejemplo:
+Registrar señales globales únicamente cuando sean útiles, por ejemplo:
 
-- existencia de framework de tests.
-- existencia de tests.
-- acceso directo a `process.env`.
-- construcción directa de clientes SDK.
-- entrypoints con lógica de negocio mezclada.
-- dependencias difíciles de sustituir.
+- Jest ya configurado;
+- ausencia total de tests;
+- uso extendido de `process.env`;
+- construcción directa de SDKs;
+- estructura legacy.
 
-No realizar todavía refactor.
-
-El análisis detallado de testabilidad se realizará Function por Function.
-
-## Configuración para validación
-
-Usar el inventario generado por `discover-function-app`.
-
-Determinar si futuras validaciones requerirán configuración local.
-
-No leer valores sensibles.
-
-Si faltan configuraciones necesarias, registrar qué claves serán requeridas mediante una configuración sanitizada o
-expresamente aprobada por el desarrollador.
-
-## Evidencia
-
-Las decisiones sobre soporte y compatibilidad deben utilizar preferentemente:
-
-1. Microsoft Learn o documentación oficial de Azure.
-2. documentación oficial de Node.js.
-3. documentación oficial del SDK o paquete.
-4. npm oficial cuando sea necesario.
-
-Guardar únicamente referencias mínimas necesarias.
-
-No copiar documentación completa.
-
-No reutilizar como hecho una recomendación antigua sin volver a verificarla cuando pueda haber cambiado.
+La testabilidad detallada pertenece a `analyze-function`.
 
 ## Salidas
 
 Crear:
 
-- `.migration/repository/assessment.json`
-- `.migration/repository/assessment.md`
-- `.migration/lessons/assess-function-app/lessons.json`
-- `.migration/lessons/assess-function-app/lessons.md`
+`.migration/repository/assessment.json`
 
-Crear únicamente las carpetas necesarias.
+`.migration/repository/assessment.md`
+
+Y:
+
+`.migration/lessons/assess-function-app/lessons.json`
+
+`.migration/lessons/assess-function-app/lessons.md`
 
 ## assessment.json
 
-Debe contener información estructurada reutilizable por otros skills.
+Debe contener como mínimo:
 
-Como mínimo:
-
-- metadata de ejecución.
-- estado objetivo.
-- evaluación por dimensión.
-- acciones requeridas.
-- riesgos globales.
-- unknowns.
+- metadata;
+- target;
+- dimensiones;
+- estado actual;
+- acciones requeridas;
+- riesgos globales;
+- unknowns;
 - evidencia oficial.
 
 Ejemplo conceptual:
 
     {
-      "target": {
-        "node": "24",
-        "runtime": "v4",
-        "programmingModel": "v4"
-      },
       "dimensions": {
         "node": {
           "current": "20",
-          "status": "CONFIRMED",
           "action": "REQUIRED"
         },
         "runtime": {
           "current": "v4",
-          "status": "CONFIRMED",
           "action": "NOT_REQUIRED"
         },
         "programmingModel": {
           "current": "v4",
-          "status": "CONFIRMED",
           "action": "NOT_REQUIRED"
         }
       }
     }
 
-El ejemplo no define un schema exhaustivo.
-
-No agregar campos sin necesidad demostrada.
-
 ## assessment.md
 
-Debe explicar de forma breve:
+Debe explicar:
 
-- estado actual.
-- qué ya cumple el objetivo.
-- qué debe cambiar.
-- qué necesita validación.
-- principales riesgos globales.
-- unknowns.
-- evidencia oficial relevante.
+- qué ya cumple;
+- qué debe cambiar;
+- qué necesita validación;
+- riesgos globales;
+- unknowns;
+- evidencia relevante.
 
-No debe ser una copia textual del JSON.
-
-No debe generar todavía el plan detallado de migración.
+No debe producir el plan de implementación.
 
 ## Lecciones aprendidas
 
-Registrar únicamente observaciones que puedan mejorar futuras ejecuciones:
+Aplicar:
 
-- reglas de assessment insuficientes.
-- estados no contemplados.
-- incompatibilidades inesperadas.
-- documentación oficial ambigua.
-- falsos supuestos.
-- contexto innecesario.
-- oportunidades de simplificación.
-- propuestas de mejora del skill.
-
-Si no existe una lección relevante, generar el artefacto con una colección vacía.
-
-No modificar automáticamente este skill.
-
-Toda mejora requiere revisión humana antes de incorporarse.
+`../_shared/lessons-policy.md`
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- `inventory.json` fue consumido.
-- cada dimensión objetivo fue evaluada independientemente.
-- las dimensiones ya cumplidas están marcadas `NOT_REQUIRED`.
-- las dimensiones pendientes están marcadas `REQUIRED`.
-- las incertidumbres están marcadas `REQUIRES_VALIDATION`.
-- las afirmaciones de soporte o compatibilidad tienen evidencia oficial cuando corresponde.
-- los riesgos globales fueron registrados.
-- no se modificó código.
-- se generaron los artefactos de assessment.
-- se generaron los artefactos de lecciones aprendidas.
+- `inventory.json` fue consumido;
+- cada dimensión fue evaluada independientemente;
+- lo ya cumplido quedó como `NOT_REQUIRED`;
+- lo pendiente quedó como `REQUIRED`;
+- las incertidumbres quedaron visibles;
+- las afirmaciones de soporte tienen evidencia suficiente;
+- no se modificó código;
+- se generaron assessment y lessons.
 
 ## Fuera de alcance
 
 Este skill no debe:
 
-- modificar código.
-- actualizar dependencias.
-- agregar tests.
-- refactorizar.
-- migrar Node.js.
-- migrar Azure Functions Runtime.
-- migrar Programming Model.
-- migrar Durable Functions.
-- decidir arquitectura final.
-- optimizar código.
-- generar el plan detallado Function por Function.
+- modificar código;
+- agregar tests;
+- refactorizar;
+- actualizar dependencias;
+- migrar Node.js;
+- migrar Runtime;
+- migrar Programming Model;
+- migrar Durable;
+- optimizar;
+- generar planes por Function.
 
-El siguiente skill sugerido, después de revisión humana del assessment, es:
+El siguiente skill sugerido es:
 
 `analyze-function`
