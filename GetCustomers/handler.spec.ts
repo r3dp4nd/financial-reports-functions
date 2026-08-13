@@ -1,72 +1,99 @@
-import {Context} from "@azure/functions";
-
 import {GetCustomerUseCase} from "../GenerateReport/application/get-customer.use-case";
 import {CustomerReportRepository} from "../GenerateReport/domain/customer-report.repository";
 import {createGetCustomersHandler} from "./handler";
 
 describe("GetCustomers handler", () => {
 
-    let repository: jest.Mocked<CustomerReportRepository>;
-    let useCase: GetCustomerUseCase;
+  let repository: jest.Mocked<CustomerReportRepository>;
+  let useCase: GetCustomerUseCase;
 
-    beforeEach(() => {
+  beforeEach(() => {
 
-        repository = {
-            findById: jest.fn()
-        };
+    repository = {
+      findById: jest.fn()
+    };
 
-        useCase = new GetCustomerUseCase(repository);
+    useCase = new GetCustomerUseCase(repository);
+  });
+
+
+  it("should return customer", async () => {
+
+    const customer = {
+      customerId: "CUS-100",
+      name: "Olek Customer",
+      documentNumber: "DOC-100",
+      segment: "PREMIUM",
+      email: "customer@example.com"
+    };
+
+    repository
+      .findById
+      .mockResolvedValue(customer);
+
+    const handler = createGetCustomersHandler({
+      useCase
     });
 
-    it("should return customer", async () => {
+    const input = {
+      customerId: "CUS-100"
+    };
 
-        repository
-            .findById
-            .mockResolvedValue({
-                customerId: "CUS-100",
-                name: "Olek Customer",
-                documentNumber: "DOC-100",
-                segment: "PREMIUM",
-                email: "customer@example.com"
-            });
+    const result = await handler(input);
 
-        const handler = createGetCustomersHandler({
-            useCase
-        });
+    expect(result).toEqual(customer);
 
-        const context = {
-            bindings: {
-                input: {
-                    customerId: "CUS-100"
-                }
-            }
-        } as unknown as Context;
+    expect(repository.findById)
+      .toHaveBeenCalledTimes(1);
 
-        const result = await handler(context);
+    expect(repository.findById)
+      .toHaveBeenCalledWith("CUS-100");
+  });
 
-        expect(result).toEqual({
-            customerId: "CUS-100",
-            name: "Olek Customer",
-            documentNumber: "DOC-100",
-            segment: "PREMIUM",
-            email: "customer@example.com"
-        });
+
+  it("should propagate application errors", async () => {
+
+    const handler = createGetCustomersHandler({
+      useCase
     });
 
-    it("should propagate application errors", async () => {
+    const input = {
+      customerId: ""
+    };
 
-        const handler = createGetCustomersHandler({
-            useCase
-        });
+    await expect(handler(input)).rejects.toThrow("customerId is required");
+  });
 
-        const context = {
-            bindings: {
-                input: {
-                    customerId: ""
-                }
-            }
-        } as unknown as Context;
 
-        await expect(handler(context)).rejects.toThrow("customerId is required");
+  it("should reject undefined input", async () => {
+
+    const handler = createGetCustomersHandler({
+      useCase
     });
+
+    await expect(handler(undefined)).rejects.toThrow("GetCustomers activity input is invalid");
+  });
+
+
+  it("should reject null input", async () => {
+
+    const handler = createGetCustomersHandler({
+      useCase
+    });
+
+    await expect(handler(null)).rejects.toThrow("GetCustomers activity input is invalid");
+  });
+
+
+  it("should reject input without customerId", async () => {
+
+    const handler = createGetCustomersHandler({
+      useCase
+    });
+
+    const input = {};
+
+    await expect(handler(input)).rejects.toThrow("GetCustomers activity input is invalid");
+  });
+
 });

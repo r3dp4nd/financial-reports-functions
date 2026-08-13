@@ -20,13 +20,13 @@ export function createGenerateExcelHandler(dependencies: GenerateExcelHandlerDep
 function parseActivityInput(input: unknown): GenerateExcelCommand {
 
   if (typeof input !== "object" || input === null) {
-    throw new Error("GetCustomers activity input is invalid");
+    throw new Error("GenerateExcel activity input is invalid");
   }
 
   const candidate = input as Partial<GenerateExcelCommand>;
 
   if (typeof candidate.customerId !== "string" || typeof candidate.reportId !== "string" || typeof candidate.data !== "object") {
-    throw new Error("GetCustomers activity input is invalid");
+    throw new Error("GenerateExcel activity input is invalid");
   }
 
   return {

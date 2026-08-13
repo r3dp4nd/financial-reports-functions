@@ -16,46 +16,47 @@ describe("GetOrders handler", () => {
     useCase = new GetOrdersUseCase(repository);
   });
 
+
   it("should return orders", async () => {
 
-    repository
-      .findByCriteria
-      .mockResolvedValue([{
-        orderId: "ORD-100",
-        customerId: "CUS-100",
-        orderDate: "2026-08-10T10:00:00.000Z",
-        total: 250,
-        currency: "PEN",
-        status: "COMPLETED"
-      }]);
-
-    const handler = createGetOrdersHandler({
-      useCase
-    });
-
-    const context = {
-      bindings: {
-        input: {
-          customerId: "CUS-100",
-          period: {
-            from: "2026-08-01",
-            to: "2026-08-31"
-          }
-        }
-      }
-    } as unknown as Context;
-
-    const result = await handler(context);
-
-    expect(result).toEqual([{
+    const orders = [{
       orderId: "ORD-100",
       customerId: "CUS-100",
       orderDate: "2026-08-10T10:00:00.000Z",
       total: 250,
       currency: "PEN",
       status: "COMPLETED"
-    }]);
+    }];
+
+    repository
+      .findByCriteria
+      .mockResolvedValue(orders);
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    const input = {
+      customerId: "CUS-100", period: {
+        from: "2026-08-01", to: "2026-08-31"
+      }
+    };
+
+    const result = await handler(input);
+
+    expect(result).toEqual(orders);
+
+    expect(repository.findByCriteria)
+      .toHaveBeenCalledTimes(1);
+
+    expect(repository.findByCriteria)
+      .toHaveBeenCalledWith({
+        customerId: "CUS-100", period: {
+          from: "2026-08-01", to: "2026-08-31"
+        }
+      });
   });
+
 
   it("should propagate application errors", async () => {
 
@@ -63,18 +64,93 @@ describe("GetOrders handler", () => {
       useCase
     });
 
-    const context = {
-      bindings: {
-        input: {
-          customerId: "",
-          period: {
-            from: "2026-08-01",
-            to: "2026-08-31"
-          }
-        }
+    const input = {
+      customerId: "", period: {
+        from: "2026-08-01", to: "2026-08-31"
       }
-    } as unknown as Context;
+    };
 
-    await expect(handler(context)).rejects.toThrow("customerId is required");
+    await expect(handler(input)).rejects.toThrow("customerId is required");
   });
+
+
+  it("should reject undefined input", async () => {
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    await expect(handler(undefined)).rejects.toThrow("GetOrders activity input is invalid");
+  });
+
+
+  it("should reject null input", async () => {
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    await expect(handler(null)).rejects.toThrow("GetOrders activity input is invalid");
+  });
+
+
+  it("should reject input without customerId", async () => {
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    const input = {
+      period: {
+        from: "2026-08-01", to: "2026-08-31"
+      }
+    };
+
+    await expect(handler(input)).rejects.toThrow("GetOrders activity input is invalid");
+  });
+
+
+  it("should reject input without period", async () => {
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    const input = {
+      customerId: "CUS-100"
+    };
+
+    await expect(handler(input)).rejects.toThrow("GetOrders activity input is invalid");
+  });
+
+
+  it("should reject input with invalid period", async () => {
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    const input = {
+      customerId: "CUS-100", period: {
+        from: "2026-08-01"
+      }
+    };
+
+    await expect(handler(input)).rejects.toThrow("GetOrders activity input is invalid");
+  });
+
+
+  it("should reject input with null period", async () => {
+
+    const handler = createGetOrdersHandler({
+      useCase
+    });
+
+    const input = {
+      customerId: "CUS-100", period: null
+    };
+
+    await expect(handler(input)).rejects.toThrow("GetOrders activity input is invalid");
+  });
+
 });

@@ -1,5 +1,5 @@
 export interface CompleteGenerationCommand {
-    reportId: string;
-    blobName: string;
-    generatedAt: string;
+  reportId: string;
+  blobName: string;
+  generatedAt: string;
 }

@@ -1,5 +1,11 @@
 import {CompleteGenerationUseCase} from "../GenerateReport/application/complete-generation.use-case";
-import {CompleteGenerationCommand} from "../GenerateReport/application/complete-generation.command";
+
+export interface CompleteGenerationInput {
+  reportId: string;
+  blobName: string;
+  generatedAt?: string;
+}
+
 
 export interface CompleteGenerationHandlerDependencies {
   useCase: CompleteGenerationUseCase;
@@ -10,7 +16,7 @@ export function createCompleteGenerationHandler(dependencies: CompleteGeneration
 
   return async function (input: unknown): Promise<unknown> {
 
-    const command: CompleteGenerationCommand = parseActivityInput(input);
+    const command: CompleteGenerationInput = parseActivityInput(input);
 
     return dependencies
       .useCase
@@ -22,21 +28,23 @@ export function createCompleteGenerationHandler(dependencies: CompleteGeneration
   };
 }
 
-function parseActivityInput(input: unknown): CompleteGenerationCommand {
+function parseActivityInput(input: unknown): CompleteGenerationInput {
 
   if (typeof input !== "object" || input === null) {
     throw new Error("CompleteGeneration activity input is invalid");
   }
 
-  const candidate = input as Partial<CompleteGenerationCommand>;
+  const candidate = input as Partial<CompleteGenerationInput>;
 
-  if (typeof candidate.reportId !== "string" || typeof candidate.blobName !== "string" || typeof candidate.generatedAt !== "string") {
+  if (
+    typeof candidate.reportId !== "string" ||
+    typeof candidate.blobName !== "string"
+  ) {
     throw new Error("CompleteGeneration activity input is invalid");
   }
 
   return {
     reportId: candidate.reportId,
     blobName: candidate.blobName,
-    generatedAt: candidate.generatedAt
   };
 }
