@@ -1,0 +1,159 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+
+name: azure-function-$(Date:yyyyMMdd).$(Rev:r)
+
+
+parameters:
+  # ============================================================
+  # Quality
+  # ============================================================
+
+  - name: runTests
+    displayName: Run tests
+    type: boolean
+    default: true
+
+  - name: runCoverage
+    displayName: Run coverage
+    type: boolean
+    default: false
+
+  - name: runSonar
+    displayName: Run SonarQube
+    type: boolean
+    default: false
+
+  # ============================================================
+  # Environment validations
+  # ============================================================
+
+  - name: runDevSmokeTest
+    type: boolean
+    default: false
+
+  - name: runUatSmokeTest
+    type: boolean
+    default: false
+
+  - name: runStgSmokeTest
+    type: boolean
+    default: false
+
+  - name: runPrdSmokeTest
+    type: boolean
+    default: false
+
+
+stages:
+
+  # ============================================================
+  # BUILD ONCE
+  # ============================================================
+
+  - stage: Build
+    displayName: Build and validate
+
+    jobs:
+
+      - template: templates/build/node-function-build.yml
+
+        parameters:
+          nodeVersion: '24.x'
+          nodeMajorVersion: 24
+
+          installCommand: 'npm ci'
+
+          buildCommand: 'npm run build:prod'
+
+          buildOutput: 'dist'
+
+          runTests: ${{ parameters.runTests }}
+
+          testCommand: 'npm test'
+
+          runCoverage: ${{ parameters.runCoverage }}
+
+          coverageCommand: 'npm run test:coverage'
+
+          coverageReportPath: 'coverage/lcov.info'
+
+          runSonar: ${{ parameters.runSonar }}
+
+          sonarServiceConnection: '<SONARQUBE-SERVICE-CONNECTION>'
+
+          sonarProjectKey: '<SONAR-PROJECT-KEY>'
+
+          sonarProjectName: '<SONAR-PROJECT-NAME>'
+
+          artifactName: 'function-app'
+
+          packageFileName: 'function-app.zip'
+
+
+  # ============================================================
+  # DEV
+  # ============================================================
+
+  - template: environments/dev.yml
+
+    parameters:
+      artifactName: 'function-app'
+
+      packageFileName: 'function-app.zip'
+
+      runSmokeTest:
+        ${{ parameters.runDevSmokeTest }}
+
+
+  # ============================================================
+  # UAT
+  # ============================================================
+
+  - template: environments/uat.yml
+
+    parameters:
+      artifactName: 'function-app'
+
+      packageFileName: 'function-app.zip'
+
+      runSmokeTest:
+        ${{ parameters.runUatSmokeTest }}
+
+
+  # ============================================================
+  # STG
+  # ============================================================
+
+  - template: environments/stg.yml
+
+    parameters:
+      artifactName: 'function-app'
+
+      packageFileName: 'function-app.zip'
+
+      runSmokeTest:
+        ${{ parameters.runStgSmokeTest }}
+
+
+  # ============================================================
+  # PRD
+  # ============================================================
+
+  - template: environments/prd.yml
+
+    parameters:
+      artifactName: 'function-app'
+
+      packageFileName: 'function-app.zip'
+
+      runSmokeTest:
+        ${{ parameters.runPrdSmokeTest }}

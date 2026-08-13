@@ -16,10 +16,6 @@ parameters:
   - name: functionAppName
     type: string
 
-  - name: appType
-    type: string
-    default: 'functionAppLinux'
-
   - name: isFlexConsumption
     type: boolean
     default: false
@@ -50,10 +46,10 @@ parameters:
 
   - name: deploymentMethod
     type: string
-    default: 'runFromPackage'
+    default: 'auto'
 
   # ============================================================
-  # Smoke test
+  # Post-deployment validation
   # ============================================================
 
   - name: runSmokeTest
@@ -85,15 +81,31 @@ jobs:
           steps:
 
             # ==================================================
-            # Download artifact
+            # Disable automatic artifact download
             # ==================================================
 
-            - download: current
-              artifact: ${{ parameters.artifactName }}
+            - download: none
 
 
             # ==================================================
-            # Verify immutable artifact
+            # Download only the immutable deployment artifact
+            # ==================================================
+
+            - task: DownloadPipelineArtifact@2
+              displayName: Download deployment artifact
+
+              inputs:
+                buildType: 'current'
+
+                artifactName:
+                  ${{ parameters.artifactName }}
+
+                targetPath:
+                  '$(Pipeline.Workspace)/${{ parameters.artifactName }}'
+
+
+            # ==================================================
+            # Verify artifact integrity
             # ==================================================
 
             - script: >
@@ -105,39 +117,59 @@ jobs:
 
 
             # ==================================================
-            # Deploy Azure Function App
+            # Deploy - Flex Consumption
             # ==================================================
 
-            - task: AzureFunctionApp@2
-              displayName: Deploy Azure Function App
+            - ${{ if eq(parameters.isFlexConsumption, true) }}:
 
-              inputs:
-                azureSubscription:
-                  ${{ parameters.azureServiceConnection }}
+                - task: AzureFunctionApp@2
+                  displayName: Deploy Azure Function App
 
-                appType:
-                  ${{ parameters.appType }}
+                  inputs:
+                    azureSubscription:
+                      ${{ parameters.azureServiceConnection }}
 
-                appName:
-                  ${{ parameters.functionAppName }}
+                    appType:
+                      'functionAppLinux'
 
-                package:
-                  '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
+                    isFlexConsumption:
+                      true
 
+                    appName:
+                      ${{ parameters.functionAppName }}
 
-                ${{ if eq(parameters.isFlexConsumption, true) }}:
-
-                  isFlexConsumption: true
-
-
-                ${{ if eq(parameters.isFlexConsumption, false) }}:
-
-                  deploymentMethod:
-                    ${{ parameters.deploymentMethod }}
+                    package:
+                      '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
 
 
             # ==================================================
-            # Post-deployment validation
+            # Deploy - Non Flex
+            # ==================================================
+
+            - ${{ if eq(parameters.isFlexConsumption, false) }}:
+
+                - task: AzureFunctionApp@2
+                  displayName: Deploy Azure Function App
+
+                  inputs:
+                    azureSubscription:
+                      ${{ parameters.azureServiceConnection }}
+
+                    appType:
+                      'functionAppLinux'
+
+                    appName:
+                      ${{ parameters.functionAppName }}
+
+                    package:
+                      '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
+
+                    deploymentMethod:
+                      ${{ parameters.deploymentMethod }}
+
+
+            # ==================================================
+            # Optional environment-specific smoke test
             # ==================================================
 
             - ${{ if eq(parameters.runSmokeTest, true) }}:
