@@ -48,6 +48,8 @@ Consumir primero:
 - catálogo actual cuando sea útil;
 - shared resource candidates.
 
+No leer directamente `dependency-baseline.json` para volver a decidir versiones ya resueltas por assessment.
+
 Analizar una Function o unidad funcional coherente por ejecución.
 
 ## Progressive disclosure
@@ -157,6 +159,74 @@ Clasificar cuando corresponda:
 - Node runtime.
 
 Cada hallazgo de compatibilidad debe utilizar `evidenceStatus` cuando sea necesario.
+
+## Dependencias y baseline
+
+Consumir:
+
+`assessment.dependencyAssessment`
+
+La versión target aprobada pertenece al assessment y a la baseline de la campaña.
+
+No volver a seleccionar una versión distinta.
+
+Para cada dependencia con:
+
+`impactAnalysisRequired = true`
+
+y:
+
+`actionStatus = REQUIRED`
+
+analizar únicamente los consumidores relevantes de la Function actual.
+
+Determinar cuando corresponda:
+
+- imports;
+- API utilizada;
+- construcción de cliente;
+- configuración;
+- métodos;
+- opciones;
+- tipos;
+- shared resources relacionados;
+- cambios necesarios en el slice.
+
+Registrar una acción `FN-*` únicamente cuando la Function necesite adaptación local.
+
+Ejemplo:
+
+    {
+      "id": "FN-REQUESTREPORT-003",
+      "type": "REQUIRED_NODE",
+      "action": "Adaptar el consumidor al SDK Cosmos target.",
+      "reason": "El cambio aprobado de SDK afecta una API utilizada por la Function.",
+      "dependency": "@azure/cosmos",
+      "targetVersion": "4.10.0",
+      "resourceId": "SR-COSMOS-REPORTS",
+      "evidenceStatus": "CONFIRMED",
+      "evidence": []
+    }
+
+Si la dependencia cambia pero el consumidor no necesita modificación de código:
+
+no crear una acción local.
+
+La actualización puede permanecer como acción global o shared.
+
+## Dependencias no incluidas en baseline
+
+Si assessment no detectó incompatibilidad:
+
+preservar.
+
+Si assessment indica:
+
+`actionStatus = REQUIRES_VALIDATION`
+
+analizar únicamente el impacto relevante.
+
+No seleccionar arbitrariamente una versión target.
 
 ## Testabilidad
 
@@ -385,6 +455,8 @@ El skill termina cuando:
 - comportamiento fue documentado;
 - arquitectura actual y target fueron comparadas;
 - shared resources fueron confirmados cuando existía evidencia;
+- dependency impacts relevantes fueron analizados;
+- versiones target aprobadas no fueron redefinidas;
 - testabilidad fue evaluada;
 - tests fueron propuestos;
 - compatibilidad fue evaluada;
@@ -399,6 +471,8 @@ El skill termina cuando:
 No debe:
 
 - modificar código;
+- instalar dependencias;
+- seleccionar nuevas versiones target;
 - agregar tests;
 - aplicar arquitectura;
 - actualizar dependencias;

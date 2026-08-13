@@ -82,6 +82,31 @@ Ejemplo:
 
 No crear un ID nuevo para representar la misma acción.
 
+## Dependency adaptations
+
+No decidir versiones de paquetes.
+
+Las versiones target provienen de:
+
+- assessment;
+- plan;
+- dependency baseline referenciada.
+
+Este skill únicamente ejecuta adaptaciones locales `FN-*` cuando el cambio de dependencia afecta el código de la
+Function.
+
+Ejemplo conceptual:
+
+    @azure/cosmos 3.x → baseline target
+             ↓
+    SR-ACTION-* adapta infraestructura compartida
+             ↓
+    FN-* adapta consumidor solo si es necesario
+
+No modificar `package.json` nuevamente si la acción propietaria ya fue ejecutada globalmente.
+
+No seleccionar una versión alternativa.
+
 ## Arquitectura
 
 Aplicar:
@@ -323,6 +348,7 @@ Crear:
 
 - comportamiento preservado;
 - acciones `FN-*` necesarias completadas;
+- adaptaciones locales de dependency upgrades completadas cuando apliquen;
 - arquitectura requerida aplicada;
 - shared dependencies disponibles;
 - baseline requerida en `PASS`;
@@ -336,6 +362,7 @@ No debe:
 - migrar Runtime;
 - migrar workflow Durable;
 - ejecutar global actions;
+- seleccionar dependency versions;
 - duplicar shared resources;
 - modificar comportamiento;
 - optimizar;
@@ -345,4 +372,4 @@ No debe:
 Siguiente skill:
 
 - `migrate-programming-model-v4`
-- `migrate-durable-functions-v4`
+- o `migrate-durable-functions-v4`

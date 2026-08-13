@@ -69,6 +69,26 @@ Las acciones locales conservan IDs:
 
 No recrear acciones con IDs nuevos.
 
+## Dependencia @azure/functions
+
+La versión requerida de:
+
+`@azure/functions`
+
+debe provenir del plan y de la dependency baseline aprobada.
+
+Este skill no decide una versión diferente.
+
+Si la dependencia target requerida no fue preparada:
+
+`status = BLOCKED`
+
+No ejecutar:
+
+`npm install @azure/functions@latest`
+
+ni modificar el package hacia una versión no aprobada.
+
 ## Arquitectura
 
 La migración debe concentrarse principalmente en:
@@ -235,6 +255,7 @@ Crear:
 `MIGRATED` requiere:
 
 - adapter migrado;
+- versión de `@azure/functions` requerida por el plan disponible;
 - acción de plataforma completada;
 - arquitectura preservada;
 - shared resources no duplicados;
@@ -247,6 +268,7 @@ Crear:
 No debe:
 
 - volver a refactorizar la capability sin necesidad;
+- seleccionar versiones de dependencias;
 - migrar Durable;
 - cambiar comportamiento;
 - redefinir recursos compartidos;

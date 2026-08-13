@@ -55,6 +55,16 @@ Aplicar cuando corresponda:
 
 Las policies compartidas tienen prioridad sobre instrucciones locales contradictorias.
 
+## Referencias compartidas
+
+La baseline de dependencias aprobada vive en:
+
+`_shared/dependency-baseline.json`
+
+No es una policy.
+
+Es una referencia técnica versionada para la campaña de migración.
+
 ## Responsabilidad de cada policy
 
 ### evidence-policy
@@ -100,6 +110,54 @@ Usar cuando corresponda:
 Los templates definen presentación humana.
 
 Los JSON son los contratos estructurados entre capabilities.
+
+## Dependency baseline
+
+Las versiones objetivo aprobadas viven en:
+
+`_shared/dependency-baseline.json`
+
+La baseline responde:
+
+`¿A qué versión queremos llegar en esta campaña?`
+
+No responde:
+
+`¿Puede actualizarse sin impacto?`
+
+Flujo:
+
+`baseline → assess → analyze → plan → prepare/migrate → verify`
+
+### Reglas
+
+- no utilizar `latest` como target durante una migración;
+- no actualizar automáticamente una dependencia por aparecer en baseline;
+- toda dependencia incluida debe pasar por assessment;
+- `impactAnalysisRequired = true` obliga a analizar consumidores cuando el cambio sea requerido;
+- las dependencias no listadas se preservan por defecto;
+- cambios de dependencia deben quedar representados en el plan;
+- verification compara contra la baseline aprobada, no contra la versión más reciente disponible.
+
+### Dependencias no listadas
+
+No se modifican por defecto.
+
+Solo entran al flujo de cambio cuando existe evidencia de que:
+
+- impiden Node.js 24;
+- impiden Runtime v4;
+- impiden Programming Model v4;
+- impiden build;
+- introducen incompatibilidad relevante para la migración.
+
+Si requieren cambio pero no existe target aprobado:
+
+mantener:
+
+`actionStatus = REQUIRES_VALIDATION`
+
+hasta resolver la versión objetivo.
 
 ## Memoria de migración
 
@@ -286,6 +344,7 @@ Evalúa:
 - Programming Model;
 - Durable;
 - dependencias;
+- dependency baseline;
 - TypeScript;
 - testing;
 - arquitectura;
@@ -302,6 +361,10 @@ Produce:
 Pregunta:
 
 `¿Cómo funciona esta Function y qué necesita?`
+
+También analiza impacto local de dependency upgrades cuando:
+
+`impactAnalysisRequired = true`
 
 Produce:
 
@@ -329,6 +392,8 @@ Después genera:
 
 `.migration/plans/migration-plan.md`
 
+El plan registra la dependency baseline utilizada.
+
 #### Plan por Function
 
 `.migration/functions/<FunctionName>/migration-plan.json`
@@ -344,7 +409,7 @@ Pregunta:
 Puede modificar:
 
 - Node.js;
-- dependencias;
+- dependencias aprobadas;
 - TypeScript;
 - Jest;
 - build;
@@ -371,6 +436,7 @@ Puede:
 - separar Azure adapter;
 - organizar capability;
 - aislar infraestructura;
+- adaptar consumidores a dependency upgrades planificados;
 - preparar shared dependencies;
 - agregar tests;
 - obtener baseline.
@@ -386,6 +452,8 @@ Produce:
 Pregunta:
 
 `¿Cómo migramos este adapter Azure legacy a v4?`
+
+La versión de `@azure/functions` ya debe estar determinada por baseline y plan.
 
 Produce:
 
@@ -403,6 +471,8 @@ Pregunta:
 
 `¿Cómo migramos este workflow Durable como una unidad?`
 
+La versión de `durable-functions` debe provenir de baseline y plan.
+
 Produce:
 
 `.migration/functions/<WorkflowName>/durable-migration.json`
@@ -418,6 +488,8 @@ Pregunta:
 Compara:
 
 `BEFORE → PLAN → AFTER`
+
+También verifica las versiones target contra la dependency baseline utilizada.
 
 Produce:
 
@@ -483,22 +555,25 @@ No crear carpetas vacías.
 
 ## Ownership de información
 
-| Información                    | Owner                          |
-|--------------------------------|--------------------------------|
-| Functions existentes           | `inventory.json`               |
-| Arquitectura observable BEFORE | `inventory.json`               |
-| Catálogo humano BEFORE         | `catalog/**`                   |
-| Gap global                     | `assessment.json`              |
-| Shared resources consolidados  | `shared-resources.json`        |
-| Comportamiento Function        | `analysis.json`                |
-| Architecture gap Function      | `analysis.json`                |
-| Acciones Function              | `analysis.json`                |
-| Coordinación global            | global `migration-plan.json`   |
-| Pasos Function                 | Function `migration-plan.json` |
-| Cambios globales ejecutados    | `repository/preparation.json`  |
-| Refactor Function ejecutado    | `preparation.json`             |
-| Migración plataforma ejecutada | `migration.json`               |
-| Resultado final                | `verification.json`            |
+| Información                    | Owner                              |
+|--------------------------------|------------------------------------|
+| Functions existentes           | `inventory.json`                   |
+| Arquitectura observable BEFORE | `inventory.json`                   |
+| Catálogo humano BEFORE         | `catalog/**`                       |
+| Gap global                     | `assessment.json`                  |
+| Dependency decisions           | `assessment.json`                  |
+| Dependency target baseline     | `_shared/dependency-baseline.json` |
+| Shared resources consolidados  | `shared-resources.json`            |
+| Comportamiento Function        | `analysis.json`                    |
+| Architecture gap Function      | `analysis.json`                    |
+| Dependency impact por Function | `analysis.json`                    |
+| Acciones Function              | `analysis.json`                    |
+| Coordinación global            | global `migration-plan.json`       |
+| Pasos Function                 | Function `migration-plan.json`     |
+| Cambios globales ejecutados    | `repository/preparation.json`      |
+| Refactor Function ejecutado    | `preparation.json`                 |
+| Migración plataforma ejecutada | `migration.json`                   |
+| Resultado final                | `verification.json`                |
 
 Referenciar al owner.
 
@@ -656,6 +731,7 @@ Cuando:
 
 Cuando:
 
+- cambia la dependency baseline;
 - cambian versiones;
 - cambian dependencias relevantes;
 - cambia arquitectura global.
@@ -665,6 +741,7 @@ Cuando:
 Cuando:
 
 - cambia el slice;
+- cambia una dependency decision relevante;
 - cambia un recurso compartido relevante;
 - nueva evidencia invalida conclusiones.
 
@@ -672,6 +749,7 @@ Cuando:
 
 Cuando:
 
+- cambia la dependency baseline aplicada;
 - cambian `FN-*`;
 - cambia ownership;
 - cambian shared actions;
@@ -755,6 +833,7 @@ El toolkit debe buscar el menor cambio suficiente para alcanzar el target con:
 - seguridad;
 - trazabilidad;
 - comportamiento protegido;
+- dependency targets reproducibles;
 - arquitectura consistente;
 - ownership claro;
 - recursos compartidos coordinados;

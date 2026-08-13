@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1",
+  "baselineId": "node24-azure-functions-v4",
+  "target": {
+    "node": "24",
+    "azureFunctionsRuntime": "v4",
+    "programmingModel": "v4"
+  },
+  "packages": {
+    "@azure/functions": {
+      "targetVersion": "4.16.2",
+      "strategy": "PINNED",
+      "scope": "PLATFORM",
+      "requiredFor": [
+        "PROGRAMMING_MODEL_V4"
+      ],
+      "impactAnalysisRequired": true
+    },
+    "durable-functions": {
+      "targetVersion": "3.5.0",
+      "strategy": "PINNED",
+      "scope": "DURABLE",
+      "requiredFor": [
+        "DURABLE_PROGRAMMING_MODEL_V4"
+      ],
+      "impactAnalysisRequired": true
+    },
+    "@azure/cosmos": {
+      "targetVersion": "4.10.0",
+      "strategy": "PINNED",
+      "scope": "INFRASTRUCTURE",
+      "impactAnalysisRequired": true
+    },
+    "@azure/service-bus": {
+      "targetVersion": "7.9.5",
+      "strategy": "PINNED",
+      "scope": "INFRASTRUCTURE",
+      "impactAnalysisRequired": true
+    },
+    "@types/node": {
+      "targetVersion": "24.9.2",
+      "strategy": "PINNED",
+      "scope": "DEVELOPMENT",
+      "requiredFor": [
+        "NODE_24"
+      ],
+      "impactAnalysisRequired": false
+    }
+  },
+  "rules": {
+    "automaticUpgrade": false,
+    "useLatest": false,
+    "preserveUnlistedDependencies": true,
+    "requireAssessmentBeforeUpgrade": true,
+    "requireImpactAnalysisWhenMarked": true
+  }
+}

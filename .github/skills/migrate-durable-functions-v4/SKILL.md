@@ -78,6 +78,34 @@ Puede contener:
 
 Los planes por Function aportan trazabilidad, pero no fragmentan la migración del workflow.
 
+## Dependencia durable-functions
+
+La versión target de:
+
+`durable-functions`
+
+debe provenir de:
+
+- assessment;
+- plan global;
+- dependency baseline aprobada.
+
+Este skill no selecciona una versión diferente durante la migración.
+
+Si la dependencia requerida no está preparada:
+
+`status = BLOCKED`
+
+Si aparece una incompatibilidad inesperada con la versión aprobada:
+
+`status = REQUIRES_REVIEW`
+
+No utilizar:
+
+`durable-functions@latest`
+
+como sustituto de la baseline.
+
 ## Evidence status
 
 Cada relación importante debe usar `evidenceStatus` cuando exista incertidumbre.
@@ -266,6 +294,7 @@ Crear:
 
 - workflow confirmado;
 - participantes coordinados;
+- dependency target aprobada disponible;
 - registrations migradas;
 - determinismo preservado;
 - arquitectura preservada;
@@ -277,6 +306,7 @@ Crear:
 
 No debe:
 
+- seleccionar versiones de dependencias;
 - rediseñar workflow;
 - cambiar negocio;
 - optimizar paralelismo;

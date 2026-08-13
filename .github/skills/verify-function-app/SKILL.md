@@ -33,6 +33,7 @@ Consumir artefactos aplicables de:
 - catálogo BEFORE;
 - shared resources;
 - global plan;
+- dependency baseline referenciada;
 - Function plans;
 - global preparation;
 - Function preparations;
@@ -57,18 +58,19 @@ Cuando corresponda:
 
 1. instalación;
 2. runtime;
-3. typecheck;
-4. build global;
-5. tests;
-6. coverage;
-7. Function registration;
-8. Programming Model;
-9. Durable;
-10. architecture;
-11. shared resources;
-12. legacy scan;
-13. packaging;
-14. blockers/debt/unknowns.
+3. dependency baseline;
+4. typecheck;
+5. build global;
+6. tests;
+7. coverage;
+8. Function registration;
+9. Programming Model;
+10. Durable;
+11. architecture;
+12. shared resources;
+13. legacy scan;
+14. packaging;
+15. blockers/debt/unknowns.
 
 ## Checks
 
@@ -113,6 +115,40 @@ Usar:
 - plan global.
 
 No cambiar el target durante verification.
+
+## Dependency baseline
+
+Consumir la baseline referenciada por el plan.
+
+No consultar `latest` para determinar el resultado esperado.
+
+Verificar únicamente packages relevantes para la migración.
+
+Para cada dependencia target registrar cuando corresponda:
+
+- package;
+- expectedVersion;
+- installedVersion;
+- baselineId;
+- status.
+
+Ejemplo:
+
+    {
+      "package": "@azure/functions",
+      "expectedVersion": "4.16.2",
+      "installedVersion": "4.16.2",
+      "baselineId": "node24-azure-functions-v4",
+      "status": "PASS"
+    }
+
+Una versión diferente no debe evaluarse automáticamente contra npm latest.
+
+Clasificar según el contrato aprobado:
+
+- `FAIL` si contradice un target obligatorio;
+- `REQUIRES_REVIEW` si existe una desviación no aprobada cuya equivalencia debe decidirse;
+- `NOT_APPLICABLE` cuando el package no aplica.
 
 ## Node.js
 
@@ -223,6 +259,7 @@ Verificar workflows como unidades.
 
 Comprobar cuando aplique:
 
+- dependency target;
 - participantes;
 - registrations;
 - graph;
@@ -329,6 +366,8 @@ Debe contener:
 - `target`;
 - `references`;
 - `runtime`;
+- `dependencyBaseline`;
+- `dependencies`;
 - `installation`;
 - `typecheck`;
 - `build`;
@@ -368,6 +407,7 @@ No usar otro vocabulario.
 Requiere:
 
 - target obligatorio alcanzado;
+- dependency baseline obligatoria satisfecha;
 - gates aplicables en `PASS`;
 - build global exitoso cuando aplica;
 - tests requeridos verdes;
@@ -388,6 +428,7 @@ Existe un impedimento técnico conocido.
 
 Ejemplos:
 
+- dependency target obligatorio incorrecto;
 - build fail;
 - tests obligatorios fail;
 - Function faltante;
@@ -429,6 +470,8 @@ Crear:
 El skill termina cuando:
 
 - BEFORE, PLAN y AFTER fueron comparados;
+- dependency baseline aprobada fue verificada;
+- no se comparó contra `latest`;
 - gates aplicables fueron ejecutados;
 - estados de checks usan vocabulario común;
 - evidencia usa `evidenceStatus`;
@@ -443,6 +486,7 @@ No debe:
 
 - corregir código;
 - modificar tests;
+- seleccionar nuevas dependency versions;
 - refactorizar;
 - actualizar dependencias;
 - migrar;

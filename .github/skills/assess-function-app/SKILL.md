@@ -29,6 +29,14 @@ Aplicar:
 - `../_shared/architecture-policy.md`
 - `../_shared/status-policy.md`
 
+Usar como baseline de dependencias:
+
+`../_shared/dependency-baseline.json`
+
+La baseline define versiones objetivo aprobadas.
+
+No implica upgrade automático.
+
 ## Precondiciones
 
 Deben existir:
@@ -49,6 +57,7 @@ Consumir primero:
 
 - inventory;
 - catálogo BEFORE;
+- dependency baseline;
 - shared resource candidates.
 
 Consultar source únicamente cuando falte evidencia concreta necesaria para evaluar una dimensión.
@@ -62,7 +71,7 @@ Evaluar frente a:
 - Node.js 24;
 - Azure Functions Runtime v4;
 - Programming Model v4;
-- dependencias compatibles;
+- dependency baseline aprobada;
 - capacidad de build y tests;
 - arquitectura objetivo;
 - recursos compartidos con ownership y límites coherentes.
@@ -176,11 +185,13 @@ Si existe:
 evaluar globalmente:
 
 - paquete;
+- versión actual;
+- versión target aprobada cuando exista en baseline;
 - modelo;
 - workflows observables;
 - necesidad de migración especializada.
 
-El detalle pertenece al análisis posterior.
+El impacto detallado pertenece al análisis posterior.
 
 ## Dependencias
 
@@ -194,12 +205,97 @@ Evaluar únicamente paquetes relevantes para:
 - tests;
 - infraestructura compartida.
 
-Cada dependencia relevante debe separar:
+Comparar las dependencias relevantes contra:
 
-- evidencia;
-- necesidad de cambio.
+`../_shared/dependency-baseline.json`
 
-No actualizar por antigüedad.
+### Dependencia incluida en baseline
+
+Registrar cuando corresponda:
+
+- `package`;
+- `currentVersion`;
+- `targetVersion`;
+- `baselineId`;
+- `scope`;
+- `strategy`;
+- `impactAnalysisRequired`;
+- `evidenceStatus`;
+- `actionStatus`.
+
+Ejemplo:
+
+    {
+      "package": "@azure/cosmos",
+      "currentVersion": "^3.10.5",
+      "targetVersion": "4.10.0",
+      "baselineId": "node24-azure-functions-v4",
+      "scope": "INFRASTRUCTURE",
+      "impactAnalysisRequired": true,
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "REQUIRED"
+    }
+
+La existencia de una versión target en baseline no significa que el cambio sea seguro sin analizar consumidores.
+
+### Dependencia no incluida en baseline
+
+Preservar por defecto.
+
+No seleccionar automáticamente una versión target.
+
+Si existe evidencia de incompatibilidad relevante:
+
+registrar:
+
+- currentVersion;
+- targetVersion como `null` mientras no exista decisión aprobada;
+- evidenceStatus;
+- actionStatus.
+
+Ejemplo:
+
+    {
+      "package": "uuid",
+      "currentVersion": "^8.3.2",
+      "targetVersion": null,
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "REQUIRES_VALIDATION"
+    }
+
+solo cuando exista motivo real para validar compatibilidad.
+
+No generar upgrade obligatorio únicamente por antigüedad.
+
+## Reglas de baseline
+
+Aplicar las reglas definidas en:
+
+`dependency-baseline.json`
+
+Especialmente:
+
+- `automaticUpgrade = false`;
+- `useLatest = false`;
+- `preserveUnlistedDependencies = true`;
+- `requireAssessmentBeforeUpgrade = true`;
+- `requireImpactAnalysisWhenMarked = true`.
+
+No ejecutar consultas de `latest` para sustituir una versión aprobada durante assessment.
+
+## Impact analysis
+
+Cuando una dependencia tenga:
+
+`impactAnalysisRequired = true`
+
+y:
+
+`actionStatus = REQUIRED`
+
+el análisis detallado de consumidores pertenece a:
+
+`analyze-function`
 
 ## TypeScript
 
@@ -210,6 +306,10 @@ Determinar:
 - riesgos relevantes.
 
 No modificar configuración.
+
+Si no existe versión aprobada en baseline:
+
+no inventar una.
 
 ## Testing global
 
@@ -267,6 +367,9 @@ Para cada recurso usar cuando corresponda:
 - `evidenceStatus`;
 - `actionStatus`.
 
+La compatibilidad técnica de un recurso debe considerar la dependency baseline cuando utilice un package incluido en
+ella.
+
 Ejemplo:
 
     {
@@ -283,7 +386,8 @@ Registrar únicamente riesgos relevantes.
 
 Ejemplos:
 
-- recurso compartido con muchos consumidores;
+- salto major de SDK;
+- dependencia compartida con muchos consumidores;
 - SDK construido repetidamente;
 - configuración transversal acoplada;
 - workflow Durable complejo;
@@ -308,6 +412,7 @@ Debe contener como mínimo:
 - schemaVersion;
 - target;
 - technicalDimensions;
+- dependencyAssessment;
 - architectureAssessment;
 - sharedResourcesAssessment;
 - testingAssessment;
@@ -328,6 +433,9 @@ Debe contener como mínimo:
     {
       "schemaVersion": "1",
       "status": "READY_FOR_ANALYSIS",
+      "target": {
+        "dependencyBaseline": "node24-azure-functions-v4"
+      },
       "technicalDimensions": {
         "node": {
           "current": "14",
@@ -347,7 +455,19 @@ Debe contener como mínimo:
           "evidenceStatus": "CONFIRMED",
           "actionStatus": "NOT_REQUIRED"
         }
-      }
+      },
+      "dependencyAssessment": [
+        {
+          "package": "@azure/functions",
+          "currentVersion": "^1.2.3",
+          "targetVersion": "4.16.2",
+          "baselineId": "node24-azure-functions-v4",
+          "scope": "PLATFORM",
+          "impactAnalysisRequired": true,
+          "evidenceStatus": "CONFIRMED",
+          "actionStatus": "REQUIRED"
+        }
+      ]
     }
 
 ## Markdown
@@ -357,6 +477,9 @@ Debe contener como mínimo:
 - qué ya cumple;
 - qué necesita cambio;
 - qué necesita validación;
+- qué dependency upgrades fueron identificados;
+- qué versión target aprobada corresponde;
+- cuáles requieren impact analysis;
 - estado arquitectónico;
 - recursos compartidos relevantes;
 - riesgos;
@@ -383,7 +506,11 @@ Crear:
 El skill termina cuando:
 
 - inventory y catálogo fueron consumidos;
+- dependency baseline fue consumida;
 - dimensiones técnicas fueron evaluadas independientemente;
+- dependencias relevantes fueron comparadas contra baseline;
+- dependencias no listadas fueron preservadas salvo evidencia;
+- impact analysis requerido quedó identificado;
 - evidencia y acción están separadas;
 - arquitectura global fue evaluada;
 - shared resources fueron considerados;
@@ -398,6 +525,8 @@ El skill termina cuando:
 No debe:
 
 - modificar código;
+- instalar dependencias;
+- consultar `latest` para sustituir la baseline;
 - generar planes;
 - analizar comportamiento detallado por Function;
 - decidir estructura concreta;

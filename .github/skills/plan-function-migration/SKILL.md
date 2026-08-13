@@ -78,6 +78,67 @@ con:
 
 `acción futura`.
 
+## Dependency baseline
+
+Consumir la baseline utilizada por:
+
+`.migration/repository/assessment.json`
+
+No volver a consultar `latest`.
+
+No modificar una versión target aprobada durante planning.
+
+El plan global debe conservar una referencia explícita a la baseline utilizada.
+
+Ejemplo:
+
+    {
+      "dependencyBaseline": {
+        "id": "node24-azure-functions-v4",
+        "path": ".github/skills/_shared/dependency-baseline.json"
+      }
+    }
+
+## Dependency actions
+
+Una dependencia puede requerir trabajo en distintos scopes.
+
+### Global
+
+Cuando el package pertenece a toda la Function App.
+
+Ejemplo:
+
+    {
+      "id": "GLOBAL-002",
+      "type": "DEPENDENCY",
+      "package": "@azure/functions",
+      "from": "^1.2.3",
+      "to": "4.16.2"
+    }
+
+### Shared resource
+
+Cuando el cambio pertenece a una infraestructura compartida.
+
+Ejemplo:
+
+    {
+      "id": "SR-ACTION-001",
+      "resourceId": "SR-COSMOS-REPORTS",
+      "package": "@azure/cosmos",
+      "from": "^3.10.5",
+      "to": "4.10.0"
+    }
+
+### Function
+
+Cuando un consumidor necesita adaptación local.
+
+Usar la acción `FN-*` proveniente de analysis.
+
+No duplicar los tres niveles cuando no sean necesarios.
+
 ## Fase 1 — Shared resources
 
 Consolidar candidatos provenientes de:
@@ -220,6 +281,22 @@ producidas por `analyze-function`.
 
 No renombrarlas durante planning.
 
+## Orden de dependencias
+
+Cuando un SDK compartido requiera adaptación, representar cuando corresponda:
+
+    global dependency preparation
+        ↓
+    shared resource adaptation
+        ↓
+    Function consumer adaptation
+        ↓
+    baseline
+        ↓
+    platform migration
+
+Utilizar IDs reales mediante `dependsOn`.
+
 ## Plan global
 
 Crear:
@@ -263,6 +340,7 @@ Debe contener:
 - schemaVersion;
 - status;
 - target;
+- dependencyBaseline;
 - architectureTarget;
 - globalChanges;
 - sharedResourceActions;
@@ -440,6 +518,8 @@ Crear:
 El skill termina cuando:
 
 - inventory, assessment y analyses fueron consumidos;
+- dependency baseline del assessment fue preservada;
+- versiones target no fueron redefinidas;
 - shared resources fueron consolidados;
 - `evidenceStatus` y `actionStatus` se usan correctamente;
 - cada shared change tiene una acción propietaria;
@@ -460,6 +540,9 @@ El skill termina cuando:
 No debe:
 
 - modificar código;
+- instalar dependencias;
+- consultar `latest`;
+- cambiar versiones target aprobadas;
 - agregar tests;
 - refactorizar;
 - actualizar dependencias;

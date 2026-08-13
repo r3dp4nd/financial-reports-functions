@@ -53,6 +53,7 @@ Consumir primero:
 - inventory;
 - assessment;
 - plan global;
+- dependency baseline referenciada por el plan;
 - shared resources;
 - shared resource actions.
 
@@ -72,6 +73,34 @@ Antes de modificar:
 6. registrar resultado.
 
 No modificar por uniformidad o conveniencia.
+
+## Dependency baseline
+
+Las versiones ejecutadas deben provenir de:
+
+- assessment;
+- plan global;
+- dependency baseline referenciada.
+
+No resolver versiones mediante:
+
+- `latest`;
+- rangos arbitrarios;
+- upgrades oportunistas.
+
+Para cada cambio de package registrar:
+
+- actionId;
+- package;
+- before;
+- target;
+- baselineId.
+
+Una versión diferente de la baseline requiere:
+
+`REQUIRES_REVIEW`
+
+salvo que exista un plan actualizado y aprobado.
 
 ## IDs
 
@@ -164,9 +193,12 @@ Registrar:
 - package;
 - before;
 - after;
+- baselineId;
 - reason.
 
 No actualizar por antigüedad.
+
+No modificar dependencias no listadas salvo acción explícita del plan.
 
 ## Package manager
 
@@ -348,6 +380,7 @@ Crear:
 `COMPLETED` requiere:
 
 - todas las acciones globales aplicables ejecutadas;
+- dependency versions ejecutadas coinciden con el plan;
 - shared actions de este scope completadas;
 - configuración válida preservada;
 - no existen blockers globales pendientes para esta etapa.
@@ -363,6 +396,8 @@ No debe:
 - migrar Functions;
 - migrar Durable;
 - ejecutar acciones no planificadas;
+- seleccionar nuevas dependency versions;
+- consultar `latest`;
 - resolver deuda no bloqueante;
 - optimizar;
 - leer CI/CD protegido;
