@@ -1,23 +1,27 @@
 ---
 name: migrate-durable-functions-v4
-description: Migra un workflow Durable Functions como una unidad coherente hacia el target definido, usando planes por Function y plan global, preservando arquitectura, determinismo, contratos y recursos compartidos.
+description: Migra un workflow Durable Functions como una unidad coherente hacia el target definido, preservando determinismo, comportamiento, arquitectura y recursos compartidos.
 ---
 
 # Migrate Durable Functions v4
 
 ## Objetivo
 
-Migrar un workflow Durable como unidad coherente.
+Migrar un workflow Durable como unidad funcional coherente.
 
 Preservar:
 
+- grafo;
+- roles;
 - comportamiento;
-- relaciones;
 - determinismo;
-- nombres;
 - contracts;
+- names;
+- retries;
+- timers;
+- events;
 - arquitectura;
-- shared resources.
+- recursos compartidos.
 
 ## Políticas
 
@@ -27,72 +31,43 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 ## Precondiciones
 
-Deben existir:
+Deben existir cuando apliquen:
 
 - inventory;
 - assessment;
-- plan global;
-- analyses participantes;
-- planes por Function;
-- preparations requeridas.
-
-## Entradas
-
-Consumir primero:
-
-- workflow;
-- analyses;
-- Function plans;
 - global plan;
-- shared resources;
-- preparations;
-- tests.
-
-No reconstruir toda la App.
+- Function analyses;
+- Function plans;
+- Function preparations;
+- shared resources.
 
 ## Aplicabilidad
 
 Durable ausente:
 
-`NOT_APPLICABLE`
+`status = NOT_APPLICABLE`
 
-Workflow ya compatible:
+Workflow ya en target y sin cambio necesario:
 
-`NOT_APPLICABLE`
+`status = NOT_APPLICABLE`
 
-Grafo no confirmable:
+Grafo insuficientemente conocido:
 
-`REQUIRES_REVIEW`
+`status = REQUIRES_REVIEW`
 
-## Unidad
+Dependencia obligatoria pendiente:
 
-La unidad de migración es el workflow.
+`status = BLOCKED`
 
-Puede incluir:
+## Unidad de migración
 
-- client;
-- starter;
-- orchestrator;
-- activities;
-- sub-orchestrators;
-- entities.
+La unidad es el workflow.
 
-Los planes por Function sirven para detalle y trazabilidad, no para fragmentar incorrectamente la migración.
-
-## Grafo y roles
-
-Confirmar:
-
-- participants;
-- roles;
-- calls;
-- events;
-- dependencies.
-
-Roles:
+Puede contener:
 
 - `CLIENT`
 - `STARTER`
@@ -100,34 +75,44 @@ Roles:
 - `ACTIVITY`
 - `SUB_ORCHESTRATOR`
 - `ENTITY`
-- `UNKNOWN`
 
-No inferir relaciones solo por naming.
+Los planes por Function aportan trazabilidad, pero no fragmentan la migración del workflow.
+
+## Evidence status
+
+Cada relación importante debe usar `evidenceStatus` cuando exista incertidumbre.
+
+Ejemplo:
+
+    {
+      "from": "GenerateReportOrchestrator",
+      "to": "CreateExcelActivity",
+      "evidenceStatus": "CONFIRMED"
+    }
+
+No usar `status` para representar certeza del grafo.
 
 ## Arquitectura
 
-Preservar la estructura preparada.
+Preservar la arquitectura preparada.
 
-No volver a mezclar runtime Durable con lógica funcional extraída.
+No volver a introducir lógica funcional dentro de registration adapters.
 
 ## Shared resources
 
-Respetar resource ownership y shared actions.
+Consumir resource IDs existentes.
 
-No crear implementaciones por Activity cuando el recurso es compartido.
+No crear implementaciones alternativas por Activity.
 
-Si una dependencia obligatoria está pendiente:
-
-`BLOCKED`
+Las acciones propietarias `SR-ACTION-*` deben estar completadas antes cuando sean obligatorias.
 
 ## Starter / Client
 
-Preservar:
+Preservar cuando aplique:
 
-- orchestrator;
+- target orchestrator;
 - input;
-- instance identity cuando aplique;
-- status behavior;
+- instance behavior;
 - response;
 - errors.
 
@@ -136,29 +121,36 @@ Preservar:
 Preservar:
 
 - order;
-- decisions;
 - branching;
 - fan-out/fan-in;
+- activities;
 - retries;
 - timers;
 - sub-orchestrations;
 - external events;
 - errors;
-- compensations;
 - result.
 
-No rediseñar workflow.
+No rediseñar el workflow.
 
 ## Determinismo
 
 No introducir dentro del orchestrator:
 
 - I/O;
-- network;
-- database;
+- network calls;
+- database access;
+- side effects;
 - random no determinista;
-- tiempo no determinista;
-- side effects.
+- tiempo no determinista.
+
+El resultado se registra como check:
+
+    {
+      "determinism": {
+        "status": "PASS"
+      }
+    }
 
 ## Activities
 
@@ -168,94 +160,87 @@ Preservar:
 - input;
 - output;
 - errors;
-- external effects.
+- effects externos.
 
-Mantener separación arquitectónica existente.
-
-## Retries
-
-Preservar semántica confirmada.
-
-No optimizar.
-
-## Timers
-
-Preservar timers Durable.
-
-## External Events
-
-Preservar:
-
-- event name;
-- wait semantics;
-- timeout;
-- behavior.
+No modificar contratos funcionales sin revisión.
 
 ## Active instances
 
-No afirmar seguridad productiva o replay compatibility sin evidencia.
+Si existen riesgos sobre instancias productivas activas y no hay evidencia suficiente para decidir estrategia:
 
-Cuando afecte cierre:
+`status = REQUIRES_REVIEW`
 
-`REQUIRES_REVIEW`
+No afirmar seguridad de replay únicamente por pruebas locales.
 
 ## Tests
 
-Ejecutar baseline del workflow.
+Ejecutar tests requeridos del workflow.
 
-Priorizar:
-
-- orchestrator decisions;
-- sequence;
-- activity contracts;
-- retries;
-- errors;
-- events;
-- sub-orchestrations.
+Registrar checks con los estados definidos por `status-policy.md`.
 
 ## Validación
 
-Ejecutar:
+Puede incluir:
 
 - tests;
 - typecheck selectivo;
-- registration checks;
+- registration consistency;
 - graph consistency;
+- determinism review.
 
-cuando corresponda.
+El build global pertenece a verification.
 
-Host global pertenece a verification.
-
-## Catálogo
-
-No modificar documentación BEFORE.
-
-## Salidas estructuradas
+## Salida estructurada
 
 Crear:
 
 `.migration/functions/<WorkflowName>/durable-migration.json`
 
-Debe registrar:
+Debe contener:
 
-- status;
-- workflow;
-- participants;
-- graph;
-- roles;
-- model change;
-- architecture preserved;
-- shared resources;
-- registrations;
-- retries;
-- timers;
-- events;
-- sub-orchestrators;
-- entities;
-- tests;
-- validations;
-- active instance risks;
-- unknowns.
+- `schemaVersion`;
+- `workflow`;
+- `status`;
+- `participants`;
+- `graph`;
+- `roles`;
+- `actionsExecuted`;
+- `architecturePreserved`;
+- `sharedResources`;
+- `registrations`;
+- `determinism`;
+- `retries`;
+- `timers`;
+- `events`;
+- `subOrchestrators`;
+- `entities`;
+- `tests`;
+- `validations`;
+- `activeInstanceRisks`;
+- `risks`;
+- `unknowns`.
+
+## Estado principal
+
+Usar únicamente:
+
+- `MIGRATED`
+- `NOT_APPLICABLE`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+## Checks internos
+
+Ejemplo:
+
+    {
+      "determinism": {
+        "status": "PASS"
+      },
+      "architecturePreserved": {
+        "status": "PASS"
+      }
+    }
 
 ## Salida humana
 
@@ -275,15 +260,6 @@ Crear:
 
 `.migration/lessons/migrate-durable-functions-v4/<WorkflowName>.md`
 
-## Estados
-
-Usar:
-
-- `MIGRATED`
-- `NOT_APPLICABLE`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
 ## Criterio de cierre
 
 `MIGRATED` requiere:
@@ -291,22 +267,23 @@ Usar:
 - workflow confirmado;
 - participantes coordinados;
 - registrations migradas;
+- determinismo preservado;
 - arquitectura preservada;
 - shared resources consistentes;
-- determinismo preservado;
-- tests verdes.
+- tests requeridos verdes;
+- ausencia de blocker.
 
 ## Fuera de alcance
 
 No debe:
 
 - rediseñar workflow;
-- modificar reglas de negocio;
+- cambiar negocio;
 - optimizar paralelismo;
-- modificar retries por conveniencia;
-- redefinir shared resources;
-- ejecutar build global;
-- afirmar seguridad de active instances sin evidencia;
+- cambiar retries por preferencia;
+- redefinir resources;
+- ejecutar build global final;
+- afirmar compatibilidad de instancias activas sin evidencia;
 - desplegar.
 
 Siguiente skill sugerido:

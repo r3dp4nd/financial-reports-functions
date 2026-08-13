@@ -2,131 +2,88 @@
 
 ## Objetivo
 
-Validar que el skill migre únicamente la integración Azure, consumiendo el plan específico y preservando arquitectura y
-shared resources.
+Validar que la migración cambie únicamente integración Azure necesaria.
 
-## Caso 1 — HTTP legacy preparado
+## Caso 1 — Legacy preparada
 
-### Entrada
+Migra adapter y produce:
 
-Function con:
+`status = MIGRATED`
 
-- architecture preparation completada;
-- tests verdes;
-- adapter legacy;
-- plan específico.
+## Caso 2 — Ya v4
 
-### Esperado
+Produce:
 
-Debe:
+`status = NOT_APPLICABLE`
 
-- migrar a `app.http`;
-- preservar route, methods y auth level;
-- conservar capability intacta;
-- ejecutar mismos tests.
+## Caso 3 — Modelo desconocido
 
-## Caso 2 — Adapter aislado
+Produce:
 
-### Entrada
+`status = REQUIRES_REVIEW`
 
-La lógica funcional ya vive fuera de `src/functions`.
+## Caso 4 — Shared action pendiente
 
-### Esperado
+Produce:
 
-La migración debe concentrarse principalmente en el adapter.
+`status = BLOCKED`
 
-No volver a reorganizar capability.
+## Caso 5 — Function action
 
-## Caso 3 — Shared repository
+Preserva IDs `FN-*`.
 
-### Entrada
+No crea `REQ-*`.
 
-Function consume `ReportRepository` preparado.
+## Caso 6 — Arquitectura
 
-### Esperado
+La verificación interna usa:
 
-No debe crear un `CosmosClient` directo en el nuevo adapter.
+`architecturePreserved.status = PASS`
 
-Debe mantener el límite arquitectónico.
+No:
 
-## Caso 4 — Ya v4
+`architecturePreserved.status = CONFIRMED`
 
-### Esperado
+## Caso 7 — Tests
 
-Resultado:
+Baseline posterior:
 
-`NOT_APPLICABLE`
+`status = PASS`
 
-Sin cambios.
+Una regresión no puede ocultarse modificando tests.
 
-## Caso 5 — Durable
+## Caso 8 — function.json
 
-### Entrada
+Solo trata el artefacto perteneciente a la Function.
 
-Function forma parte de workflow Durable.
+## Caso 9 — Shared resources
 
-### Esperado
+No duplica repositories o clients.
 
-Debe delegar al skill Durable cuando corresponda.
+## Caso 10 — Cambio funcional inesperado
 
-## Caso 6 — Shared action pendiente
-
-### Entrada
-
-Plan exige recurso compartido aún no preparado.
-
-### Esperado
-
-Resultado:
-
-`BLOCKED`
-
-No duplicar infraestructura.
-
-## Caso 7 — function.json
-
-### Entrada
-
-Function legacy migrada correctamente.
-
-### Esperado
-
-Debe retirar únicamente el artefacto correspondiente cuando deje de ser requerido.
-
-No afectar otras Functions legacy.
-
-## Caso 8 — Tests fallan
-
-### Esperado
-
-Debe tratarlo como posible regresión.
-
-No cambiar tests para aceptar nuevo comportamiento.
-
-## Caso 9 — Plan específico
-
-### Esperado
-
-Debe ejecutar acciones de plataforma definidas.
-
-No volver a ejecutar acciones estructurales ya completadas.
-
-## Caso 10 — Arquitectura degradada
-
-### Entrada
-
-Una migración propuesta volvería a meter lógica funcional en el adapter.
-
-### Esperado
-
-No debe hacerlo.
-
-Debe preservar arquitectura o marcar revisión.
-
-## Caso 11 — Binding no confirmado
-
-### Esperado
+Produce:
 
 `REQUIRES_REVIEW`
 
-en lugar de inventar equivalencia.
+## Caso 11 — Durable
+
+No migra una Function perteneciente a workflow que requiere coordinación Durable independiente.
+
+## Caso 12 — No build global
+
+El build final permanece en verification.
+
+## Criterio general
+
+Debe diferenciar:
+
+`MIGRATED`
+
+de:
+
+`PASS`
+
+y de:
+
+`CONFIRMED`.

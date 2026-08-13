@@ -2,143 +2,86 @@
 
 ## Objetivo
 
-Validar que el workflow Durable sea migrado como una unidad, preservando arquitectura, determinismo, planes por Function
-y shared resources.
+Validar migración coordinada del workflow y semántica de estados.
 
-## Caso 1 — Workflow básico
+## Caso 1 — Workflow migrable
 
-### Entrada
+Resultado:
 
-- starter;
-- orchestrator;
-- activities;
-- planes individuales;
-- plan global.
+`status = MIGRATED`
 
-### Esperado
+## Caso 2 — Durable ausente
 
-Debe:
+Resultado:
 
-- confirmar grafo;
-- migrar coordinadamente;
-- preservar nombres;
-- mantener tests verdes.
+`status = NOT_APPLICABLE`
 
-## Caso 2 — Activity aislada
+## Caso 3 — Grafo insuficiente
 
-### Entrada
+Resultado:
 
-Se solicita migrar solo una Activity perteneciente al workflow.
+`status = REQUIRES_REVIEW`
 
-### Esperado
+## Caso 4 — Shared dependency pendiente
 
-Debe recuperar contexto del workflow y evitar una migración aislada incorrecta.
+Resultado:
 
-## Caso 3 — Arquitectura preparada
+`status = BLOCKED`
 
-### Entrada
+## Caso 5 — Relaciones confirmadas
 
-Activities consumen capabilities separadas.
+Deben usar:
 
-### Esperado
+`evidenceStatus = CONFIRMED`
 
-La migración Durable no debe volver a mezclar lógica funcional con registrations/runtime.
-
-## Caso 4 — Shared Cosmos
-
-### Entrada
-
-Varias Activities consumen mismo repository.
-
-### Esperado
-
-Debe mantener una única implementación compartida según ownership.
-
-No crear repository por Activity.
-
-## Caso 5 — Shared resource pendiente
-
-### Esperado
-
-`BLOCKED`
-
-si es requerida para continuar.
+No `status = CONFIRMED`.
 
 ## Caso 6 — Determinismo
 
-### Entrada
+Check exitoso:
 
-Orchestrator tiene lógica sensible a replay.
-
-### Esperado
-
-No introducir:
-
-- I/O;
-- random;
-- tiempo no determinista;
-- database calls;
-- side effects.
+`determinism.status = PASS`
 
 ## Caso 7 — Retry
 
-### Esperado
+Preserva semántica existente.
 
-Preservar política existente.
+## Caso 8 — Timer
 
-No optimizar.
+Preserva timer Durable.
 
-## Caso 8 — Durable timer
+## Caso 9 — External Event
 
-### Esperado
-
-No sustituir por `setTimeout`.
-
-## Caso 9 — External event
-
-### Esperado
-
-Preservar:
-
-- nombre;
-- espera;
-- timeout;
-- comportamiento posterior.
+Preserva event name y wait semantics.
 
 ## Caso 10 — Sub-orchestrator
 
-### Esperado
+Preserva grafo y contrato.
 
-Preservar relación y contrato.
+## Caso 11 — Activity shared resource
 
-## Caso 11 — Workflow ya target
+No duplica infrastructure.
 
-### Esperado
+## Caso 12 — Active instances
 
-`NOT_APPLICABLE`
-
-si no necesita cambios.
-
-## Caso 12 — Grafo incompleto
-
-### Esperado
+Riesgo no resoluble automáticamente:
 
 `REQUIRES_REVIEW`
 
-No inventar relaciones.
+## Caso 13 — Arquitectura
 
-## Caso 13 — Instancias activas desconocidas
+Check:
 
-### Esperado
+`architecturePreserved.status = PASS`
 
-Mantener riesgo visible.
+## Caso 14 — Tests
 
-No afirmar seguridad de replay productivo.
+Tests requeridos deben quedar en `PASS`.
 
-## Caso 14 — Planes individuales
+## Caso 15 — No rediseño
 
-### Esperado
+No optimiza paralelismo ni retries.
 
-Deben usarse para comportamiento, dependencias y trazabilidad.
+## Criterio general
 
-No convertir la ejecución en varias migraciones Durable independientes.
+Debe migrar el workflow como unidad sin mezclar certeza, ejecución y checks.

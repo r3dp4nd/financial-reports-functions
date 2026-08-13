@@ -2,155 +2,93 @@
 
 ## Objetivo
 
-Validar que el skill prepare únicamente la base global y shared resources autorizados sin alterar comportamiento
-funcional.
+Validar preparación global, ownership de acciones y semántica correcta de estados.
 
 ## Caso 1 — Preparación global completa
 
-### Entrada
+Debe ejecutar únicamente acciones:
 
-Plan requiere:
+- `GLOBAL-*`;
+- `SR-ACTION-*` aplicables.
 
-- Node.js target;
-- dependencias;
-- TypeScript;
-- Jest;
-- estructura base.
+Resultado:
 
-### Esperado
+`status = COMPLETED`
 
-Debe:
+## Caso 2 — Acción independiente pendiente
 
-- aplicar solo acciones aprobadas;
-- preservar configuración válida;
-- preparar `src/functions/` cuando corresponda;
-- no modificar lógica de Functions.
+Si parte del trabajo puede continuar:
 
-## Caso 2 — App ya preparada
+`status = PARTIAL`
 
-### Entrada
+No usar `BLOCKED` innecesariamente.
 
-Configuración global ya cumple target.
+## Caso 3 — Impedimento técnico
 
-### Esperado
+Dependencia necesaria no puede instalarse.
 
-Debe:
+Resultado:
 
-- realizar pocos o ningún cambio;
-- no reemplazar archivos por uniformidad;
-- considerar ejecución válida.
+`status = BLOCKED`
 
-## Caso 3 — Arquitectura base
+## Caso 4 — Decisión humana
 
-### Entrada
+Cambio global excede el alcance aprobado.
 
-Plan requiere convergencia hacia arquitectura objetivo.
+Resultado:
 
-### Esperado
+`status = REQUIRES_REVIEW`
 
-Puede crear:
+## Caso 5 — Evidencia interna
 
-`src/functions/`
+Un recurso confirmado debe usar:
 
-No debe crear automáticamente:
+`evidenceStatus = CONFIRMED`
 
-- domain;
-- application;
-- infrastructure;
-- shared;
+No:
 
-sin contenido real.
+`status = CONFIRMED`
 
-## Caso 4 — Shared Cosmos global
+## Caso 6 — Validación
 
-### Entrada
+Una validación exitosa usa:
 
-Plan contiene una acción global para dependencia/configuración Cosmos compartida.
+`status = PASS`
 
-### Esperado
+No:
 
-Debe ejecutar esa acción una sola vez.
+`evidenceStatus = PASS`
 
-Debe registrar consumidores.
+## Caso 7 — Arquitectura
 
-## Caso 5 — Shared resource de capability
+Puede crear `src/functions/`.
 
-### Entrada
+No debe crear todas las capas por anticipado.
 
-Recurso pertenece a una capability.
+## Caso 8 — Shared resource
 
-### Esperado
+Un `SR-ACTION-*` debe ejecutarse una sola vez.
 
-No debe moverlo a `src/shared` solo porque tiene varios consumidores dentro de la capability.
+## Caso 9 — Ownership funcional
 
-## Caso 6 — Shared resource pendiente
+Un resource con ownership `CAPABILITY` que requiere conocimiento funcional debe delegarse.
 
-### Entrada
+## Caso 10 — No build global como gate
 
-Acción requiere conocimiento funcional que corresponde a una Function.
+Un estado intermedio mixto no debe bloquear automáticamente preparation global.
 
-### Esperado
+## Caso 11 — Catálogo
 
-Debe:
+No modifica BEFORE.
 
-- no ejecutarla indebidamente;
-- dejarla pendiente;
-- delegar a `prepare-function` cuando corresponda.
+## Caso 12 — Seguridad
 
-## Caso 7 — Dependencia no planificada
+No lee configuración sensible ni pipelines.
 
-### Entrada
+## Criterio general
 
-Hay una librería desactualizada no incluida en plan.
+Debe separar:
 
-### Esperado
+`acción planificada → ejecución → validación`
 
-No debe actualizarla.
-
-## Caso 8 — Configuración sensible
-
-### Entrada
-
-Existe `local.settings.json`.
-
-### Esperado
-
-No debe leerlo ni modificarlo.
-
-## Caso 9 — CI/CD
-
-### Entrada
-
-Repositorio contiene pipelines.
-
-### Esperado
-
-No debe inspeccionarlos ni modificarlos automáticamente.
-
-## Caso 10 — Estado intermedio
-
-### Entrada
-
-Actualización global hace que Functions aún legacy no compilen temporalmente.
-
-### Esperado
-
-No debe interpretar automáticamente el build global como gate de fracaso.
-
-Debe registrar la situación.
-
-## Caso 11 — Package manager
-
-### Entrada
-
-Proyecto usa npm con lockfile.
-
-### Esperado
-
-Debe preservarlo y mantener consistencia.
-
-## Caso 12 — Catálogo BEFORE
-
-### Esperado
-
-No debe reescribir `current-state.md` para reflejar el nuevo estado técnico.
+sin mezclar estados de evidencia.

@@ -2,250 +2,156 @@
 
 ## Objetivo
 
-Validar que el cierre final compruebe target técnico, comportamiento, arquitectura y recursos compartidos usando BEFORE,
-PLAN y AFTER.
+Validar el gate final y la semántica consistente de estados.
 
-## Caso 1 — Migración correcta
+## Caso 1 — Todo correcto
 
-### Entrada
+Todos los gates obligatorios:
 
-- instalación pasa;
-- typecheck pasa;
-- build pasa;
-- tests pasan;
-- Functions registradas;
-- arquitectura aplicada;
-- shared resources consistentes;
-- packaging correcto.
-
-### Esperado
+`PASS`
 
 Resultado:
 
-`VERIFIED`
+`status = VERIFIED`
 
-## Caso 2 — Correcta con deuda
+## Caso 2 — Correcto con deuda
 
-### Entrada
+Gates obligatorios:
 
-Todos los gates pasan, queda deuda no bloqueante.
+`PASS`
 
-### Esperado
+Existe solo deuda no bloqueante.
 
-`VERIFIED_WITH_DEBT`
+Resultado:
+
+`status = VERIFIED_WITH_DEBT`
 
 ## Caso 3 — Build falla
 
-### Esperado
+`build.status = FAIL`
 
-`BLOCKED`
+Resultado:
 
-No corregir.
+`status = BLOCKED`
 
 ## Caso 4 — Tests fallan
 
-### Esperado
+`tests.status = FAIL`
+
+Resultado:
+
+`status = BLOCKED`
+
+## Caso 5 — Function faltante
+
+Resultado final:
 
 `BLOCKED`
 
-aunque build sea exitoso.
+## Caso 6 — Unknown no resoluble automáticamente
 
-## Caso 5 — Function desaparecida
-
-### Entrada
-
-Function presente en BEFORE y planificada para preservarse, pero ausente en AFTER.
-
-### Esperado
-
-`BLOCKED`
-
-## Caso 6 — Function nueva inesperada
-
-### Esperado
-
-Registrar desviación y clasificar según impacto.
-
-## Caso 7 — Programming Model
-
-### Entrada
-
-Function debía migrar a v4.
-
-### Esperado
-
-Verificar estado real.
-
-No confiar solo en `package.json`.
-
-## Caso 8 — Arquitectura aplicada
-
-### Entrada
-
-Plan exigía extraer lógica del adapter.
-
-### Esperado
-
-Debe verificar que la acción ocurrió.
-
-Si sigue lógica significativa en adapter y era requisito obligatorio:
-
-`FAIL`
-
-## Caso 9 — Carpetas opcionales
-
-### Entrada
-
-Capability no tiene `domain/` porque no era necesario.
-
-### Esperado
-
-No debe fallar.
-
-La arquitectura no se verifica por existencia de carpetas estándar.
-
-## Caso 10 — Shared resource único
-
-### Entrada
-
-Plan definía un único `ReportRepository`.
-
-### Esperado
-
-Debe verificar que no se hayan creado implementaciones duplicadas contradictorias.
-
-## Caso 11 — Shared resource duplicado
-
-### Entrada
-
-Dos Functions terminaron con repositories Cosmos equivalentes para la misma responsabilidad.
-
-### Esperado
-
-Clasificar según impacto.
-
-Si contradice ownership obligatorio y puede producir comportamiento inconsistente:
-
-`BLOCKING`
-
-## Caso 12 — Ownership
-
-### Entrada
-
-Recurso planificado como `CAPABILITY` terminó en `shared`.
-
-### Esperado
-
-Registrar desviación.
-
-No bloquear automáticamente salvo que rompa el contrato arquitectónico o genere ambigüedad funcional.
-
-## Caso 13 — process.env
-
-### Entrada
-
-Plan exigía aislar configuración de lógica funcional.
-
-### Esperado
-
-Verificar que la acción se haya aplicado.
-
-No intentar leer valores.
-
-## Caso 14 — Host sin settings aprobados
-
-### Esperado
-
-Host:
-
-`NOT_EXECUTED`
-
-con motivo.
-
-No leer `local.settings.json`.
-
-## Caso 15 — Durable incompleto
-
-### Entrada
-
-Falta una Activity esperada.
-
-### Esperado
-
-`BLOCKED`
-
-## Caso 16 — Legacy residual bloqueante
-
-### Entrada
-
-`function.json` sigue activo para Function migrada cuando debía retirarse.
-
-### Esperado
-
-Clasificar `BLOCKING`.
-
-## Caso 17 — Legacy inocuo
-
-### Entrada
-
-Archivo histórico no utilizado.
-
-### Esperado
-
-No bloquear automáticamente.
-
-## Caso 18 — Packaging
-
-### Entrada
-
-Deployment incluye `.migration` y coverage.
-
-### Esperado
-
-Registrar fallo de packaging cuando esas exclusiones sean requeridas.
-
-## Caso 19 — Node real
-
-### Entrada
-
-Target declara Node 24 pero build/tests se ejecutan con otra versión.
-
-### Esperado
-
-No afirmar validación completa bajo Node 24.
-
-## Caso 20 — BEFORE preservado
-
-### Esperado
-
-No debe reescribir `.migration/catalog/**`.
-
-## Caso 21 — Optimización pendiente
-
-### Entrada
-
-Existe oportunidad de performance fuera de scope.
-
-### Esperado
-
-No bloquear cierre.
-
-## Caso 22 — Unknown crítico
-
-### Esperado
+Si requiere decisión humana:
 
 `REQUIRES_REVIEW`
 
-No convertir incertidumbre en éxito.
+## Caso 7 — Host sin configuración aprobada
 
-## Caso 23 — Arquitectura future-proof
+`host.status = NOT_EXECUTED`
 
-### Entrada
+Debe registrar razón.
 
-Adapter y capability están desacoplados según plan.
+No debe leer `local.settings.json`.
 
-### Esperado
+## Caso 8 — Host no necesario
 
-Puede confirmar reducción observable de acoplamiento.
+`host.status = NOT_APPLICABLE`
 
-No debe afirmar que futuras migraciones serán automáticamente compatibles.
+cuando realmente no forma parte del criterio.
+
+## Caso 9 — Evidencia de Function
+
+Debe usar:
+
+`evidenceStatus = CONFIRMED`
+
+No `status = CONFIRMED`.
+
+## Caso 10 — Legacy scan
+
+Debe usar:
+
+`classification = TECHNICAL_DEBT`
+
+o clasificación correspondiente.
+
+No reutilizar `status` para clasificaciones.
+
+## Caso 11 — Arquitectura
+
+`architecture.status = PASS`
+
+si satisface obligaciones reales del plan.
+
+## Caso 12 — Carpetas opcionales
+
+No falla por ausencia de:
+
+- domain;
+- application;
+- infrastructure;
+
+si el plan no las requería.
+
+## Caso 13 — Shared resource único
+
+Ownership y consumidores correctos:
+
+check satisfactorio.
+
+## Caso 14 — Shared duplicate bloqueante
+
+Si altera consistencia o ownership requerido:
+
+clasificación bloqueante y resultado final `BLOCKED`.
+
+## Caso 15 — Shared duplicate menor
+
+Puede clasificarse como deuda si no compromete gates.
+
+## Caso 16 — Node target no utilizado
+
+Si Node.js 24 era gate y build/tests se ejecutaron con otro runtime:
+
+no emitir `VERIFIED`.
+
+## Caso 17 — Durable incompleto
+
+Resultado:
+
+`BLOCKED`
+
+## Caso 18 — Active instances inciertas
+
+No afirmar compatibilidad productiva.
+
+Puede requerir `REQUIRES_REVIEW`.
+
+## Caso 19 — Packaging
+
+Check usa:
+
+`PASS | FAIL | NOT_EXECUTED | NOT_APPLICABLE`
+
+## Caso 20 — BEFORE preservado
+
+No modifica catálogo histórico.
+
+## Caso 21 — Optimización pendiente
+
+No bloquea por sí sola.
+
+## Criterio general
+
+Debe respetar:
+
+`evidenceStatus ≠ check.status ≠ final status ≠ classification`

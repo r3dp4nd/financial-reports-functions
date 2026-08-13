@@ -1,17 +1,23 @@
 ---
 name: prepare-function-app
-description: Prepara la base técnica y arquitectónica global de una Azure Function App para su migración aplicando únicamente cambios planificados, coordinando recursos compartidos y preservando configuraciones válidas existentes.
+description: Prepara la base técnica y arquitectónica global de una Azure Function App aplicando únicamente cambios planificados y coordinando recursos compartidos sin modificar comportamiento funcional.
 ---
 
 # Prepare Function App
 
 ## Objetivo
 
-Preparar la infraestructura técnica y arquitectónica global necesaria para ejecutar la migración.
+Ejecutar las acciones globales necesarias antes de preparar Functions individuales.
 
-Este skill puede modificar configuración y estructura global.
+Puede modificar:
 
-No modifica comportamiento funcional de una Function.
+- configuración global;
+- dependencias;
+- tooling;
+- estructura base;
+- recursos compartidos cuyo ownership permita tratamiento global.
+
+No modifica comportamiento funcional específico de una Function.
 
 ## Políticas
 
@@ -21,6 +27,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 ## Precondiciones
 
@@ -30,9 +37,13 @@ Deben existir:
 - `.migration/repository/assessment.json`
 - `.migration/plans/migration-plan.json`
 
-El plan global debe estar en:
+Cuando existan shared resources:
 
-- `READY`
+`.migration/resources/shared-resources.json`
+
+El plan global debe estar:
+
+- `READY`;
 - o `PARTIAL` cuando existan acciones independientes seguras.
 
 ## Entradas
@@ -42,29 +53,45 @@ Consumir primero:
 - inventory;
 - assessment;
 - plan global;
-- `.migration/resources/shared-resources.json` cuando exista;
-- shared resource actions del plan.
+- shared resources;
+- shared resource actions.
 
 No volver a analizar el repositorio completo.
 
 ## Principio
 
-Aplicar únicamente acciones globales planificadas.
+Aplicar únicamente acciones planificadas.
 
 Antes de modificar:
 
-1. confirmar la acción propietaria;
-2. verificar el estado actual;
+1. confirmar action ID;
+2. comprobar estado actual;
 3. preservar lo válido;
-4. aplicar el menor delta necesario;
+4. aplicar el menor cambio necesario;
 5. validar;
-6. registrar el resultado.
+6. registrar resultado.
 
-No modificar por uniformidad.
+No modificar por uniformidad o conveniencia.
+
+## IDs
+
+Ejecutar acciones existentes del plan.
+
+Acciones globales:
+
+`GLOBAL-*`
+
+Acciones sobre recursos compartidos:
+
+`SR-ACTION-*`
+
+No generar nuevos IDs salvo que una inconsistencia del plan obligue a detenerse y registrarla.
+
+No modificar silenciosamente el plan.
 
 ## Arquitectura
 
-Preparar la base definida en:
+Aplicar:
 
 `../_shared/architecture-policy.md`
 
@@ -72,7 +99,7 @@ Puede preparar:
 
 `src/functions/`
 
-cuando el plan lo requiera.
+cuando esté planificado.
 
 No crear por anticipado:
 
@@ -80,14 +107,14 @@ No crear por anticipado:
 - `domain/`;
 - `infrastructure/`;
 - `shared/`;
-- `ports/`;
-- `adapters/`.
+- interfaces;
+- factories.
 
 Crear únicamente estructura con responsabilidad real.
 
 ## Cambios globales
 
-Aplicar cuando estén planificados:
+Aplicar cuando estén explícitamente planificados:
 
 - Node.js;
 - Azure Functions dependencies;
@@ -96,117 +123,119 @@ Aplicar cuando estén planificados:
 - TypeScript;
 - Jest;
 - coverage;
+- scripts;
 - build;
-- package scripts;
-- estructura base;
 - `host.json`;
 - `.funcignore`;
+- estructura base;
 - configuración transversal.
 
 ## Node.js
 
-Actualizar únicamente cuando:
+Actualizar únicamente cuando exista una acción global respaldada por:
 
-`assessment → node.action = REQUIRED`
+`assessment.technicalDimensions.node.actionStatus = REQUIRED`
 
-No interpretar una declaración de Node.js como evidencia de compatibilidad funcional.
+No tratar el cambio de versión como prueba de compatibilidad del código.
 
-## Runtime
+## Azure Functions Runtime
 
-Modificar únicamente configuración bajo control del repositorio.
+Modificar únicamente configuración observable y controlada por el repositorio.
 
-Cuando dependa de infraestructura externa no observable:
+Cuando el Runtime efectivo dependa de infraestructura externa no observable:
 
-dejar pendiente.
+no inferirlo.
 
-No leer CI/CD protegido para inferirla.
+Mantener la validación pendiente.
 
 ## Programming Model
 
-Puede preparar:
+Puede preparar dependencias o estructura global necesarias.
 
-- dependencia;
-- entrypoint global;
-- estructura.
-
-No migrar Functions individuales.
+No migrar registros individuales.
 
 ## Dependencias
 
-Actualizar únicamente paquetes autorizados por el plan.
+Actualizar únicamente paquetes incluidos en el plan.
 
 Registrar:
 
-- paquete;
-- versión anterior;
-- versión target;
-- razón;
-- acción relacionada.
+- actionId;
+- package;
+- before;
+- after;
+- reason.
 
 No actualizar por antigüedad.
 
 ## Package manager
 
-Preservar el package manager existente cuando sea válido.
+Preservar el mecanismo existente cuando sea compatible con el target.
 
 Mantener lockfile consistente.
 
-## Scripts
-
-Mantener scripts:
-
-- breves;
-- legibles;
-- multiplataforma.
-
-Evitar cuando sea razonable comandos shell específicos de plataforma.
-
 ## TypeScript
 
-Preservar configuración válida.
+Modificar únicamente lo necesario para:
 
-Separar producción y tests únicamente cuando aporte una necesidad real.
+- target;
+- build;
+- tests;
+- arquitectura planificada.
+
+No introducir configuraciones complejas sin necesidad.
 
 ## Jest
 
-Preparar infraestructura global de tests cuando el plan lo requiera.
+Preparar tooling global cuando esté planificado.
 
-No crear tests de Functions.
+No crear tests funcionales aquí.
 
 ## Recursos compartidos
 
-Consumir acciones globales de shared resources.
+Consumir:
 
-Cada recurso debe modificarse una sola vez mediante su acción propietaria.
+`.migration/resources/shared-resources.json`
+
+y:
+
+`sharedResourceActions`
+
+del plan global.
+
+Cada recurso que requiera cambio debe modificarse mediante una única acción propietaria.
+
+No duplicar una transformación en cada consumidor.
+
+## Ownership
 
 Respetar:
-
-- resourceId;
-- ownership;
-- consumers;
-- scope;
-- dependencies.
-
-Scopes:
 
 - `REPOSITORY`
 - `FUNCTION_APP`
 - `CAPABILITY`
 - `WORKFLOW`
 
-No promover un recurso a `src/shared/` sin evidencia de ownership transversal.
+Una acción global solo debe ejecutarse aquí cuando su ownership y alcance lo permitan.
 
-## Shared resource funcional
+Si requiere conocimiento funcional específico:
 
-Si la transformación requiere comprender comportamiento específico de una Function o capability:
+delegar a `prepare-function`.
 
-no resolverla aquí.
+## Shared resource action
 
-Delegar a:
+Ejemplo:
 
-`prepare-function`
+    {
+      "id": "SR-ACTION-001",
+      "resourceId": "SR-COSMOS-REPORTS"
+    }
 
-cuando corresponda.
+Registrar el resultado de ejecución sin modificar:
+
+`shared-resources.json`
+
+para aparentar que el recurso siempre estuvo así.
 
 ## Configuración
 
@@ -214,61 +243,87 @@ Trabajar únicamente con nombres de claves.
 
 Nunca leer valores sensibles.
 
-## host.json
+## Catálogo BEFORE
 
-Preservar configuración válida.
-
-Modificar únicamente propiedades justificadas.
-
-## .funcignore
-
-Actualizar cuando corresponda para excluir artefactos no runtime.
-
-Ejemplos:
-
-- `.migration`;
-- `.skill-improvement`;
-- tests;
-- coverage;
-- test-results;
-- documentación de desarrollo.
-
-No excluir contenido requerido para runtime.
-
-## Catálogo
-
-No modificar las secciones BEFORE de:
+No modificar:
 
 `.migration/catalog/**`
 
+salvo metadatos de navegación explícitamente permitidos.
+
 ## Build
 
-El build global completo no es gate de este skill.
+El build global final no es gate de este skill.
 
-Estados intermedios pueden ser temporalmente incompatibles.
+Puede ejecutarse validación selectiva cuando aporte evidencia.
 
-Registrar los fallos observados y su causa cuando pueda determinarse.
+No considerar un estado intermedio mixto como fallo definitivo por sí solo.
 
-## Salidas estructuradas
+## Salida estructurada
 
 Crear:
 
 `.migration/repository/preparation.json`
 
-Debe registrar:
+## preparation.json
 
-- status;
-- executed actions;
-- global changes;
-- architecture preparation;
-- shared resource actions;
-- files modified;
-- dependencies changed;
-- validations;
-- skipped actions;
-- blocked actions;
-- risks;
-- unknowns.
+Debe contener como mínimo:
+
+- `schemaVersion`;
+- `status`;
+- `executedActions`;
+- `globalChanges`;
+- `architecturePreparation`;
+- `sharedResourceActions`;
+- `filesModified`;
+- `dependenciesChanged`;
+- `validations`;
+- `skippedActions`;
+- `blockedActions`;
+- `risks`;
+- `unknowns`.
+
+## Estado principal
+
+Usar exclusivamente:
+
+- `COMPLETED`
+- `PARTIAL`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+Ejemplo:
+
+    {
+      "status": "COMPLETED"
+    }
+
+No usar:
+
+    {
+      "status": "CONFIRMED"
+    }
+
+La evidencia interna usa:
+
+`evidenceStatus`
+
+## Validaciones
+
+Cada validación usa:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
+
+Ejemplo:
+
+    {
+      "name": "typescript-config",
+      "status": "PASS"
+    }
 
 ## Salida humana
 
@@ -288,41 +343,29 @@ Crear:
 
 `.migration/lessons/prepare-function-app/lessons.md`
 
-## Estados
-
-Usar:
-
-- `COMPLETED`
-- `PARTIAL`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
 ## Criterio de cierre
 
-El skill termina cuando:
+`COMPLETED` requiere:
 
-- el plan global fue consumido;
-- solo se ejecutaron acciones autorizadas;
-- configuración válida fue preservada;
-- base arquitectónica necesaria fue preparada;
-- shared resources globales fueron tratados una sola vez;
-- no se modificó comportamiento funcional;
-- validaciones razonables fueron ejecutadas;
-- blockers y unknowns quedaron visibles;
-- se generaron preparation y lessons.
+- todas las acciones globales aplicables ejecutadas;
+- shared actions de este scope completadas;
+- configuración válida preservada;
+- no existen blockers globales pendientes para esta etapa.
+
+`PARTIAL` se permite cuando otras acciones independientes pueden continuar.
 
 ## Fuera de alcance
 
 No debe:
 
-- modificar lógica de negocio;
-- crear tests de comportamiento;
-- completar refactor de una Function;
-- migrar registros Azure;
+- modificar lógica funcional específica;
+- agregar tests de comportamiento;
+- migrar Functions;
 - migrar Durable;
+- ejecutar acciones no planificadas;
 - resolver deuda no bloqueante;
 - optimizar;
-- leer pipelines protegidos;
+- leer CI/CD protegido;
 - desplegar.
 
 Siguiente skill sugerido:

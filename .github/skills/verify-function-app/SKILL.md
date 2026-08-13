@@ -1,13 +1,14 @@
 ---
 name: verify-function-app
-description: Verifica de forma determinista una Azure Function App después de su migración, consolidando plataforma, build, tests, Functions, Durable, arquitectura, recursos compartidos, legacy residual y packaging sin modificar código.
+description: Verifica de forma determinista una Azure Function App después de su migración comparando BEFORE, PLAN y AFTER sin modificar código.
 ---
 
 # Verify Function App
 
 ## Objetivo
 
-Determinar mediante evidencia reproducible si la Function App alcanzó el target técnico y arquitectónico.
+Determinar mediante evidencia reproducible si la Function App alcanzó el target técnico, funcional y arquitectónico
+requerido.
 
 Este skill verifica.
 
@@ -21,21 +22,22 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
-## Precondiciones
+## Entradas
 
-Consumir los artefactos aplicables de:
+Consumir artefactos aplicables de:
 
-- discovery;
+- inventory;
 - assessment;
 - catálogo BEFORE;
-- plan global;
+- shared resources;
+- global plan;
 - Function plans;
 - global preparation;
 - Function preparations;
 - migrations;
-- Durable migrations;
-- shared resources.
+- Durable migrations.
 
 No exigir artefactos correctamente `NOT_APPLICABLE`.
 
@@ -45,7 +47,9 @@ Comparar:
 
 `BEFORE → PLAN → AFTER`
 
-Preferir evidencia determinista.
+No reconstruir el target.
+
+No corregir fallos encontrados.
 
 ## Secuencia
 
@@ -58,185 +62,17 @@ Cuando corresponda:
 5. tests;
 6. coverage;
 7. Function registration;
-8. Durable;
-9. architecture;
-10. shared resources;
-11. legacy scan;
-12. packaging;
-13. debt/unknowns.
-
-## Target
-
-Usar assessment y plan global.
-
-No redefinir target durante verification.
-
-## Node.js
-
-Registrar versión declarada y realmente utilizada para:
-
-- install;
-- typecheck;
-- build;
-- tests.
-
-No afirmar validación completa bajo Node.js 24 si no se utilizó donde correspondía.
-
-## Instalación
-
-Usar el mecanismo reproducible del proyecto.
-
-No actualizar dependencias.
-
-## Typecheck
-
-Ejecutar el comando real del proyecto.
-
-Registrar resultado.
-
-## Build
-
-Ejecutar build global final.
-
-Aquí sí es gate obligatorio cuando el proyecto requiere compilación.
-
-## Tests
-
-Ejecutar suite requerida.
-
-Los tests de baseline deben continuar verdes.
-
-## Coverage
-
-Verificar únicamente cuando forme parte del contrato existente.
-
-No crear thresholds nuevos.
-
-## Azure Functions Host
-
-Ejecutar solo cuando exista configuración sanitizada/aprobada suficiente.
-
-Validar:
-
-- startup;
-- module loading;
-- registrations;
-- errores relevantes.
-
-Si no puede ejecutarse:
-
-`NOT_EXECUTED`
-
-con razón.
-
-No leer settings sensibles automáticamente.
-
-## Functions
-
-Comparar:
-
-- BEFORE;
-- PLAN;
-- AFTER.
-
-Detectar:
-
-- missing;
-- unexpected;
-- renamed;
-- trigger changes;
-- binding differences.
-
-## Programming Model
-
-Verificar:
-
-- Functions que debían migrar;
-- Functions ya v4;
-- legacy residual.
-
-## Durable
-
-Verificar workflows como unidades.
-
-No afirmar replay compatibility productiva únicamente por pruebas locales.
-
-## Arquitectura
-
-Verificar únicamente obligaciones del plan.
-
-Comprobar cuando corresponda:
-
-- adapters Azure;
-- capability boundaries;
-- infrastructure isolation;
-- configuration isolation;
-- dependency boundaries.
-
-No verificar arquitectura por cantidad de carpetas.
-
-La ausencia de `domain/` o `infrastructure/` no es fallo si no eran necesarias.
-
-## Shared resources
-
-Verificar por resource:
-
-- ownership;
-- consumers;
-- implementation;
-- shared action;
-- duplications;
-- deviations.
-
-No bloquear por preferencia de ubicación.
-
-Bloquear únicamente cuando contradiga una obligación real o produzca riesgo funcional.
-
-## Legacy scan
-
-Clasificar:
-
-- `BLOCKING`
-- `TECHNICAL_DEBT`
-- `EXPECTED`
-- `UNKNOWN`
-
-No eliminar nada.
-
-## Packaging
-
-Verificar cuando corresponda:
-
-- dist;
-- package.json;
-- lockfile;
-- runtime dependencies;
-- host.json;
-- `.funcignore`.
-
-Detectar artefactos no runtime que no deberían desplegarse.
-
-## Catálogo
-
-No modificar:
-
-`.migration/catalog/**`
-
-El catálogo conserva BEFORE.
-
-## Deuda y optimización
-
-Separar:
-
-- blockers;
-- technical debt;
-- optimization opportunities.
-
-No resolverlas.
+8. Programming Model;
+9. Durable;
+10. architecture;
+11. shared resources;
+12. legacy scan;
+13. packaging;
+14. blockers/debt/unknowns.
 
 ## Checks
 
-Usar:
+Todo check individual usa:
 
 - `PASS`
 - `FAIL`
@@ -244,32 +80,243 @@ Usar:
 - `NOT_APPLICABLE`
 - `REQUIRES_REVIEW`
 
-## Estado final
+Ejemplo:
+
+    {
+      "build": {
+        "status": "PASS"
+      }
+    }
+
+## Evidence status
+
+Si un hallazgo describe certeza y no resultado de ejecución:
+
+usar:
+
+`evidenceStatus`
+
+Ejemplo:
+
+    {
+      "function": "RequestReport",
+      "evidenceStatus": "CONFIRMED"
+    }
+
+No usar `PASS` para representar simplemente que algo fue observado.
+
+## Target
 
 Usar:
 
-- `VERIFIED`
-- `VERIFIED_WITH_DEBT`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
+- assessment;
+- plan global.
 
-## VERIFIED
+No cambiar el target durante verification.
 
-Requiere:
+## Node.js
 
-- target obligatorio alcanzado;
-- build requerido exitoso;
-- tests obligatorios verdes;
-- Functions completas;
-- architecture obligations satisfechas;
-- shared resources consistentes;
-- ausencia de blockers.
+Registrar:
 
-## VERIFIED_WITH_DEBT
+- versión declarada;
+- runtime utilizado para install;
+- runtime utilizado para typecheck;
+- runtime utilizado para build;
+- runtime utilizado para tests.
 
-Los gates obligatorios pasan y solo queda deuda no bloqueante.
+Si el target exige Node.js 24 y no fue utilizado en gates relevantes:
 
-## Salidas estructuradas
+no declarar `VERIFIED`.
+
+## Instalación
+
+Usar el mecanismo reproducible del proyecto.
+
+Ejemplo cuando corresponda:
+
+`npm ci`
+
+No actualizar dependencias.
+
+## Typecheck
+
+Ejecutar comando real del proyecto cuando exista o sea parte del plan.
+
+Registrar:
+
+`status`
+
+y evidencia.
+
+## Build global
+
+Ejecutar después de completar todas las adaptaciones requeridas.
+
+Es gate final cuando el proyecto necesita build.
+
+Un fallo implica:
+
+`status final = BLOCKED`
+
+salvo que el build sea explícitamente `NOT_APPLICABLE`.
+
+## Tests
+
+Ejecutar la baseline requerida.
+
+Los mismos comportamientos protegidos antes de migración deben continuar verdes.
+
+Un test obligatorio en `FAIL`:
+
+bloquea cierre.
+
+## Coverage
+
+Verificar únicamente si forma parte del contrato acordado.
+
+No crear thresholds nuevos.
+
+## Azure Functions Host
+
+Ejecutar únicamente cuando exista configuración sanitizada y aprobada.
+
+Si aplicaba pero no puede ejecutarse:
+
+    {
+      "status": "NOT_EXECUTED",
+      "reason": "No approved sanitized configuration available."
+    }
+
+No leer `local.settings.json`.
+
+## Functions
+
+Comparar:
+
+- Functions BEFORE;
+- Functions esperadas por el plan;
+- Functions detectadas AFTER.
+
+Registrar:
+
+- missing;
+- unexpected;
+- renamed;
+- trigger changes;
+- binding changes.
+
+## Programming Model
+
+Verificar por Function cuando corresponda.
+
+Una Function que debía migrar y sigue legacy:
+
+blocker.
+
+Una Function que ya era v4 y continúa v4:
+
+correcta sin remigración.
+
+## Durable
+
+Verificar workflows como unidades.
+
+Comprobar cuando aplique:
+
+- participantes;
+- registrations;
+- graph;
+- determinism;
+- tests;
+- shared dependencies.
+
+No afirmar compatibilidad productiva de instancias activas sin evidencia.
+
+## Arquitectura
+
+Verificar obligaciones reales del plan.
+
+Puede comprobar:
+
+- Azure adapters;
+- capability boundaries;
+- infrastructure isolation;
+- configuration isolation;
+- contracts necesarios;
+- absence of planned coupling.
+
+No verificar arquitectura por cantidad de carpetas.
+
+La ausencia de una capa opcional no es fallo.
+
+## Shared resources
+
+Verificar:
+
+- resource ID;
+- ownership;
+- implementation;
+- consumers;
+- shared action completion;
+- duplications.
+
+Una duplicación puede clasificarse como:
+
+- `BLOCKING`
+- `TECHNICAL_DEBT`
+- `UNKNOWN`
+
+según impacto.
+
+No bloquear por preferencias estéticas de ubicación.
+
+## Legacy scan
+
+Clasificar hallazgos como:
+
+- `BLOCKING`
+- `TECHNICAL_DEBT`
+- `EXPECTED`
+- `UNKNOWN`
+
+Esta clasificación no debe reutilizar el campo principal `status` si representa tipo de hallazgo.
+
+Preferir:
+
+`classification`
+
+Ejemplo:
+
+    {
+      "path": "...",
+      "classification": "TECHNICAL_DEBT"
+    }
+
+## Packaging
+
+Verificar cuando corresponda:
+
+- `dist`;
+- package metadata;
+- lockfile;
+- runtime dependencies;
+- `host.json`;
+- `.funcignore`.
+
+Comprobar exclusión de artefactos no runtime cuando corresponda.
+
+## Deuda
+
+Separar claramente:
+
+- blockers;
+- technical debt;
+- optimizations;
+- unknowns.
+
+No convertir deuda no bloqueante en blocker.
+
+## Salida estructurada
 
 Crear:
 
@@ -277,28 +324,79 @@ Crear:
 
 Debe contener:
 
-- final status;
-- target;
-- BEFORE/PLAN references;
-- runtime;
-- installation;
-- typecheck;
-- build;
-- tests;
-- coverage;
-- host;
-- functions;
-- programming model;
-- Durable;
-- architecture;
-- shared resources;
-- legacy scan;
-- packaging;
-- blockers;
-- debt;
-- optimizations;
-- risks;
-- unknowns.
+- `schemaVersion`;
+- `status`;
+- `target`;
+- `references`;
+- `runtime`;
+- `installation`;
+- `typecheck`;
+- `build`;
+- `tests`;
+- `coverage`;
+- `host`;
+- `functions`;
+- `programmingModel`;
+- `durable`;
+- `architecture`;
+- `sharedResources`;
+- `legacyScan`;
+- `packaging`;
+- `blockers`;
+- `technicalDebt`;
+- `optimizationOpportunities`;
+- `risks`;
+- `unknowns`.
+
+## Estado final
+
+El campo principal:
+
+`status`
+
+usa exclusivamente:
+
+- `VERIFIED`
+- `VERIFIED_WITH_DEBT`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+No usar otro vocabulario.
+
+## VERIFIED
+
+Requiere:
+
+- target obligatorio alcanzado;
+- gates aplicables en `PASS`;
+- build global exitoso cuando aplica;
+- tests requeridos verdes;
+- Functions esperadas presentes;
+- Programming Model correcto;
+- Durable correcto cuando aplica;
+- arquitectura planificada satisfecha;
+- shared resources consistentes;
+- ausencia de blockers.
+
+## VERIFIED_WITH_DEBT
+
+Igual que `VERIFIED`, pero quedan hallazgos clasificados exclusivamente como deuda no bloqueante.
+
+## BLOCKED
+
+Existe un impedimento técnico conocido.
+
+Ejemplos:
+
+- build fail;
+- tests obligatorios fail;
+- Function faltante;
+- Programming Model incorrecto;
+- workflow Durable incompleto.
+
+## REQUIRES_REVIEW
+
+La evidencia obtenida no permite cerrar sin decisión humana.
 
 ## Salida humana
 
@@ -309,6 +407,14 @@ Crear:
 Usar:
 
 `../_shared/templates/verification.template.md`
+
+## Catálogo
+
+No modificar:
+
+`.migration/catalog/**`
+
+AFTER vive en verification.
 
 ## Lecciones
 
@@ -323,19 +429,13 @@ Crear:
 El skill termina cuando:
 
 - BEFORE, PLAN y AFTER fueron comparados;
-- installation fue evaluada;
-- typecheck fue ejecutado cuando aplica;
-- build global fue ejecutado cuando aplica;
-- tests fueron ejecutados;
-- Functions fueron comparadas;
-- Durable fue verificado cuando aplica;
-- arquitectura fue verificada contra obligaciones reales;
-- shared resources fueron comprobados;
-- legacy scan fue ejecutado;
-- packaging fue revisado;
-- blockers/debt/optimizations/unknowns fueron separados;
+- gates aplicables fueron ejecutados;
+- estados de checks usan vocabulario común;
+- evidencia usa `evidenceStatus`;
+- classifications no abusan de `status`;
+- blockers/debt/unknowns están separados;
 - se emitió estado final;
-- se generaron verification y lessons.
+- no se realizaron correcciones.
 
 ## Fuera de alcance
 
@@ -346,12 +446,7 @@ No debe:
 - refactorizar;
 - actualizar dependencias;
 - migrar;
-- mover shared resources;
 - eliminar legacy;
 - modificar pipelines;
 - desplegar;
 - optimizar.
-
-Si el resultado es `BLOCKED`, identificar el capability responsable de cada bloqueo.
-
-Si es `VERIFIED` o `VERIFIED_WITH_DEBT`, la migración técnica puede considerarse cerrada.

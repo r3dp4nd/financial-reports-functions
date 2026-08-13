@@ -1,25 +1,24 @@
 ---
 name: prepare-function
-description: Prepara una Function para migración refactorizándola hacia la arquitectura objetivo, aislando infraestructura y recursos compartidos cuando corresponda, y agregando tests que protejan su comportamiento actual.
+description: Prepara una Function para migración refactorizándola hacia la arquitectura objetivo, aislando infraestructura cuando corresponda y agregando tests que protejan su comportamiento actual.
 ---
 
 # Prepare Function
 
 ## Objetivo
 
-Preparar una Function para migración segura.
+Dejar una Function preparada para su siguiente migración de plataforma.
 
 Debe:
 
 - preservar comportamiento;
-- converger hacia arquitectura objetivo;
-- reducir acoplamiento a runtime y SDKs;
-- respetar shared resources;
-- lograr testabilidad;
-- agregar tests;
-- obtener baseline reproducible.
+- aplicar acciones estructurales requeridas;
+- reducir acoplamiento al runtime;
+- respetar recursos compartidos;
+- lograr testabilidad suficiente;
+- obtener baseline verde.
 
-No migra Programming Model ni Durable.
+No migra Programming Model ni workflows Durable.
 
 ## Políticas
 
@@ -29,64 +28,65 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 ## Precondiciones
 
 Deben existir:
 
-`.migration/functions/<FunctionName>/analysis.json`
+- analysis de la Function;
+- migration plan de la Function;
+- plan global;
+- preparación global aplicable.
 
-`.migration/functions/<FunctionName>/migration-plan.json`
+Cuando corresponda:
 
-`.migration/plans/migration-plan.json`
-
-La preparación global necesaria debe estar ejecutada o no bloquear esta Function.
+`.migration/resources/shared-resources.json`
 
 ## Entradas
 
 Consumir primero:
 
-- inventory;
-- assessment;
 - analysis;
-- plan global;
-- plan específico;
-- preparation global;
-- shared resources relacionados.
+- Function plan;
+- global plan;
+- global preparation;
+- shared resources.
 
-No volver a analizar toda la App.
+No reconstruir analysis.
 
-## Comportamiento
+## Acciones
 
-Usar como fuente principal:
+Ejecutar acciones `FN-*` autorizadas por el plan.
 
-`analysis.json`
+Principalmente:
 
-y el plan específico.
+- `REQUIRED_TESTABILITY`;
+- `STRUCTURAL`;
+- otras acciones locales explícitamente planificadas.
 
-Preservar:
+No ejecutar:
 
-- inputs;
-- validaciones;
-- decisiones;
-- side effects;
-- interacciones externas;
-- outputs;
-- errores.
+- `TECHNICAL_DEBT`;
+- `OPTIMIZATION`;
 
-No cambiar intencionalmente comportamiento.
+salvo que hayan sido promovidas explícitamente a requisito mediante nuevo análisis/plan aprobado.
+
+## IDs
+
+Preservar los IDs provenientes de `analysis.json`.
+
+Ejemplo:
+
+`FN-REQUESTREPORT-001`
+
+No crear un ID nuevo para representar la misma acción.
 
 ## Arquitectura
 
 Aplicar:
 
 `../_shared/architecture-policy.md`
-
-La arquitectura es obligatoria para código refactorizado.
-
-La materialización es incremental.
-
-## Estructura
 
 Azure adapters:
 
@@ -96,53 +96,33 @@ Lógica funcional:
 
 `src/<Capability>/`
 
-Crear únicamente componentes con responsabilidad real.
+Crear solo las piezas requeridas.
 
 No crear capas vacías.
 
 ## Adapter Azure
 
-Debe quedar limitado principalmente a:
+Debe concentrarse principalmente en:
 
 - registro;
-- input mapping;
+- adaptación;
 - composition;
 - invocation;
-- output mapping.
+- response mapping.
 
-No mantener lógica funcional significativa dentro del adapter cuando el plan exige extraerla.
-
-## Capability
-
-Organizar lógica según la capability identificada.
-
-No crear una capability artificial por cada Function cuando varias pertenecen al mismo proceso.
-
-## Acciones
-
-Ejecutar únicamente acciones aprobadas del plan.
-
-Principalmente:
-
-- `REQUIRED_TESTABILITY`;
-- `STRUCTURAL`.
-
-No ejecutar:
-
-- optimizaciones;
-- deuda no bloqueante;
-- acciones globales ya completadas.
+Si el plan exige extracción funcional, no mantener la lógica significativa dentro del adapter.
 
 ## Contracts
 
-Crear un contrato cuando aporte un límite real para:
-
-- testabilidad;
-- infraestructura;
-- ownership;
-- futuras migraciones.
+Crear únicamente cuando proporcionen un límite real.
 
 Usar nombres naturales.
+
+Ejemplos:
+
+- `ReportRepository`
+- `MessagePublisher`
+- `ReportGenerator`
 
 No imponer `*.port.ts`.
 
@@ -158,149 +138,166 @@ Aislar cuando corresponda:
 - HTTP;
 - otros SDKs.
 
-No crear interfaces sin responsabilidad real.
+## Recursos compartidos
 
-## Shared resources
+Consumir resource IDs y shared action dependencies.
 
-Consumir:
+Ejemplo:
 
-- resource IDs;
-- shared actions;
-- `dependsOn`.
+    {
+      "resourceId": "SR-COSMOS-REPORTS"
+    }
 
-Una Function consumidora no debe duplicar infraestructura compartida.
+Si una acción compartida obligatoria:
 
-Si una acción compartida obligatoria sigue pendiente:
+`SR-ACTION-*`
 
-`BLOCKED`
+está pendiente:
 
-No crear una solución local equivalente.
+`status = BLOCKED`
 
-## Ownership
-
-Respetar:
-
-- `REPOSITORY`
-- `FUNCTION_APP`
-- `CAPABILITY`
-- `WORKFLOW`
-
-No mover automáticamente recursos de una capability a `shared`.
+No crear una implementación local alternativa.
 
 ## Configuración
 
-Aislar acceso a `process.env` cuando sea requerido por arquitectura/testabilidad.
+Aislar `process.env` cuando sea requerido por:
 
-No leer valores sensibles.
+- testabilidad;
+- arquitectura;
+- plan.
 
-## SDK construction
-
-Mover construcción de clientes fuera de lógica funcional cuando corresponda.
-
-Preferir composition root o factory existente.
-
-No introducir framework DI.
+Nunca leer valores sensibles.
 
 ## Refactor scope
 
-Usar:
+Clasificar:
 
 - `NONE`
 - `MINIMAL`
 - `SIGNIFICANT`
 
-`SIGNIFICANT` puede ejecutarse solo si el plan define el alcance suficiente.
+Esta clasificación no usa el campo `status`.
 
-En caso contrario:
+Si un refactor `SIGNIFICANT` excede el alcance aprobado:
 
-`REQUIRES_REVIEW`
+`status = REQUIRES_REVIEW`
 
 ## Tests
 
-Agregar únicamente los tests requeridos por analysis/plan.
+Agregar únicamente tests definidos o derivados directamente del análisis/plan.
 
 Priorizar:
 
 1. comportamiento principal;
-2. reglas;
-3. validaciones;
+2. validaciones;
+3. decisiones;
 4. errores;
-5. límites externos;
-6. mappings relevantes.
+5. límites externos.
 
 No agregar integration tests.
-
-## Characterization
-
-Usar cuando sea necesario fijar comportamiento legacy antes de separar responsabilidades.
-
-## Unit tests
-
-Preferir tests sobre lógica funcional aislada.
-
-Mockear límites externos, no detalles internos arbitrarios.
 
 ## Baseline
 
 Registrar:
 
-- comando;
+- command;
 - runtime;
 - suites;
 - tests;
-- resultado;
-- coverage cuando aplique.
+- failures;
+- coverage cuando aplique;
+- status.
 
-Para `READY_FOR_MIGRATION`, la baseline requerida debe estar verde.
+El status de baseline usa:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `REQUIRES_REVIEW`
 
 ## Programming Model
 
-No migrar.
+Preservar temporalmente el modelo actual.
 
-Preservar temporalmente:
-
-- adapter legacy;
-- o registro v4 existente.
+No migrarlo aquí.
 
 ## Durable
 
-Puede preparar internamente Activities o componentes cuando sea seguro.
+Puede refactorizar una Activity internamente cuando esté planificado.
 
-No cambiar semántica del workflow.
+No cambiar:
 
-## Catálogo
+- workflow graph;
+- orchestration semantics;
+- retries;
+- timers;
+- events.
 
-No reescribir:
+## Catálogo BEFORE
+
+No modificar la ficha histórica:
 
 `.migration/catalog/functions/<FunctionName>.md`
 
-Ese documento representa BEFORE.
-
-## Salidas estructuradas
+## Salida estructurada
 
 Crear:
 
 `.migration/functions/<FunctionName>/preparation.json`
 
-Debe registrar:
+Debe contener:
 
-- status;
-- behavior preserved;
-- architecture before;
-- architecture changes;
-- resulting structure;
-- actions executed;
-- shared resources;
-- shared dependencies;
-- files modified;
-- contracts introduced;
-- infrastructure isolated;
-- tests;
-- baseline;
-- validations;
-- risks;
-- unknowns;
-- debt remaining.
+- `schemaVersion`;
+- `function`;
+- `status`;
+- `behaviorPreserved`;
+- `architectureBefore`;
+- `architectureChanges`;
+- `resultingStructure`;
+- `requiredActionsExecuted`;
+- `sharedResources`;
+- `sharedActionDependencies`;
+- `filesModified`;
+- `contractsIntroduced`;
+- `infrastructureIsolated`;
+- `testsAdded`;
+- `baseline`;
+- `validations`;
+- `risks`;
+- `unknowns`;
+- `technicalDebtRemaining`.
+
+## Estado principal
+
+Usar únicamente:
+
+- `READY_FOR_MIGRATION`
+- `NOT_APPLICABLE`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+Ejemplo:
+
+    {
+      "status": "READY_FOR_MIGRATION"
+    }
+
+No utilizar evidencia como estado principal.
+
+## Evidencia interna
+
+Cuando un hallazgo necesite expresar certeza:
+
+usar:
+
+`evidenceStatus`
+
+Ejemplo:
+
+    {
+      "resourceId": "SR-COSMOS-REPORTS",
+      "evidenceStatus": "CONFIRMED"
+    }
 
 ## Salida humana
 
@@ -320,23 +317,15 @@ Crear:
 
 `.migration/lessons/prepare-function/<FunctionName>.md`
 
-## Estados
-
-Usar:
-
-- `READY_FOR_MIGRATION`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-- `NOT_APPLICABLE`
-
 ## Criterio de cierre
 
 `READY_FOR_MIGRATION` requiere:
 
 - comportamiento preservado;
-- arquitectura objetivo aplicable alcanzada;
-- shared dependencies listas;
-- tests requeridos verdes;
+- acciones `FN-*` necesarias completadas;
+- arquitectura requerida aplicada;
+- shared dependencies disponibles;
+- baseline requerida en `PASS`;
 - ausencia de blocker local.
 
 ## Fuera de alcance
@@ -345,12 +334,12 @@ No debe:
 
 - migrar Programming Model;
 - migrar Runtime;
-- migrar Durable;
-- actualizar dependencias globales no planificadas;
-- modificar comportamiento de negocio;
-- optimizar;
-- resolver deuda no necesaria;
+- migrar workflow Durable;
+- ejecutar global actions;
 - duplicar shared resources;
+- modificar comportamiento;
+- optimizar;
+- resolver deuda no requerida;
 - desplegar.
 
 Siguiente skill:

@@ -2,199 +2,86 @@
 
 ## Objetivo
 
-Validar que la Function sea refactorizada hacia la arquitectura objetivo, con testabilidad y comportamiento protegido,
-sin sobrearquitectura ni duplicación de shared resources.
+Validar preparación arquitectónica y baseline sin migrar plataforma.
 
-## Caso 1 — Function ya correcta
+## Caso 1 — Ya preparada
 
-### Entrada
+Si no existe trabajo local necesario:
 
-Function con:
+`status = NOT_APPLICABLE`
 
-- adapter delgado;
-- capability separada;
-- infraestructura aislada;
-- tests suficientes.
+## Caso 2 — Refactor correcto
 
-### Esperado
+Ejecuta acción:
 
-Debe poder producir:
+`FN-*`
 
-`NOT_APPLICABLE`
+y preserva el mismo ID.
 
-o realizar cambios mínimos.
+## Caso 3 — Adapter con lógica
 
-No refactorizar por uniformidad.
+Extrae únicamente lo requerido por plan.
 
-## Caso 2 — Lógica en adapter
+## Caso 4 — Shared dependency pendiente
 
-### Entrada
+Si depende de `SR-ACTION-001` no completada:
 
-Azure entrypoint contiene reglas funcionales.
+`status = BLOCKED`
 
-### Esperado
+No crear alternativa local.
 
-Debe:
+## Caso 5 — Shared resource confirmado
 
-- extraer comportamiento hacia capability;
-- dejar adapter delgado;
-- preservar comportamiento;
-- agregar tests.
+Debe usar:
 
-## Caso 3 — Cosmos dentro del service
+`evidenceStatus = CONFIRMED`
 
-### Entrada
+No `status = CONFIRMED`.
 
-Service construye `CosmosClient`.
-
-### Esperado
-
-Cuando el plan lo requiera debe:
-
-- aislar infraestructura;
-- introducir contrato funcional apropiado;
-- mover implementación a infraestructura;
-- permitir unit tests.
-
-## Caso 4 — Interfaz innecesaria
-
-### Entrada
-
-Function simple con función pura sin infraestructura.
-
-### Esperado
-
-No debe crear interfaces ni layers artificiales.
-
-## Caso 5 — Shared repository ya preparado
-
-### Entrada
-
-Function depende de `SR-ACTION-001`, completada globalmente.
-
-### Esperado
-
-Debe:
-
-- consumir el resultado;
-- no crear otro repository equivalente.
-
-## Caso 6 — Shared action pendiente
-
-### Entrada
-
-Plan declara dependencia obligatoria no completada.
-
-### Esperado
+## Caso 6 — Refactor significativo no aprobado
 
 Resultado:
 
-`BLOCKED`
+`status = REQUIRES_REVIEW`
 
-No crear solución local duplicada.
+## Caso 7 — Baseline verde
 
-## Caso 7 — Ownership
+Debe registrar:
 
-### Entrada
+`baseline.status = PASS`
 
-Repository es propiedad de la capability.
+## Caso 8 — Baseline falla
 
-### Esperado
+No producir:
 
-Debe mantenerlo dentro de la capability.
+`READY_FOR_MIGRATION`
 
-No moverlo a `shared` arbitrariamente.
+## Caso 9 — Arquitectura simple
 
-## Caso 8 — process.env
+No crear interfaces o layers innecesarias.
 
-### Entrada
+## Caso 10 — Cosmos directo
 
-Lógica funcional accede directamente a configuración.
+Aislar cuando el plan lo exige.
 
-### Esperado
+## Caso 11 — process.env
 
-Si el plan lo exige para testabilidad/arquitectura:
+Aislar únicamente cuando sea necesario.
 
-- aislar configuración;
-- pasarla desde composition;
-- no leer valores sensibles.
+## Caso 12 — Existing v4
 
-## Caso 9 — Refactor SIGNIFICANT aprobado
-
-### Entrada
-
-Plan explícitamente aprueba un refactor significativo.
-
-### Esperado
-
-Puede ejecutarlo dentro del alcance definido.
-
-## Caso 10 — Refactor SIGNIFICANT no aprobado
-
-### Esperado
-
-Resultado:
-
-`REQUIRES_REVIEW`
-
-No ampliar el alcance.
-
-## Caso 11 — Characterization
-
-### Entrada
-
-Legacy code difícil de separar sin riesgo.
-
-### Esperado
-
-Debe poder agregar characterization tests para fijar comportamiento antes de extraer.
-
-## Caso 12 — Unit tests
-
-### Entrada
-
-Lógica ya aislada.
-
-### Esperado
-
-Preferir tests unitarios sobre capability.
-
-No depender del Azure Functions Host.
+Preservar Programming Model v4.
 
 ## Caso 13 — Durable Activity
 
-### Entrada
+Puede refactorizar lógica interna.
 
-Activity con lógica e infraestructura.
+No modifica semántica del workflow.
 
-### Esperado
+## Caso 14 — Catálogo
 
-Puede refactorizar internamente hacia arquitectura objetivo sin cambiar semántica del workflow.
+No modifica BEFORE.
 
-No migrar todavía Durable.
+## Criterio general
 
-## Caso 14 — Adapter v4 existente
-
-### Entrada
-
-Function ya v4.
-
-### Esperado
-
-Debe preservar registro v4 y trabajar únicamente en arquitectura/testabilidad.
-
-## Caso 15 — Baseline
-
-### Esperado
-
-`READY_FOR_MIGRATION` requiere:
-
-- arquitectura requerida aplicada;
-- shared dependencies listas;
-- tests requeridos verdes.
-
-## Caso 16 — Catálogo histórico
-
-### Esperado
-
-No debe alterar la ficha BEFORE de la Function para que muestre el estado refactorizado.
+`READY_FOR_MIGRATION` requiere arquitectura, dependencies y baseline realmente preparadas.
