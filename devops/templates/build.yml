@@ -129,8 +129,7 @@ jobs:
             package.json
             package-lock.json
 
-          TargetFolder:
-            '$(Build.ArtifactStagingDirectory)/package'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/package'
 
           CleanTargetFolder: true
 
@@ -138,23 +137,20 @@ jobs:
       - script: npm ci --omit=dev
         displayName: Install production dependencies
 
-        workingDirectory:
-          '$(Build.ArtifactStagingDirectory)/package'
+        workingDirectory: '$(Build.ArtifactStagingDirectory)/package'
 
 
       - task: ArchiveFiles@2
         displayName: Create Function App package
 
         inputs:
-          rootFolderOrFile:
-            '$(Build.ArtifactStagingDirectory)/package'
+          rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
 
           includeRootFolder: false
 
           archiveType: 'zip'
 
-          archiveFile:
-            '$(Build.ArtifactStagingDirectory)/function-app.zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/function-app.zip'
 
           replaceExistingArchive: true
 
@@ -163,8 +159,6 @@ jobs:
         displayName: Publish Function App artifact
 
         inputs:
-          targetPath:
-            '$(Build.ArtifactStagingDirectory)/function-app.zip'
+          targetPath: '$(Build.ArtifactStagingDirectory)/function-app.zip'
 
-          artifact:
-            ${{ parameters.artifactName }}
+          artifact: ${{ parameters.artifactName }}

@@ -4,12 +4,15 @@ pr: none
 
 name: function-uat-$(Date:yyyyMMdd).$(Rev:r)
 
+
 resources:
   pipelines:
+
     - pipeline: dev
       source: '<DEV-PIPELINE-NAME>'
 
       trigger: true
+
 
 stages:
 
@@ -17,13 +20,20 @@ stages:
     displayName: Deploy UAT
 
     jobs:
+
       - template: ../templates/deploy.yml
 
         parameters:
           environmentName: '<ENVIRONMENT-UAT>'
+
           azureServiceConnection: '<SERVICE-CONNECTION-UAT>'
+
           functionAppName: '<FUNCTION-APP-UAT>'
 
-          artifactSource: dev
+          artifactSource: 'dev'
+
+          artifactName: 'function-app'
 
           republishArtifact: true
+
+          isFlexConsumption: false

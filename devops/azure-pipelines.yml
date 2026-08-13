@@ -37,32 +37,23 @@ stages:
       - template: templates/build.yml
 
         parameters:
-          runTests:
-            ${{ parameters.runTests }}
+          runTests: ${{ parameters.runTests }}
 
-          runCoverage:
-            ${{ parameters.runCoverage }}
+          runCoverage: ${{ parameters.runCoverage }}
 
-          runSonar:
-            ${{ parameters.runSonar }}
+          runSonar: ${{ parameters.runSonar }}
 
-          buildCommand:
-            'npm run build:prod'
+          buildCommand: 'npm run build:prod'
 
-          testCommand:
-            'npm test'
+          testCommand: 'npm test'
 
-          coverageCommand:
-            'npm run test:coverage'
+          coverageCommand: 'npm run test:coverage'
 
-          sonarServiceConnection:
-            '<SONARQUBE-SERVICE-CONNECTION>'
+          sonarServiceConnection: '<SONARQUBE-SERVICE-CONNECTION>'
 
-          sonarProjectKey:
-            '<SONAR-PROJECT-KEY>'
+          sonarProjectKey: '<SONAR-PROJECT-KEY>'
 
-          sonarProjectName:
-            '<SONAR-PROJECT-NAME>'
+          sonarProjectName: '<SONAR-PROJECT-NAME>'
 
 
   # ============================================================
@@ -82,14 +73,11 @@ stages:
       - template: templates/deploy.yml
 
         parameters:
-          environmentName:
-            '<ENVIRONMENT-DEV>'
+          environmentName: '<ENVIRONMENT-DEV>'
 
-          azureServiceConnection:
-            '<SERVICE-CONNECTION-DEV>'
+          azureServiceConnection: '<SERVICE-CONNECTION-DEV>'
 
-          functionAppName:
-            '<FUNCTION-APP-DEV>'
+          functionAppName: '<FUNCTION-APP-DEV>'
 
 
   # ============================================================
@@ -109,14 +97,11 @@ stages:
       - template: templates/deploy.yml
 
         parameters:
-          environmentName:
-            '<ENVIRONMENT-UAT>'
+          environmentName: '<ENVIRONMENT-UAT>'
 
-          azureServiceConnection:
-            '<SERVICE-CONNECTION-UAT>'
+          azureServiceConnection: '<SERVICE-CONNECTION-UAT>'
 
-          functionAppName:
-            '<FUNCTION-APP-UAT>'
+          functionAppName: '<FUNCTION-APP-UAT>'
 
 
   # ============================================================
@@ -136,14 +121,11 @@ stages:
       - template: templates/deploy.yml
 
         parameters:
-          environmentName:
-            '<ENVIRONMENT-STG>'
+          environmentName: '<ENVIRONMENT-STG>'
 
-          azureServiceConnection:
-            '<SERVICE-CONNECTION-STG>'
+          azureServiceConnection: '<SERVICE-CONNECTION-STG>'
 
-          functionAppName:
-            '<FUNCTION-APP-STG>'
+          functionAppName: '<FUNCTION-APP-STG>'
 
 
   # ============================================================
@@ -163,11 +145,8 @@ stages:
       - template: templates/deploy.yml
 
         parameters:
-          environmentName:
-            '<ENVIRONMENT-PRD>'
+          environmentName: '<ENVIRONMENT-PRD>'
 
-          azureServiceConnection:
-            '<SERVICE-CONNECTION-PRD>'
+          azureServiceConnection: '<SERVICE-CONNECTION-PRD>'
 
-          functionAppName:
-            '<FUNCTION-APP-PRD>'
+          functionAppName: '<FUNCTION-APP-PRD>'

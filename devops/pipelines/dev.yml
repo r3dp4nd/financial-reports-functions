@@ -7,6 +7,7 @@ pr: none
 
 name: function-dev-$(Date:yyyyMMdd).$(Rev:r)
 
+
 parameters:
   - name: runTests
     type: boolean
@@ -20,24 +21,26 @@ parameters:
     type: boolean
     default: false
 
+
 stages:
 
   - stage: Build
     displayName: Build
 
     jobs:
+
       - template: ../templates/build.yml
 
         parameters:
           runTests: ${{ parameters.runTests }}
+
           runCoverage: ${{ parameters.runCoverage }}
+
           runSonar: ${{ parameters.runSonar }}
 
           buildCommand: 'npm run build:prod'
 
-          sonarServiceConnection: '<SONAR-SERVICE-CONNECTION>'
-          sonarProjectKey: '<SONAR-PROJECT-KEY>'
-          sonarProjectName: '<SONAR-PROJECT-NAME>'
+          artifactName: 'function-app'
 
 
   - stage: Deploy_DEV
@@ -49,11 +52,20 @@ stages:
     condition: succeeded()
 
     jobs:
+
       - template: ../templates/deploy.yml
 
         parameters:
           environmentName: '<ENVIRONMENT-DEV>'
+
           azureServiceConnection: '<SERVICE-CONNECTION-DEV>'
+
           functionAppName: '<FUNCTION-APP-DEV>'
 
-          artifactSource: current
+          artifactSource: 'current'
+
+          artifactName: 'function-app'
+
+          republishArtifact: false
+
+          isFlexConsumption: false
