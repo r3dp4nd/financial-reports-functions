@@ -9,19 +9,18 @@ devops/
 local.settings.json
 
 src/
-tests/
-
 coverage/
 test-results/
 
 local-infra/
 
 docs/
+
 *.md
 
 tsconfig.json
-tsconfig.spec.json
 tsconfig.prod.json
+tsconfig.spec.json
 
 jest.config.js
 sonar-project.properties
