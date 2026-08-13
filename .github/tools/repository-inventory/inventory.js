@@ -308,6 +308,153 @@ function buildRepositoryMetadata() {
   };
 }
 
+function discoverV4Registrations(app, files, warnings) {
+  const appRoot = path.resolve(ROOT, app.path);
+
+  const registrations = [];
+
+  const registrationPatterns = [{
+    type: "http", pattern: /\bapp\.http\s*\(\s*["'`]([^"'`]+)["'`]/
+  }, {
+    type: "timer", pattern: /\bapp\.timer\s*\(\s*["'`]([^"'`]+)["'`]/
+  }, {
+    type: "serviceBusQueue", pattern: /\bapp\.serviceBusQueue\s*\(\s*["'`]([^"'`]+)["'`]/
+  }, {
+    type: "serviceBusTopic", pattern: /\bapp\.serviceBusTopic\s*\(\s*["'`]([^"'`]+)["'`]/
+  }, {
+    type: "cosmosDB", pattern: /\bapp\.cosmosDB\s*\(\s*["'`]([^"'`]+)["'`]/
+  }];
+
+  files.forEach(function (file) {
+    if (!belongsToFunctionApp(file.absolutePath, appRoot)) {
+      return;
+    }
+
+    const extension = path.extname(file.absolutePath);
+
+    if (!SOURCE_EXTENSIONS.has(extension)) {
+      return;
+    }
+
+    const source = readTextSafe(file.absolutePath, warnings);
+
+    if (source === null) {
+      return;
+    }
+
+    registrationPatterns.forEach(function (candidate) {
+      const match = candidate.pattern.exec(source);
+
+      if (!match) {
+        return;
+      }
+
+      registrations.push({
+        name: match[1],
+        path: file.relativePath,
+        programmingModel: "v4",
+        trigger: candidate.type,
+        bindings: [],
+        durableRole: null,
+        status: "CONFIRMED"
+      });
+    });
+  });
+
+  return registrations;
+}
+
+function discoverDurableV4Registrations(app, files, warnings) {
+  const appRoot = path.resolve(ROOT, app.path);
+
+  const registrations = [];
+
+  const durablePatterns = [{
+    role: "orchestrator",
+    trigger: "orchestrationTrigger",
+    pattern: /\bdf\.app\.orchestration\s*\(\s*["'`]([^"'`]+)["'`]/
+  }, {
+    role: "activity", trigger: "activityTrigger", pattern: /\bdf\.app\.activity\s*\(\s*["'`]([^"'`]+)["'`]/
+  }];
+
+  files.forEach(function (file) {
+    if (!belongsToFunctionApp(file.absolutePath, appRoot)) {
+      return;
+    }
+
+    const extension = path.extname(file.absolutePath);
+
+    if (!SOURCE_EXTENSIONS.has(extension)) {
+      return;
+    }
+
+    const source = readTextSafe(file.absolutePath, warnings);
+
+    if (source === null) {
+      return;
+    }
+
+    durablePatterns.forEach(function (candidate) {
+      const match = candidate.pattern.exec(source);
+
+      if (!match) {
+        return;
+      }
+
+      registrations.push({
+        name: match[1],
+        path: file.relativePath,
+        programmingModel: "v4",
+        trigger: candidate.trigger,
+        bindings: [],
+        durableRole: candidate.role,
+        status: "CONFIRMED"
+      });
+    });
+  });
+
+  return registrations;
+}
+
+function determineProgrammingModel(app, legacyFunctions, v4Functions) {
+  const azureFunctionsVersion = app.azureDependencies.azureFunctions;
+
+  const hasLegacyFunctions = legacyFunctions.length > 0;
+
+  const hasV4Functions = v4Functions.length > 0;
+
+  if (hasV4Functions && !hasLegacyFunctions) {
+    return {
+      version: "v4", status: "CONFIRMED", evidence: ["v4 registrations detected"]
+    };
+  }
+
+  if (hasLegacyFunctions && !hasV4Functions) {
+    return {
+      version: "v3-or-earlier", status: "CONFIRMED", evidence: ["function.json detected"]
+    };
+  }
+
+  if (hasLegacyFunctions && hasV4Functions) {
+    return {
+      version: null,
+      status: "UNKNOWN",
+      evidence: ["legacy and v4 registrations detected"],
+      warning: "Se detectaron artefactos legacy y registros v4."
+    };
+  }
+
+  if (typeof azureFunctionsVersion === "string" && /^(\^|~)?4\./.test(azureFunctionsVersion)) {
+    return {
+      version: "v4", status: "INFERRED", evidence: ["@azure/functions 4.x detected"]
+    };
+  }
+
+  return {
+    version: null, status: "UNKNOWN", evidence: []
+  };
+}
+
 function execute() {
   const state = {
     files: [], sensitiveFilesDetected: [], warnings: []
@@ -318,7 +465,17 @@ function execute() {
   const functionApps = findFunctionAppCandidates(state.files, state.warnings);
 
   functionApps.forEach(function (app) {
-    app.functions = discoverLegacyFunctions(app, state.files, state.warnings);
+    const legacyFunctions = discoverLegacyFunctions(app, state.files, state.warnings);
+
+    const v4Functions = discoverV4Registrations(app, state.files, state.warnings);
+
+    const durableV4Functions = discoverDurableV4Registrations(app, state.files, state.warnings);
+
+    const allV4Functions = v4Functions.concat(durableV4Functions);
+
+    app.functions = legacyFunctions.concat(allV4Functions);
+
+    app.programmingModel = determineProgrammingModel(app, legacyFunctions, allV4Functions);
 
     app.environmentKeys = discoverEnvironmentKeys(app, state.files, state.warnings);
   });

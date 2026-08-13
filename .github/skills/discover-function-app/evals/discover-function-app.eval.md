@@ -85,3 +85,45 @@ El skill debe registrar:
 `runtime.status = UNKNOWN`
 
 No debe inferir una versión sin evidencia.
+
+## Caso 5 — Function App ya en Programming Model v4
+
+### Entrada
+
+Repositorio con:
+
+- `@azure/functions` 4.x.
+- `host.json`.
+- Functions registradas mediante `app.http`, `app.timer` u otros registros v4.
+- Sin `function.json` legacy.
+
+### Esperado
+
+La tool debe:
+
+- detectar la Function App;
+- detectar las Functions registradas en código;
+- registrar `programmingModel.version = v4`;
+- registrar `programmingModel.status = CONFIRMED`;
+- no requerir `function.json`;
+- no indicar que el Programming Model debe migrarse;
+- mantener el inventario de `process.env`;
+- no modificar código.
+
+## Caso 6 — Evidencia legacy y v4
+
+### Entrada
+
+Repositorio con:
+
+- uno o más `function.json`;
+- registros `app.http(...)`.
+
+### Esperado
+
+La tool debe:
+
+- detectar ambas evidencias;
+- no asumir que la Function App está correctamente migrada;
+- registrar el Programming Model como `UNKNOWN`;
+- generar una advertencia para análisis posterior.
