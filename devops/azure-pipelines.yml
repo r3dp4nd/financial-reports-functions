@@ -1,22 +1,12 @@
-trigger:
-  branches:
-    include:
-      - main
+trigger: none
 
-pr:
-  branches:
-    include:
-      - main
+pr: none
 
 
 name: azure-function-$(Date:yyyyMMdd).$(Rev:r)
 
 
 parameters:
-  # ============================================================
-  # Quality
-  # ============================================================
-
   - name: runTests
     displayName: Run tests
     type: boolean
@@ -32,26 +22,6 @@ parameters:
     type: boolean
     default: false
 
-  # ============================================================
-  # Environment validations
-  # ============================================================
-
-  - name: runDevSmokeTest
-    type: boolean
-    default: false
-
-  - name: runUatSmokeTest
-    type: boolean
-    default: false
-
-  - name: runStgSmokeTest
-    type: boolean
-    default: false
-
-  - name: runPrdSmokeTest
-    type: boolean
-    default: false
-
 
 stages:
 
@@ -60,100 +30,144 @@ stages:
   # ============================================================
 
   - stage: Build
-    displayName: Build and validate
+    displayName: Build
 
     jobs:
 
-      - template: templates/build/node-function-build.yml
+      - template: templates/build.yml
 
         parameters:
-          nodeVersion: '24.x'
-          nodeMajorVersion: 24
+          runTests:
+            ${{ parameters.runTests }}
 
-          installCommand: 'npm ci'
+          runCoverage:
+            ${{ parameters.runCoverage }}
 
-          buildCommand: 'npm run build:prod'
+          runSonar:
+            ${{ parameters.runSonar }}
 
-          buildOutput: 'dist'
+          buildCommand:
+            'npm run build:prod'
 
-          runTests: ${{ parameters.runTests }}
+          testCommand:
+            'npm test'
 
-          testCommand: 'npm test'
+          coverageCommand:
+            'npm run test:coverage'
 
-          runCoverage: ${{ parameters.runCoverage }}
+          sonarServiceConnection:
+            '<SONARQUBE-SERVICE-CONNECTION>'
 
-          coverageCommand: 'npm run test:coverage'
+          sonarProjectKey:
+            '<SONAR-PROJECT-KEY>'
 
-          coverageReportPath: 'coverage/lcov.info'
-
-          runSonar: ${{ parameters.runSonar }}
-
-          sonarServiceConnection: '<SONARQUBE-SERVICE-CONNECTION>'
-
-          sonarProjectKey: '<SONAR-PROJECT-KEY>'
-
-          sonarProjectName: '<SONAR-PROJECT-NAME>'
-
-          artifactName: 'function-app'
-
-          packageFileName: 'function-app.zip'
+          sonarProjectName:
+            '<SONAR-PROJECT-NAME>'
 
 
   # ============================================================
   # DEV
   # ============================================================
 
-  - template: environments/dev.yml
+  - stage: DEV
+    displayName: DEV
 
-    parameters:
-      artifactName: 'function-app'
+    dependsOn:
+      - Build
 
-      packageFileName: 'function-app.zip'
+    condition: succeeded()
 
-      runSmokeTest:
-        ${{ parameters.runDevSmokeTest }}
+    jobs:
+
+      - template: templates/deploy.yml
+
+        parameters:
+          environmentName:
+            '<ENVIRONMENT-DEV>'
+
+          azureServiceConnection:
+            '<SERVICE-CONNECTION-DEV>'
+
+          functionAppName:
+            '<FUNCTION-APP-DEV>'
 
 
   # ============================================================
   # UAT
   # ============================================================
 
-  - template: environments/uat.yml
+  - stage: UAT
+    displayName: UAT
 
-    parameters:
-      artifactName: 'function-app'
+    dependsOn:
+      - DEV
 
-      packageFileName: 'function-app.zip'
+    condition: succeeded()
 
-      runSmokeTest:
-        ${{ parameters.runUatSmokeTest }}
+    jobs:
+
+      - template: templates/deploy.yml
+
+        parameters:
+          environmentName:
+            '<ENVIRONMENT-UAT>'
+
+          azureServiceConnection:
+            '<SERVICE-CONNECTION-UAT>'
+
+          functionAppName:
+            '<FUNCTION-APP-UAT>'
 
 
   # ============================================================
   # STG
   # ============================================================
 
-  - template: environments/stg.yml
+  - stage: STG
+    displayName: STG
 
-    parameters:
-      artifactName: 'function-app'
+    dependsOn:
+      - UAT
 
-      packageFileName: 'function-app.zip'
+    condition: succeeded()
 
-      runSmokeTest:
-        ${{ parameters.runStgSmokeTest }}
+    jobs:
+
+      - template: templates/deploy.yml
+
+        parameters:
+          environmentName:
+            '<ENVIRONMENT-STG>'
+
+          azureServiceConnection:
+            '<SERVICE-CONNECTION-STG>'
+
+          functionAppName:
+            '<FUNCTION-APP-STG>'
 
 
   # ============================================================
   # PRD
   # ============================================================
 
-  - template: environments/prd.yml
+  - stage: PRD
+    displayName: PRD
 
-    parameters:
-      artifactName: 'function-app'
+    dependsOn:
+      - STG
 
-      packageFileName: 'function-app.zip'
+    condition: succeeded()
 
-      runSmokeTest:
-        ${{ parameters.runPrdSmokeTest }}
+    jobs:
+
+      - template: templates/deploy.yml
+
+        parameters:
+          environmentName:
+            '<ENVIRONMENT-PRD>'
+
+          azureServiceConnection:
+            '<SERVICE-CONNECTION-PRD>'
+
+          functionAppName:
+            '<FUNCTION-APP-PRD>'

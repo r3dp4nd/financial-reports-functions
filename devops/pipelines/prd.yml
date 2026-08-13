@@ -1,0 +1,29 @@
+trigger: none
+
+pr: none
+
+name: function-prd-$(Date:yyyyMMdd).$(Rev:r)
+
+resources:
+  pipelines:
+    - pipeline: stg
+      source: '<STG-PIPELINE-NAME>'
+
+      trigger: true
+
+stages:
+
+  - stage: Deploy_PRD
+    displayName: Deploy PRD
+
+    jobs:
+      - template: ../templates/deploy.yml
+
+        parameters:
+          environmentName: '<ENVIRONMENT-PRD>'
+          azureServiceConnection: '<SERVICE-CONNECTION-PRD>'
+          functionAppName: '<FUNCTION-APP-PRD>'
+
+          artifactSource: stg
+
+          republishArtifact: false

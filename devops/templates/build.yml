@@ -1,0 +1,170 @@
+parameters:
+  - name: runTests
+    type: boolean
+    default: true
+
+  - name: runCoverage
+    type: boolean
+    default: false
+
+  - name: runSonar
+    type: boolean
+    default: false
+
+  - name: testCommand
+    type: string
+    default: 'npm test'
+
+  - name: coverageCommand
+    type: string
+    default: 'npm run test:coverage'
+
+  - name: buildCommand
+    type: string
+    default: 'npm run build'
+
+  - name: sonarServiceConnection
+    type: string
+    default: ''
+
+  - name: sonarProjectKey
+    type: string
+    default: ''
+
+  - name: sonarProjectName
+    type: string
+    default: ''
+
+  - name: artifactName
+    type: string
+    default: 'function-app'
+
+
+jobs:
+
+  - job: Build
+    displayName: Build Azure Function App
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+
+      - checkout: self
+        clean: true
+        fetchDepth: 0
+
+
+      - task: UseNode@1
+        displayName: Use Node.js 24
+
+        inputs:
+          version: '24.x'
+
+
+      - script: |
+          node --version
+          npm --version
+        displayName: Show tool versions
+
+
+      - script: npm ci
+        displayName: Install dependencies
+
+
+      - ${{ if eq(parameters.runSonar, true) }}:
+
+          - task: SonarQubePrepare@8
+            displayName: Prepare SonarQube
+
+            inputs:
+              SonarQube: ${{ parameters.sonarServiceConnection }}
+
+              scannerMode: 'cli'
+
+              configMode: 'manual'
+
+              cliProjectKey: ${{ parameters.sonarProjectKey }}
+
+              cliProjectName: ${{ parameters.sonarProjectName }}
+
+              cliSources: '.'
+
+
+      - ${{ if eq(parameters.runCoverage, true) }}:
+
+          - script: ${{ parameters.coverageCommand }}
+            displayName: Run tests with coverage
+
+
+      - ${{ elseif eq(parameters.runTests, true) }}:
+
+          - script: ${{ parameters.testCommand }}
+            displayName: Run tests
+
+
+      - script: ${{ parameters.buildCommand }}
+        displayName: Build production application
+
+
+      - ${{ if eq(parameters.runSonar, true) }}:
+
+          - task: SonarQubeAnalyze@8
+            displayName: Analyze with SonarQube
+
+
+          - task: SonarQubePublish@8
+            displayName: Publish SonarQube Quality Gate
+
+
+      - task: CopyFiles@2
+        displayName: Prepare deployment package
+
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+
+          Contents: |
+            dist/**
+            host.json
+            package.json
+            package-lock.json
+
+          TargetFolder:
+            '$(Build.ArtifactStagingDirectory)/package'
+
+          CleanTargetFolder: true
+
+
+      - script: npm ci --omit=dev
+        displayName: Install production dependencies
+
+        workingDirectory:
+          '$(Build.ArtifactStagingDirectory)/package'
+
+
+      - task: ArchiveFiles@2
+        displayName: Create Function App package
+
+        inputs:
+          rootFolderOrFile:
+            '$(Build.ArtifactStagingDirectory)/package'
+
+          includeRootFolder: false
+
+          archiveType: 'zip'
+
+          archiveFile:
+            '$(Build.ArtifactStagingDirectory)/function-app.zip'
+
+          replaceExistingArchive: true
+
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish Function App artifact
+
+        inputs:
+          targetPath:
+            '$(Build.ArtifactStagingDirectory)/function-app.zip'
+
+          artifact:
+            ${{ parameters.artifactName }}
