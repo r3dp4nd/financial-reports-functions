@@ -1,16 +1,22 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: "ts-jest",
+
   testEnvironment: "node",
+
   testMatch: [
     "**/*.spec.ts"
   ],
+
   testPathIgnorePatterns: [
     "/node_modules/",
     "\\.integration\\.spec\\.ts$"
   ],
+
   clearMocks: true,
+
   restoreMocks: true,
+
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",
@@ -19,13 +25,15 @@ module.exports = {
       }
     ]
   },
-  collectCoverageFrom: [
-    "**/*.ts",
 
+  collectCoverageFrom: [
+    "src/**/*.ts",
+
+    "!src/**/tests/**",
     "!**/*.spec.ts",
 
     // Programming Model v4 composition roots.
-    "!functions/**/*.function.ts",
+    "!src/functions/**/*.function.ts",
 
     // Legacy composition roots, mientras no quede ninguno.
     "!**/index.ts",
@@ -47,12 +55,16 @@ module.exports = {
     "!coverage/**",
     "!test-results/**"
   ],
+
   coverageDirectory: "coverage",
+
   coverageProvider: "v8",
+
   coverageReporters: [
     "text",
     "lcov"
   ],
+
   coverageThreshold: {
     "global": {
       "branches": 70,
@@ -61,6 +73,7 @@ module.exports = {
       "statements": 80
     }
   },
+
   reporters: [
     "default",
 

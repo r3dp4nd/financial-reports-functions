@@ -1,56 +1,36 @@
-# Git
 .git/
-.gitignore
+.github/
+devops/
 
-# IDE / editor
 .idea/
 .vscode/
 .DS_Store
 
-# Local Azure Functions configuration
 local.settings.json
 
-# TypeScript source
-**/*.ts
-**/*.tsx
-
-# Source maps
-**/*.map
-
-# Unit and integration tests
-**/*.spec.*
-**/*.test.*
-test/
+src/
 tests/
 
-# Test and quality artifacts
 coverage/
 test-results/
-build-migration.log
 
-# Local infrastructure
 local-infra/
 
-# Documentation
 docs/
 *.md
 
-# TypeScript configuration
 tsconfig.json
 tsconfig.spec.json
 tsconfig.prod.json
 
-# Jest configuration
 jest.config.js
+sonar-project.properties
 
-# npm development artifacts
+.env
+.env.*
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# OS files
 Thumbs.db
-
-# Environment files
-.env
-.env.*
