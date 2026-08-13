@@ -1,13 +1,13 @@
 ---
 name: verify-function-app
-description: Verifica de forma determinista una Azure Function App después de su migración, consolidando plataforma, build, tests, Functions, Durable, recursos compartidos, arquitectura objetivo, legacy residual, packaging y deuda restante sin modificar código.
+description: Verifica de forma determinista una Azure Function App después de su migración, consolidando plataforma, build, tests, Functions, Durable, arquitectura, recursos compartidos, legacy residual y packaging sin modificar código.
 ---
 
 # Verify Function App
 
 ## Objetivo
 
-Determinar mediante evidencia reproducible si la Function App alcanzó correctamente el target técnico y arquitectónico.
+Determinar mediante evidencia reproducible si la Function App alcanzó el target técnico y arquitectónico.
 
 Este skill verifica.
 
@@ -24,26 +24,32 @@ Aplicar:
 
 ## Precondiciones
 
-Consumir cuando existan:
+Consumir los artefactos aplicables de:
 
-- inventory;
+- discovery;
 - assessment;
 - catálogo BEFORE;
 - plan global;
-- planes por Function;
-- preparation global;
-- preparations por Function;
+- Function plans;
+- global preparation;
+- Function preparations;
 - migrations;
-- durable migrations;
-- shared resource actions.
+- Durable migrations;
+- shared resources.
 
-No exigir artefactos de skills que fueron correctamente `NOT_APPLICABLE`.
+No exigir artefactos correctamente `NOT_APPLICABLE`.
 
 ## Principio
 
+Comparar:
+
+`BEFORE → PLAN → AFTER`
+
 Preferir evidencia determinista.
 
-Secuencia sugerida:
+## Secuencia
+
+Cuando corresponda:
 
 1. instalación;
 2. runtime;
@@ -51,140 +57,71 @@ Secuencia sugerida:
 4. build global;
 5. tests;
 6. coverage;
-7. Function registrations;
-8. Durable workflows;
-9. arquitectura;
+7. Function registration;
+8. Durable;
+9. architecture;
 10. shared resources;
 11. legacy scan;
 12. packaging;
-13. deuda y unknowns.
-
-No declarar éxito porque compile.
+13. debt/unknowns.
 
 ## Target
 
-Usar:
+Usar assessment y plan global.
 
-`.migration/repository/assessment.json`
-
-y:
-
-`.migration/plans/migration-plan.json`
-
-como definición del target.
-
-No redefinirlo durante verificación.
-
-## Comparación BEFORE / PLAN / AFTER
-
-Utilizar tres perspectivas:
-
-### BEFORE
-
-`.migration/catalog/current-state.md`
-
-y fichas por Function.
-
-### PLAN
-
-plan global y planes específicos.
-
-### AFTER
-
-estado real del repositorio y resultados de validación.
-
-La verificación debe identificar cambios esperados y desviaciones no planificadas.
+No redefinir target durante verification.
 
 ## Node.js
 
-Registrar:
+Registrar versión declarada y realmente utilizada para:
 
-- versión declarada;
-- versión real utilizada para instalación;
-- versión real utilizada para tests;
-- versión real utilizada para build.
+- install;
+- typecheck;
+- build;
+- tests.
 
-La verificación completa de target Node.js requiere ejecutar las validaciones relevantes con la versión objetivo cuando
-sea técnicamente posible.
+No afirmar validación completa bajo Node.js 24 si no se utilizó donde correspondía.
 
-## Dependencias
+## Instalación
 
-Usar instalación reproducible.
+Usar el mecanismo reproducible del proyecto.
 
-Con npm y lockfile:
-
-`npm ci`
-
-cuando corresponda al proyecto.
-
-No actualizar dependencias durante verificación.
-
-Registrar fallos sin corregirlos.
+No actualizar dependencias.
 
 ## Typecheck
 
-Ejecutar el comando definido por el proyecto.
+Ejecutar el comando real del proyecto.
 
-Registrar:
-
-- comando;
-- runtime;
-- resultado;
-- errores relevantes.
+Registrar resultado.
 
 ## Build
 
-Ejecutar el build global final.
+Ejecutar build global final.
 
-Aquí sí es un gate.
-
-Registrar:
-
-- comando;
-- resultado;
-- outputs;
-- errores;
-- runtime utilizado.
+Aquí sí es gate obligatorio cuando el proyecto requiere compilación.
 
 ## Tests
 
-Ejecutar la suite requerida.
+Ejecutar suite requerida.
 
-Registrar:
-
-- suites;
-- tests;
-- pass;
-- fail;
-- skipped.
-
-Los tests que protegían comportamiento antes de migración deben continuar verdes.
+Los tests de baseline deben continuar verdes.
 
 ## Coverage
 
-Ejecutar cuando forme parte del contrato.
+Verificar únicamente cuando forme parte del contrato existente.
 
-Registrar:
-
-- statements;
-- branches;
-- functions;
-- lines;
-- thresholds;
-- resultado.
-
-No introducir nuevos thresholds durante verificación.
+No crear thresholds nuevos.
 
 ## Azure Functions Host
 
-Cuando exista configuración sanitizada y aprobada suficiente, validar:
+Ejecutar solo cuando exista configuración sanitizada/aprobada suficiente.
+
+Validar:
 
 - startup;
 - module loading;
-- Function registration;
-- errors relevantes.
-
-No realizar integration testing en el alcance actual.
+- registrations;
+- errores relevantes.
 
 Si no puede ejecutarse:
 
@@ -192,160 +129,70 @@ Si no puede ejecutarse:
 
 con razón.
 
-Nunca abrir automáticamente configuración sensible.
+No leer settings sensibles automáticamente.
 
-## Functions esperadas
+## Functions
 
 Comparar:
 
-- inventory inicial;
-- planes;
-- Functions finales.
+- BEFORE;
+- PLAN;
+- AFTER.
 
 Detectar:
 
-- Function faltante;
-- Function adicional no planificada;
-- rename inesperado;
-- cambio de trigger;
-- binding inesperado;
-- registration faltante.
+- missing;
+- unexpected;
+- renamed;
+- trigger changes;
+- binding differences.
 
 ## Programming Model
 
-Verificar que:
+Verificar:
 
-- Functions que debían migrar estén realmente en v4;
-- Functions ya v4 continúen registradas;
-- legacy residual no permanezca activo cuando debía retirarse.
+- Functions que debían migrar;
+- Functions ya v4;
+- legacy residual.
 
 ## Durable
 
-Verificar cada workflow como unidad.
+Verificar workflows como unidades.
 
-Comprobar cuando aplique:
+No afirmar replay compatibility productiva únicamente por pruebas locales.
 
-- starter/client;
-- orchestrator;
-- activities;
-- sub-orchestrators;
-- entities;
-- nombres;
-- graph esperado;
-- registrations.
+## Arquitectura
 
-No afirmar compatibilidad de replay productivo únicamente mediante validación local.
+Verificar únicamente obligaciones del plan.
 
-## Arquitectura objetivo
+Comprobar cuando corresponda:
 
-Verificar que el estado resultante respete:
+- adapters Azure;
+- capability boundaries;
+- infrastructure isolation;
+- configuration isolation;
+- dependency boundaries.
 
-`../_shared/architecture-policy.md`
+No verificar arquitectura por cantidad de carpetas.
 
-La verificación debe comprobar únicamente reglas que puedan observarse con evidencia suficiente.
-
-## Azure adapters
-
-Verificar cuando corresponda que:
-
-`src/functions/`
-
-contenga principalmente responsabilidades de integración Azure.
-
-Detectar como desviación cuando exista evidencia clara de:
-
-- lógica de negocio significativa dentro del adapter;
-- acceso directo innecesario a infraestructura desde el adapter;
-- duplicación de comportamiento funcional.
-
-No bloquear por estilo.
-
-Bloquear únicamente cuando contradiga una acción arquitectónica obligatoria del plan.
-
-## Capabilities
-
-Verificar que el código refactorizado esté organizado por capability según el plan.
-
-No exigir carpetas no planificadas.
-
-No considerar ausencia de:
-
-- `application`;
-- `domain`;
-- `infrastructure`;
-
-como error si no eran necesarias.
-
-## Capas vacías
-
-Detectar carpetas o abstracciones creadas sin uso cuando sean claramente resultado de la migración.
-
-Clasificar normalmente como:
-
-`TECHNICAL_DEBT`
-
-salvo que afecten comportamiento o build.
-
-## Runtime coupling
-
-Verificar que acciones planificadas para desacoplar:
-
-- Azure runtime;
-- process.env;
-- SDK clients;
-- infraestructura;
-
-hayan sido realmente aplicadas.
-
-No exigir aislamiento que no estuviera en el plan.
+La ausencia de `domain/` o `infrastructure/` no es fallo si no eran necesarias.
 
 ## Shared resources
 
-Consolidar los shared resources definidos en el plan.
-
-Para cada recurso verificar:
+Verificar por resource:
 
 - ownership;
-- implementación esperada;
-- consumidores;
-- acción propietaria;
-- ausencia de migraciones duplicadas;
-- configuración por nombre de clave;
-- dependencias.
+- consumers;
+- implementation;
+- shared action;
+- duplications;
+- deviations.
 
-## Duplicación de shared resources
+No bloquear por preferencia de ubicación.
 
-Detectar casos como:
-
-- múltiples Cosmos repositories para la misma responsabilidad creados por la migración;
-- múltiples client factories equivalentes;
-- contracts duplicados;
-- ownership contradictorio.
-
-Clasificar según impacto:
-
-- `BLOCKING`
-- `TECHNICAL_DEBT`
-- `UNKNOWN`
-
-## Ownership
-
-Verificar que recursos `CAPABILITY` o `WORKFLOW` no hayan sido promovidos arbitrariamente a global/shared.
-
-La ubicación concreta no debe juzgarse por convención, sino por el ownership definido en plan.
+Bloquear únicamente cuando contradiga una obligación real o produzca riesgo funcional.
 
 ## Legacy scan
-
-Buscar artefactos que el plan esperaba retirar.
-
-Ejemplos:
-
-- `function.json`;
-- adapters legacy;
-- imports antiguos;
-- dependencies antiguas;
-- configuration obsolete;
-- code paths no utilizados.
 
 Clasificar:
 
@@ -358,61 +205,26 @@ No eliminar nada.
 
 ## Packaging
 
-Verificar contenido requerido para deployment.
+Verificar cuando corresponda:
 
-Comprobar cuando corresponda:
-
-- `dist`;
-- `package.json`;
+- dist;
+- package.json;
 - lockfile;
 - runtime dependencies;
-- `host.json`;
+- host.json;
 - `.funcignore`.
 
-Detectar contenido que no debería desplegarse, por ejemplo:
+Detectar artefactos no runtime que no deberían desplegarse.
 
-- `.migration`;
-- `.skill-improvement`;
-- tests;
-- coverage;
-- test-results;
-- documentación de desarrollo.
-
-## Catálogo BEFORE
+## Catálogo
 
 No modificar:
 
 `.migration/catalog/**`
 
-durante verificación.
+El catálogo conserva BEFORE.
 
-El catálogo debe conservar la fotografía original.
-
-## Documentación AFTER
-
-El estado final se documenta en:
-
-`.migration/verification/verification.md`
-
-No sobrescribir la baseline histórica.
-
-## Compatibilidad futura
-
-Evaluar únicamente las acciones explícitas del plan destinadas a reducir impacto futuro.
-
-Por ejemplo:
-
-- adapters Azure aislados;
-- infrastructure detrás de contratos;
-- capabilities independientes del runtime.
-
-No afirmar que futuras migraciones serán automáticamente compatibles.
-
-El objetivo es verificar reducción de acoplamiento, no garantizar el futuro.
-
-## Deuda técnica
-
-Consolidar deuda no bloqueante.
+## Deuda y optimización
 
 Separar:
 
@@ -422,9 +234,9 @@ Separar:
 
 No resolverlas.
 
-## Verificaciones
+## Checks
 
-Cada check debe usar:
+Usar:
 
 - `PASS`
 - `FAIL`
@@ -443,167 +255,103 @@ Usar:
 
 ## VERIFIED
 
-Usar cuando:
+Requiere:
 
 - target obligatorio alcanzado;
-- build pasa;
-- tests obligatorios pasan;
-- Functions esperadas están presentes;
-- arquitectura obligatoria planificada fue aplicada;
-- no existen blockers conocidos.
+- build requerido exitoso;
+- tests obligatorios verdes;
+- Functions completas;
+- architecture obligations satisfechas;
+- shared resources consistentes;
+- ausencia de blockers.
 
 ## VERIFIED_WITH_DEBT
 
-Usar cuando:
+Los gates obligatorios pasan y solo queda deuda no bloqueante.
 
-- todos los gates obligatorios pasan;
-- queda deuda técnica no bloqueante.
-
-## BLOCKED
-
-Usar cuando exista al menos un fallo obligatorio.
-
-Ejemplos:
-
-- build FAIL;
-- tests FAIL;
-- Function faltante;
-- workflow Durable incompleto;
-- arquitectura requerida por el plan no aplicada;
-- shared resource incompatible o duplicado de forma bloqueante.
-
-## REQUIRES_REVIEW
-
-Usar cuando la evidencia disponible no permite decidir con suficiente confianza.
-
-## Salidas
+## Salidas estructuradas
 
 Crear:
 
 `.migration/verification/verification.json`
 
-`.migration/verification/verification.md`
+Debe contener:
 
-Y:
-
-`.migration/lessons/verify-function-app/lessons.json`
-
-`.migration/lessons/verify-function-app/lessons.md`
-
-## verification.json
-
-Debe contener como mínimo:
-
-- metadata;
+- final status;
 - target;
-- before reference;
-- plan reference;
-- runtime validation;
+- BEFORE/PLAN references;
+- runtime;
 - installation;
 - typecheck;
 - build;
 - tests;
 - coverage;
 - host;
-- expected functions;
-- detected functions;
+- functions;
 - programming model;
-- durable;
+- Durable;
 - architecture;
 - shared resources;
 - legacy scan;
 - packaging;
 - blockers;
-- technical debt;
-- optimization opportunities;
+- debt;
+- optimizations;
 - risks;
-- unknowns;
-- final status.
+- unknowns.
 
-## Architecture verification
+## Salida humana
 
-Debe incluir cuando corresponda:
+Crear:
 
-- adapters;
-- capabilities;
-- dependency boundaries;
-- infrastructure isolation;
-- configuration isolation;
-- shared resource ownership;
-- structural deviations.
+`.migration/verification/verification.md`
 
-Cada hallazgo debe referenciar la acción del plan correspondiente cuando exista.
+Usar:
 
-## Shared resource verification
-
-Registrar por recurso:
-
-- resourceId;
-- ownership;
-- consumers expected;
-- consumers detected;
-- expected action;
-- resulting implementation;
-- duplicate implementations;
-- verification status.
-
-## verification.md
-
-Debe responder claramente:
-
-- ¿la migración terminó?;
-- ¿el target técnico fue alcanzado?;
-- ¿la arquitectura objetivo fue aplicada?;
-- ¿las Functions siguen registradas?;
-- ¿los workflows Durable están completos?;
-- ¿los recursos compartidos quedaron consistentes?;
-- ¿qué verificaciones no pudieron ejecutarse?;
-- ¿queda legacy activo?;
-- ¿qué bloquea?;
-- ¿qué deuda queda?;
-- ¿qué requiere revisión manual?
+`../_shared/templates/verification.template.md`
 
 ## Lecciones
 
-Aplicar:
+Crear:
 
-`../_shared/lessons-policy.md`
+`.migration/lessons/verify-function-app/lessons.json`
+
+`.migration/lessons/verify-function-app/lessons.md`
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- se consumieron artefactos relevantes;
-- BEFORE, PLAN y AFTER fueron considerados;
-- instalación fue validada;
-- typecheck fue ejecutado;
-- build global fue ejecutado;
+- BEFORE, PLAN y AFTER fueron comparados;
+- installation fue evaluada;
+- typecheck fue ejecutado cuando aplica;
+- build global fue ejecutado cuando aplica;
 - tests fueron ejecutados;
 - Functions fueron comparadas;
 - Durable fue verificado cuando aplica;
-- arquitectura fue verificada contra el plan;
-- shared resources fueron verificados;
+- arquitectura fue verificada contra obligaciones reales;
+- shared resources fueron comprobados;
 - legacy scan fue ejecutado;
 - packaging fue revisado;
-- blockers, debt, optimizations y unknowns quedaron separados;
+- blockers/debt/optimizations/unknowns fueron separados;
 - se emitió estado final;
 - se generaron verification y lessons.
 
 ## Fuera de alcance
 
-Este skill no debe:
+No debe:
 
 - corregir código;
 - modificar tests;
 - refactorizar;
 - actualizar dependencias;
 - migrar;
-- mover recursos compartidos;
+- mover shared resources;
 - eliminar legacy;
 - modificar pipelines;
 - desplegar;
 - optimizar.
 
-Si el resultado es `BLOCKED`, debe identificarse el capability responsable de resolver cada bloqueo.
+Si el resultado es `BLOCKED`, identificar el capability responsable de cada bloqueo.
 
-Si el resultado es `VERIFIED` o `VERIFIED_WITH_DEBT`, la migración técnica puede considerarse cerrada.
+Si es `VERIFIED` o `VERIFIED_WITH_DEBT`, la migración técnica puede considerarse cerrada.

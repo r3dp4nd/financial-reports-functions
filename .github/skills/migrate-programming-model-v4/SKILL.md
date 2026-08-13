@@ -9,11 +9,9 @@ description: Migra una Function legacy de Azure Functions Node.js al Programming
 
 Migrar una Function legacy hacia Programming Model v4.
 
-El cambio debe concentrarse en la integración con Azure Functions.
+El cambio debe concentrarse en la integración Azure.
 
-La arquitectura funcional preparada previamente debe permanecer estable.
-
-No modificar comportamiento funcional intencionalmente.
+No modificar intencionalmente comportamiento funcional ni arquitectura ya preparada.
 
 ## Políticas
 
@@ -34,53 +32,43 @@ Deben existir:
 
 `.migration/functions/<FunctionName>/preparation.json`
 
-También debe existir:
-
 `.migration/plans/migration-plan.json`
 
-La Function debe estar:
-
-`READY_FOR_MIGRATION`
-
-salvo que el plan indique explícitamente que la migración no requiere preparación adicional.
+La Function debe estar preparada para migración.
 
 ## Entradas
 
-Consumir primero:
+Consumir:
 
 - analysis;
 - plan global;
 - plan específico;
 - preparation;
-- shared resource dependencies relacionadas.
+- shared dependencies.
 
-No volver a analizar toda la Function App.
+No volver a analizar toda la App.
 
 ## Aplicabilidad
 
-Si la Function ya utiliza Programming Model v4:
+Ya v4:
 
 `NOT_APPLICABLE`
 
-Si Programming Model no puede confirmarse:
+Programming Model desconocido:
 
 `REQUIRES_REVIEW`
 
-Si forma parte de un workflow Durable cuya migración debe ejecutarse de forma coordinada:
+Workflow Durable:
 
-delegar a:
-
-`migrate-durable-functions-v4`
-
-No migrar componentes Durable de forma independiente cuando ello pueda alterar el workflow.
+delegar a `migrate-durable-functions-v4` cuando corresponda.
 
 ## Principio
 
-Transformar principalmente:
+Transformar:
 
 `Azure adapter legacy`
 
-en:
+hacia:
 
 `Azure adapter Programming Model v4`
 
@@ -88,307 +76,151 @@ Preservando:
 
 - comportamiento;
 - trigger;
-- contratos externos;
+- bindings;
+- contratos;
 - nombres;
-- arquitectura preparada;
-- dependencias internas;
+- capability;
 - shared resources;
 - tests.
 
-## Arquitectura preparada
+## Arquitectura
 
-Usar como base la estructura resultante de:
+Usar la estructura preparada por `prepare-function`.
 
-`prepare-function`
+No reorganizar nuevamente la capability.
 
-La migración no debe volver a reorganizar la capability.
-
-Idealmente:
-
-    src/
-    ├── functions/
-    │   └── <function>.function.ts
-    └── <Capability>/
-        └── ...
-
-El cambio de Programming Model debe concentrarse en:
+La migración debe concentrarse principalmente en:
 
 `src/functions/**`
 
-cuando la preparación haya logrado ese aislamiento.
-
-## Adapter Azure
-
-El adapter debe encargarse únicamente de responsabilidades de runtime como:
-
-- registro;
-- trigger configuration;
-- request/message mapping;
-- invocation;
-- response mapping;
-- composition cuando corresponda.
-
-No introducir nueva lógica funcional.
+cuando el aislamiento ya exista.
 
 ## Plan específico
 
-Ejecutar únicamente los pasos de plataforma incluidos en:
-
-`.migration/functions/<FunctionName>/migration-plan.json`
-
-No ejecutar:
-
-- refactors arquitectónicos ya completados;
-- deuda técnica;
-- optimizaciones;
-- shared resource actions globales ya ejecutadas.
-
-## requiredActions
-
-Consumir acciones relevantes del análisis y plan.
+Ejecutar únicamente acciones de plataforma aprobadas.
 
 Principalmente:
 
-- `REQUIRED_PLATFORM`.
+`REQUIRED_PLATFORM`
 
-Las acciones `STRUCTURAL` deberían haber sido resueltas durante preparación.
-
-Si una acción estructural necesaria sigue pendiente y bloquea la migración:
+Si queda pendiente una acción estructural obligatoria:
 
 `BLOCKED`
 
 ## Shared resources
 
-Respetar las dependencias declaradas en el plan.
-
-Una Function puede depender de:
-
-`SR-ACTION-*`
-
-La migración del adapter no debe:
+No:
 
 - recrear repositories;
-- crear nuevos SDK clients alternativos;
 - duplicar factories;
-- modificar ownership.
+- construir clientes alternativos;
+- cambiar ownership.
 
-Debe consumir la arquitectura preparada.
+Consumir los límites ya preparados.
 
 ## Registro v4
 
-Migrar el registro usando la API correspondiente al trigger confirmado.
+Usar la API correspondiente al trigger confirmado.
 
-Preservar:
+Preservar configuración observable y nombres.
 
-- nombre lógico;
-- configuración;
-- bindings;
-- metadata relevante.
-
-No inventar equivalencias.
+No inventar mappings.
 
 ## function.json
 
-Cuando una Function legacy haya sido migrada correctamente:
+Retirar únicamente el correspondiente a la Function migrada cuando deje de ser requerido.
 
-- trasladar al registro v4 la configuración requerida;
-- retirar únicamente el `function.json` correspondiente cuando ya no sea necesario.
+No realizar cleanup global.
 
-No eliminar archivos legacy de otras Functions pendientes.
+## Bindings
 
-## HTTP
+Preservar semántica relevante del trigger/binding real.
 
-Preservar:
-
-- methods;
-- route;
-- authorization level;
-- input;
-- status;
-- headers;
-- body;
-- errores observables.
-
-## Timer
-
-Preservar:
-
-- schedule;
-- configuración relevante;
-- comportamiento funcional invocado.
-
-## Service Bus
-
-Preservar cuando aplique:
-
-- queue;
-- topic;
-- subscription;
-- connection setting name;
-- cardinalidad;
-- metadata relevante.
-
-Nunca resolver valores de configuración.
-
-## Cosmos DB
-
-Cuando exista binding Cosmos:
-
-preservar las propiedades necesarias del binding.
-
-Si la arquitectura preparada ya aisló Cosmos mediante infraestructura propia:
-
-no reintroducir acceso directo a Cosmos dentro del Azure adapter.
-
-## Otros bindings
-
-Usar evidencia y documentación correspondiente al binding real.
-
-No transformar mediante reglas genéricas si la semántica no está confirmada.
+Nunca leer valores de configuración.
 
 ## context
 
-Adaptar únicamente usos reales relacionados con el Programming Model.
+Adaptar únicamente usos necesarios del modelo legacy.
 
-Ejemplos:
+No ejecutar reemplazos globales mecánicos.
 
-- logging;
-- request;
-- response;
-- invocation metadata;
-- bindings.
+## Composition
 
-No realizar reemplazos globales mecánicos sobre todo el source.
+El adapter puede realizar wiring de dependencias según la arquitectura preparada.
 
-## Composition root
-
-Cuando el adapter actúe como composition root:
-
-puede construir o recibir las implementaciones necesarias según arquitectura existente.
-
-No introducir un DI framework.
-
-No modificar ownership de dependencias compartidas.
+No introducir framework DI.
 
 ## Código funcional
 
-No modificar la capability salvo que exista una incompatibilidad estrictamente necesaria causada por el cambio de
-Programming Model.
+No modificar la capability salvo incompatibilidad estrictamente necesaria.
 
-Si ocurre:
-
-- justificar;
-- mantener el cambio mínimo;
-- ejecutar nuevamente tests;
-- registrar la desviación.
-
-Si el cambio supera el plan:
+Si se requiere un cambio fuera del plan:
 
 `REQUIRES_REVIEW`
 
 ## Tests
 
-Ejecutar la misma baseline definida en preparación.
+Ejecutar la misma baseline preparada previamente.
 
-Los tests deben continuar verdes.
+Debe continuar verde.
 
-Registrar:
+No cambiar tests para aceptar una regresión.
 
-- comando;
-- runtime;
-- suites;
-- pass/fail;
-- diferencias observadas.
-
-No cambiar tests para aceptar una regresión no justificada.
-
-## Validación selectiva
+## Validación
 
 Ejecutar cuando corresponda:
 
-- unit tests;
+- tests;
 - typecheck selectivo;
-- imports;
-- registration validation;
+- registration checks;
 - static checks.
 
-No exigir build global después de esta Function.
-
-## Estado intermedio
-
-Una Function App puede contener temporalmente:
-
-- Functions legacy;
-- Functions v4;
-
-durante la migración.
-
-Esto no significa que el estado mixto sea válido como cierre final.
-
-`verify-function-app` determinará el estado final.
+No exigir build global.
 
 ## Catálogo
 
-No modificar:
+No modificar documentación BEFORE.
 
-`.migration/catalog/functions/<FunctionName>.md`
-
-para describir el estado migrado.
-
-Ese archivo representa la fotografía BEFORE.
-
-La migración se documenta en:
-
-`.migration/functions/<FunctionName>/migration.md`
-
-## Salidas
+## Salidas estructuradas
 
 Crear:
 
 `.migration/functions/<FunctionName>/migration.json`
 
-`.migration/functions/<FunctionName>/migration.md`
+Debe registrar:
 
-Y:
-
-`.migration/lessons/migrate-programming-model-v4/<FunctionName>.json`
-
-`.migration/lessons/migrate-programming-model-v4/<FunctionName>.md`
-
-## migration.json
-
-Debe incluir como mínimo:
-
-- metadata;
-- function;
-- capability;
+- status;
 - plan reference;
-- previous programming model;
-- resulting programming model;
-- trigger;
-- bindings;
+- previous model;
+- resulting model;
+- trigger/bindings;
 - adapter changes;
 - architecture preserved;
 - shared resources preserved;
 - files modified;
-- legacy artifacts handled;
+- legacy artifacts;
 - tests;
 - validations;
 - risks;
-- unknowns;
-- status.
+- unknowns.
 
-## migration.md
+## Salida humana
 
-Debe explicar:
+Crear:
 
-- qué adapter fue migrado;
-- qué configuración legacy fue reemplazada;
-- qué comportamiento permaneció estable;
-- qué arquitectura fue preservada;
-- qué shared resources utiliza;
-- qué tests fueron ejecutados;
-- qué quedó pendiente.
+`.migration/functions/<FunctionName>/migration.md`
+
+Usar:
+
+`../_shared/templates/function-migration.template.md`
+
+## Lecciones
+
+Crear:
+
+`.migration/lessons/migrate-programming-model-v4/<FunctionName>.json`
+
+`.migration/lessons/migrate-programming-model-v4/<FunctionName>.md`
 
 ## Estados
 
@@ -399,77 +231,32 @@ Usar:
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-## MIGRATED
-
-Usar únicamente cuando:
-
-- el adapter fue migrado;
-- la configuración requerida fue preservada;
-- la arquitectura preparada sigue válida;
-- los shared resources no fueron duplicados;
-- los tests requeridos continúan verdes;
-- no existe blocker conocido específico de esta Function.
-
-## NOT_APPLICABLE
-
-Usar cuando:
-
-- la Function ya estaba en Programming Model v4;
-- o su migración pertenece íntegramente al workflow Durable especializado.
-
-## BLOCKED
-
-Ejemplos:
-
-- preparation incompleta;
-- shared dependency obligatoria pendiente;
-- baseline falla;
-- configuración de trigger no puede preservarse.
-
-## REQUIRES_REVIEW
-
-Ejemplos:
-
-- Programming Model contradictorio;
-- binding no puede mapearse con suficiente evidencia;
-- el cambio requiere alterar comportamiento;
-- el cambio excede el plan.
-
-## Lecciones
-
-Aplicar:
-
-`../_shared/lessons-policy.md`
-
 ## Criterio de cierre
 
-El skill termina cuando:
+`MIGRATED` requiere:
 
-- se verificó aplicabilidad;
-- se consumió el plan específico;
-- el adapter fue migrado cuando correspondía;
-- arquitectura y ownership fueron preservados;
-- trigger y bindings fueron preservados;
-- tests continúan verdes;
-- no se duplicaron shared resources;
-- no se introdujeron optimizaciones;
-- se generaron migration y lessons.
+- adapter migrado;
+- configuración preservada;
+- arquitectura preservada;
+- shared resources no duplicados;
+- baseline verde;
+- ausencia de blocker específico.
 
 ## Fuera de alcance
 
-Este skill no debe:
+No debe:
 
-- refactorizar nuevamente la capability sin necesidad;
-- migrar workflows Durable;
+- refactorizar nuevamente sin necesidad;
+- migrar Durable;
 - modificar lógica de negocio;
 - redefinir shared resources;
 - actualizar dependencias no planificadas;
-- resolver deuda no bloqueante;
+- resolver deuda;
 - optimizar;
-- ejecutar build global final;
+- ejecutar build final;
 - desplegar.
 
-El siguiente skill depende del caso:
+Siguiente skill:
 
 - `migrate-durable-functions-v4`
-- `verify-function-app`
+- o `verify-function-app`

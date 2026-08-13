@@ -7,21 +7,19 @@ description: Prepara una Function para migración refactorizándola hacia la arq
 
 ## Objetivo
 
-Preparar una Function para que pueda migrarse de forma segura.
+Preparar una Function para migración segura.
 
 Debe:
 
 - preservar comportamiento;
-- converger hacia la arquitectura objetivo;
-- reducir acoplamiento al runtime y SDKs;
-- respetar ownership de recursos compartidos;
+- converger hacia arquitectura objetivo;
+- reducir acoplamiento a runtime y SDKs;
+- respetar shared resources;
 - lograr testabilidad;
-- agregar tests de protección;
-- obtener una baseline reproducible.
+- agregar tests;
+- obtener baseline reproducible.
 
-Este skill puede modificar código funcional únicamente mediante refactor sin cambio intencional de comportamiento.
-
-No migra todavía Programming Model ni Durable.
+No migra Programming Model ni Durable.
 
 ## Políticas
 
@@ -40,16 +38,11 @@ Deben existir:
 
 `.migration/functions/<FunctionName>/migration-plan.json`
 
-Debe existir también el plan global:
-
 `.migration/plans/migration-plan.json`
 
-La preparación global requerida debe haberse ejecutado o encontrarse en un estado que permita trabajar de forma segura
-sobre esta Function.
+La preparación global necesaria debe estar ejecutada o no bloquear esta Function.
 
-## Entrada
-
-Recibir una Function objetivo.
+## Entradas
 
 Consumir primero:
 
@@ -57,109 +50,77 @@ Consumir primero:
 - assessment;
 - analysis;
 - plan global;
-- plan específico de la Function;
+- plan específico;
 - preparation global;
-- shared resource actions relacionadas.
+- shared resources relacionados.
 
-No volver a analizar toda la Function App.
+No volver a analizar toda la App.
 
-## Neutralidad del ejecutor
+## Comportamiento
 
-El plan puede haberse preparado para ejecución:
+Usar como fuente principal:
 
-- mediante IA;
-- mediante skill;
-- manualmente.
+`analysis.json`
 
-Este skill debe seguir exactamente la misma intención técnica y criterios de resultado.
+y el plan específico.
 
-## Comportamiento a preservar
-
-Usar como fuentes:
-
-- `analysis.json`;
-- `migration-plan.json`;
-- ficha del catálogo.
-
-Identificar:
+Preservar:
 
 - inputs;
 - validaciones;
 - decisiones;
-- efectos secundarios;
+- side effects;
 - interacciones externas;
 - outputs;
-- errores;
-- contratos observables.
+- errores.
 
-No cambiar intencionalmente estos comportamientos.
+No cambiar intencionalmente comportamiento.
 
-## Arquitectura objetivo
+## Arquitectura
 
-Todo código refactorizado debe converger hacia:
+Aplicar:
 
 `../_shared/architecture-policy.md`
 
-La arquitectura objetivo es obligatoria.
+La arquitectura es obligatoria para código refactorizado.
 
-Esto no significa crear todas las capas posibles.
-
-La materialización debe ser incremental.
+La materialización es incremental.
 
 ## Estructura
 
-Los adapters Azure deben quedar o converger hacia:
+Azure adapters:
 
 `src/functions/`
 
-La lógica funcional debe quedar organizada bajo:
+Lógica funcional:
 
 `src/<Capability>/`
 
-Ejemplo simple:
+Crear únicamente componentes con responsabilidad real.
 
-    src/
-    ├── functions/
-    │   └── request-report.function.ts
-    └── RequestReport/
-        ├── request-report.service.ts
-        └── tests/
-
-Ejemplo con infraestructura:
-
-    src/
-    ├── functions/
-    │   └── request-report.function.ts
-    └── RequestReport/
-        ├── application/
-        ├── domain/
-        ├── infrastructure/
-        └── tests/
-
-Crear únicamente carpetas que vayan a contener una responsabilidad real.
+No crear capas vacías.
 
 ## Adapter Azure
 
-Reducir el entrypoint Azure a responsabilidades como:
+Debe quedar limitado principalmente a:
 
 - registro;
-- mapping;
-- extracción de inputs;
-- composición;
-- llamada a comportamiento funcional;
-- mapping de output.
+- input mapping;
+- composition;
+- invocation;
+- output mapping.
 
-No dejar lógica de negocio relevante dentro del adapter cuando el código sea refactorizado.
+No mantener lógica funcional significativa dentro del adapter cuando el plan exige extraerla.
 
 ## Capability
 
-La lógica debe organizarse según la capability identificada.
+Organizar lógica según la capability identificada.
 
-No crear automáticamente una capability diferente por cada Function si varias pertenecen al mismo proceso funcional.
+No crear una capability artificial por cada Function cuando varias pertenecen al mismo proceso.
 
-## requiredActions
+## Acciones
 
-Ejecutar las acciones aprobadas del plan específico.
+Ejecutar únicamente acciones aprobadas del plan.
 
 Principalmente:
 
@@ -168,122 +129,52 @@ Principalmente:
 
 No ejecutar:
 
-- `OPTIMIZATION`;
-- deuda técnica no necesaria;
-- acciones globales ya tratadas.
+- optimizaciones;
+- deuda no bloqueante;
+- acciones globales ya completadas.
 
-## Architecture gap
+## Contracts
 
-Usar:
-
-`analysis.architectureGap`
-
-para determinar qué cambios estructurales son necesarios.
-
-Ejemplos:
-
-- extraer lógica del Azure adapter;
-- separar persistencia;
-- aislar messaging;
-- encapsular configuración;
-- introducir contrato de repositorio;
-- mover implementación a infraestructura;
-- adaptar ownership de shared resource.
-
-No inventar cambios arquitectónicos no respaldados por analysis/plan.
-
-## Contratos internos
-
-Crear un contrato cuando exista una dependencia externa que deba aislarse y ello aporte:
+Crear un contrato cuando aporte un límite real para:
 
 - testabilidad;
-- desacoplamiento;
-- ownership claro;
-- facilidad de futura migración.
+- infraestructura;
+- ownership;
+- futuras migraciones.
 
 Usar nombres naturales.
 
-Ejemplos:
-
-- `ReportRepository`;
-- `MessagePublisher`;
-- `ReportStorage`;
-- `CustomerRepository`.
-
-No exigir nombres como:
-
-- `RepositoryPort`;
-- `ServicePort`;
-- `AdapterPort`;
-
-por convención.
+No imponer `*.port.ts`.
 
 ## Infraestructura
 
-SDKs externos no deben quedar acoplados a la lógica funcional cuando la Function sea refactorizada.
+Aislar cuando corresponda:
 
-Ejemplos:
+- Cosmos DB;
+- MongoDB;
+- SQL;
+- Service Bus;
+- Blob Storage;
+- HTTP;
+- otros SDKs.
 
-### Cosmos DB
+No crear interfaces sin responsabilidad real.
 
-Evitar:
+## Shared resources
 
-`application/service → CosmosClient`
+Consumir:
 
-Preferir:
+- resource IDs;
+- shared actions;
+- `dependsOn`.
 
-`application/service → ReportRepository ← CosmosReportRepository`
+Una Function consumidora no debe duplicar infraestructura compartida.
 
-cuando exista comportamiento que justifique ese límite.
-
-### MongoDB
-
-Aislar cliente/collection access cuando sea infraestructura de la capability.
-
-### SQL
-
-Aislar acceso SQL o datasource detrás del contrato funcional apropiado.
-
-### Service Bus
-
-Separar publishing/consumption runtime-specific cuando sea necesario.
-
-### Blob
-
-Aislar almacenamiento cuando forme parte de infraestructura.
-
-No crear una interfaz para cada llamada externa si no aporta un límite real.
-
-## Recursos compartidos
-
-Consumir las referencias del plan:
-
-`sharedResources`
-
-y:
-
-`dependsOn`
-
-Una Function consumidora no debe volver a implementar una acción compartida ya asignada globalmente.
-
-Ejemplo:
-
-    RequestReport
-      dependsOn:
-        SR-ACTION-001
-
-Si `SR-ACTION-001` ya adaptó `ReportRepository`, este skill debe usar el resultado.
-
-No volver a crear otro repositorio Cosmos específico para la misma responsabilidad salvo que el plan indique un
-ownership distinto.
-
-## Acción compartida pendiente
-
-Si una Function depende de una shared resource action no ejecutada y dicha acción es necesaria para continuar:
+Si una acción compartida obligatoria sigue pendiente:
 
 `BLOCKED`
 
-No duplicar localmente la solución para evitar el bloqueo.
+No crear una solución local equivalente.
 
 ## Ownership
 
@@ -294,61 +185,39 @@ Respetar:
 - `CAPABILITY`
 - `WORKFLOW`
 
-No mover automáticamente infraestructura de una capability hacia `shared`.
+No mover automáticamente recursos de una capability a `shared`.
 
-## process.env
+## Configuración
 
-El comportamiento funcional no debería depender directamente de `process.env` cuando el código deba ser testeable.
+Aislar acceso a `process.env` cuando sea requerido por arquitectura/testabilidad.
 
-Puede:
-
-- extraer configuración en composition root;
-- pasar valores necesarios;
-- introducir configuración mínima tipada cuando aporte valor.
-
-Nunca leer ni registrar valores secretos durante análisis o documentación.
+No leer valores sensibles.
 
 ## SDK construction
 
-Mover creación de clientes externos fuera de lógica funcional cuando sea necesario.
+Mover construcción de clientes fuera de lógica funcional cuando corresponda.
 
-Preferir composition roots o factories existentes.
+Preferir composition root o factory existente.
 
-No introducir un dependency injection framework.
+No introducir framework DI.
 
 ## Refactor scope
 
-Clasificar el esfuerzo según el analysis:
+Usar:
 
 - `NONE`
 - `MINIMAL`
 - `SIGNIFICANT`
 
-### NONE
+`SIGNIFICANT` puede ejecutarse solo si el plan define el alcance suficiente.
 
-La Function ya respeta arquitectura y testabilidad necesarias.
-
-No refactorizar por uniformidad.
-
-### MINIMAL
-
-Aplicar únicamente los cambios necesarios para alcanzar arquitectura objetivo y testabilidad.
-
-### SIGNIFICANT
-
-Si el plan aprobó explícitamente el alcance:
-
-puede ejecutarse.
-
-Si no está suficientemente definido:
+En caso contrario:
 
 `REQUIRES_REVIEW`
 
-No expandir automáticamente el refactor.
-
 ## Tests
 
-Agregar los tests definidos en analysis y plan.
+Agregar únicamente los tests requeridos por analysis/plan.
 
 Priorizar:
 
@@ -356,155 +225,100 @@ Priorizar:
 2. reglas;
 3. validaciones;
 4. errores;
-5. interacciones con límites externos;
-6. mapping cuando sea relevante.
+5. límites externos;
+6. mappings relevantes.
 
 No agregar integration tests.
 
-## Characterization tests
+## Characterization
 
-Utilizar cuando el código legacy necesite fijar comportamiento antes o durante la extracción.
-
-Estos tests son especialmente útiles cuando el refactor arquitectónico implica separar código previamente mezclado.
+Usar cuando sea necesario fijar comportamiento legacy antes de separar responsabilidades.
 
 ## Unit tests
 
-Después de aislar comportamiento, preferir unit tests sobre la lógica funcional.
+Preferir tests sobre lógica funcional aislada.
 
-Mockear límites externos.
-
-No mockear detalles internos arbitrarios.
-
-## Ubicación de tests
-
-Seguir la organización acordada por capability.
-
-No crear una estructura de tests que obligue a duplicar jerarquías innecesariamente.
+Mockear límites externos, no detalles internos arbitrarios.
 
 ## Baseline
-
-Debe existir una baseline verde antes de realizar una migración de plataforma que pueda alterar comportamiento, cuando
-los tests requeridos sean técnicamente posibles.
 
 Registrar:
 
 - comando;
+- runtime;
 - suites;
-- pass/fail;
-- coverage cuando aplique;
-- runtime usado.
+- tests;
+- resultado;
+- coverage cuando aplique.
 
-## Tests que fallan
-
-Si un test basado en comportamiento documentado falla contra el código actual:
-
-- no cambiar arbitrariamente la expectativa;
-- revisar evidencia;
-- registrar contradicción;
-- utilizar `REQUIRES_REVIEW` cuando sea necesario.
+Para `READY_FOR_MIGRATION`, la baseline requerida debe estar verde.
 
 ## Programming Model
 
-No migrar Programming Model.
+No migrar.
 
-### Legacy
+Preservar temporalmente:
 
-Preservar temporalmente el adapter legacy necesario para ejecutar o representar la Function.
-
-La arquitectura interna puede ser refactorizada antes de cambiar el registro Azure.
-
-### v4
-
-Preservar el registro v4.
-
-No reconstruirlo innecesariamente.
+- adapter legacy;
+- o registro v4 existente.
 
 ## Durable
 
-Respetar el rol Durable.
-
-Para:
-
-- orchestrator;
-- activity;
-- starter;
-- client;
-- entity;
-
-la arquitectura interna puede prepararse cuando sea seguro.
+Puede preparar internamente Activities o componentes cuando sea seguro.
 
 No cambiar semántica del workflow.
 
-La migración coordinada pertenece a:
-
-`migrate-durable-functions-v4`
-
 ## Catálogo
 
-No reemplazar:
+No reescribir:
 
 `.migration/catalog/functions/<FunctionName>.md`
 
-con documentación del estado refactorizado.
+Ese documento representa BEFORE.
 
-Ese documento conserva la foto BEFORE.
-
-Los cambios realizados se documentan en:
-
-`.migration/functions/<FunctionName>/preparation.md`
-
-## Salidas
+## Salidas estructuradas
 
 Crear:
 
 `.migration/functions/<FunctionName>/preparation.json`
 
-`.migration/functions/<FunctionName>/preparation.md`
+Debe registrar:
 
-Y:
-
-`.migration/lessons/prepare-function/<FunctionName>.json`
-
-`.migration/lessons/prepare-function/<FunctionName>.md`
-
-## preparation.json
-
-Debe contener como mínimo:
-
-- metadata;
-- function;
-- capability;
 - status;
 - behavior preserved;
 - architecture before;
 - architecture changes;
 - resulting structure;
-- requiredActions executed;
-- sharedResources consumed;
-- sharedActions dependencies;
+- actions executed;
+- shared resources;
+- shared dependencies;
 - files modified;
 - contracts introduced;
 - infrastructure isolated;
-- tests added;
+- tests;
 - baseline;
 - validations;
 - risks;
 - unknowns;
-- technical debt remaining.
+- debt remaining.
 
-## preparation.md
+## Salida humana
 
-Debe explicar:
+Crear:
 
-- cómo estaba estructurada la Function;
-- qué arquitectura se aplicó;
-- qué carpetas realmente fueron necesarias;
-- qué comportamiento fue extraído;
-- qué infraestructura quedó aislada;
-- qué recursos compartidos consume;
-- qué tests protegen comportamiento;
-- resultado de baseline;
-- qué quedó pendiente.
+`.migration/functions/<FunctionName>/preparation.md`
+
+Usar:
+
+`../_shared/templates/function-preparation.template.md`
+
+## Lecciones
+
+Crear:
+
+`.migration/lessons/prepare-function/<FunctionName>.json`
+
+`.migration/lessons/prepare-function/<FunctionName>.md`
 
 ## Estados
 
@@ -515,87 +329,31 @@ Usar:
 - `REQUIRES_REVIEW`
 - `NOT_APPLICABLE`
 
-## READY_FOR_MIGRATION
-
-Usar cuando:
-
-- acciones obligatorias fueron completadas;
-- arquitectura objetivo aplicable fue alcanzada;
-- shared dependencies requeridas están disponibles;
-- tests requeridos están verdes;
-- no existe blocker conocido para la siguiente migración.
-
-## NOT_APPLICABLE
-
-Puede usarse cuando la Function no requiere preparación adicional.
-
-Por ejemplo:
-
-- arquitectura ya correcta;
-- tests suficientes;
-- sin acciones estructurales o de testabilidad.
-
-No modificar código para evitar `NOT_APPLICABLE`.
-
-## BLOCKED
-
-Usar cuando existe una dependencia necesaria no resuelta.
-
-Ejemplos:
-
-- shared resource action pendiente;
-- baseline no reproducible;
-- cambio global requerido no completado.
-
-## REQUIRES_REVIEW
-
-Usar cuando:
-
-- el refactor excede alcance aprobado;
-- comportamiento no puede confirmarse;
-- architecture gap es ambiguo;
-- existen contradicciones relevantes.
-
-## Lecciones
-
-Aplicar:
-
-`../_shared/lessons-policy.md`
-
 ## Criterio de cierre
 
-El skill termina cuando:
+`READY_FOR_MIGRATION` requiere:
 
-- analysis y plan específico fueron consumidos;
-- comportamiento fue preservado;
-- arquitectura objetivo aplicable fue alcanzada;
-- solo se crearon carpetas con responsabilidad real;
-- Azure runtime quedó desacoplado de lógica funcional cuando correspondía;
-- infraestructura externa quedó aislada cuando era necesario;
-- shared resources respetaron ownership;
-- no se duplicaron acciones compartidas;
-- tests necesarios fueron agregados;
-- baseline fue obtenida cuando correspondía;
-- no se migró Programming Model;
-- deuda y optimizaciones permanecen fuera de alcance;
-- se generaron preparation y lessons.
+- comportamiento preservado;
+- arquitectura objetivo aplicable alcanzada;
+- shared dependencies listas;
+- tests requeridos verdes;
+- ausencia de blocker local.
 
 ## Fuera de alcance
 
-Este skill no debe:
+No debe:
 
 - migrar Programming Model;
 - migrar Runtime;
-- migrar Durable workflow;
+- migrar Durable;
 - actualizar dependencias globales no planificadas;
-- rediseñar comportamiento de negocio;
+- modificar comportamiento de negocio;
 - optimizar;
 - resolver deuda no necesaria;
-- duplicar recursos compartidos;
+- duplicar shared resources;
 - desplegar.
 
-El siguiente skill depende del caso:
+Siguiente skill:
 
 - `migrate-programming-model-v4`
 - `migrate-durable-functions-v4`
-- `verify-function-app`

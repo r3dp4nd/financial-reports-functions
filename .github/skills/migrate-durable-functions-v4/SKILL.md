@@ -7,20 +7,17 @@ description: Migra un workflow Durable Functions como una unidad coherente hacia
 
 ## Objetivo
 
-Migrar un workflow Durable como una unidad coherente.
+Migrar un workflow Durable como unidad coherente.
 
-Debe preservar:
+Preservar:
 
 - comportamiento;
 - relaciones;
-- orden;
 - determinismo;
 - nombres;
-- contratos;
-- arquitectura preparada;
-- recursos compartidos.
-
-No migrar componentes Durable de forma aislada cuando el comportamiento dependa del workflow.
+- contracts;
+- arquitectura;
+- shared resources.
 
 ## Políticas
 
@@ -38,43 +35,41 @@ Deben existir:
 - inventory;
 - assessment;
 - plan global;
-- analyses de las Functions participantes;
-- planes específicos;
+- analyses participantes;
+- planes por Function;
 - preparations requeridas.
-
-Los componentes necesarios deben encontrarse preparados para migración.
 
 ## Entradas
 
 Consumir primero:
 
-- workflow identificado;
+- workflow;
 - analyses;
-- planes por Function;
-- plan global;
-- shared resource actions;
-- preparation artifacts;
-- tests existentes.
+- Function plans;
+- global plan;
+- shared resources;
+- preparations;
+- tests.
 
 No reconstruir toda la App.
 
 ## Aplicabilidad
 
-Si Durable no está presente:
+Durable ausente:
 
 `NOT_APPLICABLE`
 
-Si el workflow ya utiliza el target compatible y no requiere cambios:
+Workflow ya compatible:
 
 `NOT_APPLICABLE`
 
-Si no puede reconstruirse el workflow con evidencia suficiente:
+Grafo no confirmable:
 
 `REQUIRES_REVIEW`
 
-## Unidad de migración
+## Unidad
 
-La unidad es el workflow.
+La unidad de migración es el workflow.
 
 Puede incluir:
 
@@ -85,27 +80,19 @@ Puede incluir:
 - sub-orchestrators;
 - entities.
 
-Los planes individuales existen para trazabilidad y preparación.
+Los planes por Function sirven para detalle y trazabilidad, no para fragmentar incorrectamente la migración.
 
-La migración debe seguir siendo coordinada a nivel workflow.
+## Grafo y roles
 
-## Grafo
+Confirmar:
 
-Antes de modificar código, confirmar el grafo mínimo.
-
-Registrar:
-
-- nodos;
+- participants;
 - roles;
-- llamadas;
-- eventos;
-- dependencias relevantes.
+- calls;
+- events;
+- dependencies.
 
-No inferir relaciones únicamente por naming.
-
-## Roles
-
-Usar cuando corresponda:
+Roles:
 
 - `CLIENT`
 - `STARTER`
@@ -115,176 +102,85 @@ Usar cuando corresponda:
 - `ENTITY`
 - `UNKNOWN`
 
+No inferir relaciones solo por naming.
+
 ## Arquitectura
 
-Preservar la arquitectura preparada.
+Preservar la estructura preparada.
 
-Los adapters o registrations Durable específicos del runtime deben permanecer separados de la lógica funcional cuando la
-arquitectura target así lo haya establecido.
-
-Las Activities pueden depender de capabilities y contratos internos.
-
-No volver a mezclar Azure/Durable runtime con lógica funcional extraída previamente.
-
-## Plan global
-
-Consumir las acciones Durable coordinadas del plan global.
-
-El plan debe identificar:
-
-- workflow;
-- participantes;
-- orden;
-- shared resources;
-- dependencies;
-- migration steps;
-- verification criteria.
-
-## Planes por Function
-
-Usar los planes individuales para:
-
-- comportamiento a preservar;
-- preparación;
-- dependencies;
-- shared resources;
-- riesgos locales;
-- criterios específicos.
-
-No ejecutar Functions como migraciones totalmente independientes.
+No volver a mezclar runtime Durable con lógica funcional extraída.
 
 ## Shared resources
 
-Los workflows pueden consumir recursos compartidos como:
+Respetar resource ownership y shared actions.
 
-- Cosmos repositories;
-- Mongo repositories;
-- SQL repositories;
-- Service Bus;
-- Blob Storage;
-- HTTP clients;
-- shared services.
+No crear implementaciones por Activity cuando el recurso es compartido.
 
-Respetar ownership y `SR-ACTION-*`.
-
-No modificar un shared resource desde varias Activities.
-
-Si el recurso ya fue preparado globalmente:
-
-consumirlo.
-
-Si una shared resource action obligatoria está pendiente:
+Si una dependencia obligatoria está pendiente:
 
 `BLOCKED`
 
-## Starter
+## Starter / Client
 
 Preservar:
 
-- orchestrator target;
+- orchestrator;
 - input;
-- instance id cuando aplique;
-- response;
+- instance identity cuando aplique;
 - status behavior;
-- errores.
-
-## Client
-
-Preservar:
-
-- operaciones utilizadas;
-- nombres;
-- inputs;
-- relación con workflow.
+- response;
+- errors.
 
 ## Orchestrator
 
 Preservar:
 
-- orden de actividades;
-- decisiones;
+- order;
+- decisions;
 - branching;
 - fan-out/fan-in;
 - retries;
 - timers;
 - sub-orchestrations;
 - external events;
-- manejo de errores;
-- compensaciones;
-- resultado.
+- errors;
+- compensations;
+- result.
 
-No rediseñar el workflow durante migración.
+No rediseñar workflow.
 
 ## Determinismo
 
-Preservar las restricciones de replay y determinismo.
+No introducir dentro del orchestrator:
 
-Revisar especialmente:
-
-- acceso a tiempo;
-- random;
 - I/O;
 - network;
 - database;
-- filesystem;
-- side effects;
-- APIs externas.
-
-No introducir operaciones no deterministas dentro del orchestrator.
+- random no determinista;
+- tiempo no determinista;
+- side effects.
 
 ## Activities
 
-Preservar para cada Activity:
-
-- nombre;
-- input;
-- output;
-- errores;
-- efectos secundarios.
-
-Si la Activity fue refactorizada hacia una capability:
-
-mantener esa separación.
-
-## Sub-orchestrators
-
 Preservar:
 
-- nombre;
+- names;
 - input;
-- relación;
-- resultado;
-- orden de invocación.
+- output;
+- errors;
+- external effects.
 
-## Entities
-
-Cuando existan:
-
-- preservar identidad;
-- operaciones;
-- state transitions;
-- contratos observables.
-
-No rediseñar entidades como parte de migración.
+Mantener separación arquitectónica existente.
 
 ## Retries
 
-Preservar:
+Preservar semántica confirmada.
 
-- policy;
-- attempts;
-- delay/backoff;
-- errores que disparan retry;
-
-cuando exista evidencia.
-
-No optimizar retries.
+No optimizar.
 
 ## Timers
 
 Preservar timers Durable.
-
-No sustituirlos por mecanismos de timer comunes de Node.js.
 
 ## External Events
 
@@ -292,132 +188,92 @@ Preservar:
 
 - event name;
 - wait semantics;
-- timeout cuando exista;
-- comportamiento posterior.
+- timeout;
+- behavior.
 
-## Naming
+## Active instances
 
-Preservar nombres lógicos de:
+No afirmar seguridad productiva o replay compatibility sin evidencia.
 
-- orchestrators;
-- activities;
-- events;
-- entities;
-
-salvo que exista una acción explícita aprobada.
-
-## Instancias activas
-
-No afirmar que la migración es segura para instancias productivas actualmente en ejecución sin evidencia.
-
-Si existe riesgo de replay/versioning/active instances:
-
-registrar:
+Cuando afecte cierre:
 
 `REQUIRES_REVIEW`
 
-cuando afecte el cierre.
-
-## Dependencias
-
-Actualizar únicamente dependencias Durable incluidas en el plan global.
-
-No actualizar otros paquetes por conveniencia.
-
 ## Tests
 
-Ejecutar la baseline preparada para el workflow.
+Ejecutar baseline del workflow.
 
 Priorizar:
 
-- decisiones del orchestrator;
-- secuencia;
+- orchestrator decisions;
+- sequence;
 - activity contracts;
 - retries;
 - errors;
-- inputs;
-- outputs;
 - events;
-- sub-orchestrations cuando existan.
-
-No agregar integration tests.
+- sub-orchestrations.
 
 ## Validación
 
-Validar cuando sea posible:
+Ejecutar:
 
-- registrations;
-- nombres;
-- referencias;
 - tests;
 - typecheck selectivo;
-- workflow graph consistency.
+- registration checks;
+- graph consistency;
 
-La validación global Host pertenece a:
+cuando corresponda.
 
-`verify-function-app`
+Host global pertenece a verification.
 
 ## Catálogo
 
-No modificar las fichas BEFORE para reflejar estado migrado.
+No modificar documentación BEFORE.
 
-Documentar los cambios en el artefacto de migración Durable.
+## Salidas estructuradas
 
-## Salidas
-
-Crear por workflow:
+Crear:
 
 `.migration/functions/<WorkflowName>/durable-migration.json`
 
-`.migration/functions/<WorkflowName>/durable-migration.md`
+Debe registrar:
 
-Y:
-
-`.migration/lessons/migrate-durable-functions-v4/<WorkflowName>.json`
-
-`.migration/lessons/migrate-durable-functions-v4/<WorkflowName>.md`
-
-## durable-migration.json
-
-Debe registrar como mínimo:
-
-- metadata;
+- status;
 - workflow;
-- plan references;
 - participants;
 - graph;
 - roles;
-- previous model;
-- resulting model;
+- model change;
 - architecture preserved;
 - shared resources;
-- dependencies;
 - registrations;
 - retries;
 - timers;
 - events;
 - sub-orchestrators;
-- entities cuando existan;
+- entities;
 - tests;
 - validations;
 - active instance risks;
-- unknowns;
-- status.
+- unknowns.
 
-## durable-migration.md
+## Salida humana
 
-Debe explicar:
+Crear:
 
-- qué workflow fue migrado;
-- qué componentes participan;
-- cómo estaba organizado;
-- qué runtime integration cambió;
-- cómo se preservó arquitectura;
-- qué shared resources utiliza;
-- cómo se preservó comportamiento y determinismo;
-- tests;
-- riesgos;
-- pendientes.
+`.migration/functions/<WorkflowName>/durable-migration.md`
+
+Usar:
+
+`../_shared/templates/durable-migration.template.md`
+
+## Lecciones
+
+Crear:
+
+`.migration/lessons/migrate-durable-functions-v4/<WorkflowName>.json`
+
+`.migration/lessons/migrate-durable-functions-v4/<WorkflowName>.md`
 
 ## Estados
 
@@ -428,68 +284,31 @@ Usar:
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-## MIGRATED
-
-Usar cuando:
-
-- el workflow fue migrado coherentemente;
-- graph y nombres fueron preservados;
-- arquitectura preparada permanece válida;
-- shared resources no fueron duplicados;
-- determinismo fue preservado;
-- tests requeridos están verdes.
-
-## BLOCKED
-
-Ejemplos:
-
-- participant no preparado;
-- shared resource action pendiente;
-- baseline falla;
-- dependency Durable requerida no disponible.
-
-## REQUIRES_REVIEW
-
-Ejemplos:
-
-- workflow graph incompleto;
-- active instance risk no resuelto;
-- replay behavior incierto;
-- semántica no puede preservarse con suficiente evidencia.
-
-## Lecciones
-
-Aplicar:
-
-`../_shared/lessons-policy.md`
-
 ## Criterio de cierre
 
-El skill termina cuando:
+`MIGRATED` requiere:
 
-- workflow y participantes fueron confirmados;
-- planes fueron consumidos;
-- roles y grafo fueron validados;
-- APIs/registrations necesarias fueron migradas;
-- arquitectura y ownership fueron preservados;
-- determinismo permaneció válido;
-- tests siguen verdes;
-- riesgos operativos siguen visibles;
-- se generaron durable-migration y lessons.
+- workflow confirmado;
+- participantes coordinados;
+- registrations migradas;
+- arquitectura preservada;
+- shared resources consistentes;
+- determinismo preservado;
+- tests verdes.
 
 ## Fuera de alcance
 
-Este skill no debe:
+No debe:
 
 - rediseñar workflow;
 - modificar reglas de negocio;
 - optimizar paralelismo;
 - modificar retries por conveniencia;
 - redefinir shared resources;
-- ejecutar build global final;
-- declarar seguridad de instancias activas sin evidencia;
+- ejecutar build global;
+- afirmar seguridad de active instances sin evidencia;
 - desplegar.
 
-El siguiente skill sugerido es:
+Siguiente skill sugerido:
 
 `verify-function-app`
