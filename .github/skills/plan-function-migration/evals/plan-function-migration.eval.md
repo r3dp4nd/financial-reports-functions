@@ -2,124 +2,194 @@
 
 ## Objetivo
 
-Validar que el skill consolide correctamente shared resources antes de construir un plan global y planes por Function,
-sin duplicar análisis ni mezclar catálogo con planificación.
+Validar que planning coordine las acciones ya identificadas sin:
 
-## Caso 1 — Plan completo sin shared resources
+- reanalizar source;
+- redefinir versiones;
+- duplicar recursos compartidos;
+- perder provenance;
+- promover conocimiento de dependencias.
+
+## Caso 1 — Plan simple
 
 ### Entrada
 
-Existen:
-
-- inventory;
-- assessment;
-- analyses de todas las Functions;
-- ningún shared resource real.
+Una Function con acciones confirmadas.
 
 ### Esperado
 
-Debe crear:
+Crear:
 
-`.migration/plans/migration-plan.json`
+- plan global;
+- plan por Function.
 
-`.migration/plans/migration-plan.md`
+Status:
 
-y planes por Function.
+`READY`
 
-No debe crear:
+cuando no existen blockers.
 
-`.migration/resources/`
-
-si no existe un recurso compartido real.
-
-## Caso 2 — Shared resource confirmado
+## Caso 2 — Function actions
 
 ### Entrada
 
-RequestReport y GenerateReport confirman consumo del mismo `ReportRepository`.
+Analysis contiene:
+
+`FN-REQUESTREPORT-001`
 
 ### Esperado
 
-Debe crear:
+El plan conserva exactamente ese ID.
 
-`.migration/resources/shared-resources.json`
+No generar:
 
-con el recurso consolidado.
+`REQ-*`
 
-Debe registrar:
-
-- resourceId;
-- type;
-- ownership;
-- consumers;
-- paths;
-- configuration keys;
-- status;
-- evidence.
-
-## Caso 3 — Shared resources son descriptivos
+## Caso 3 — Dependency action global
 
 ### Entrada
 
-Recurso compartido necesita posteriormente migración.
+Assessment exige actualizar:
+
+`@azure/functions`
 
 ### Esperado
 
-`shared-resources.json` debe describir el recurso.
+Crear acción:
 
-No debe contener los pasos detallados de migración.
+`GLOBAL-*`
 
-La acción debe vivir en:
+con:
 
-`migration-plan.json`
+```text
+type = REQUIRED_DEPENDENCY
+```
 
-como `SR-ACTION-*`.
-
-## Caso 4 — Acción propietaria única
+## Caso 4 — Dependency provenance baseline
 
 ### Entrada
 
-RequestReport y GenerateReport usan el mismo repository Cosmos que requiere cambio.
+Dependency target proviene de baseline.
 
 ### Esperado
 
-Debe generar una sola acción:
+La acción conserva:
 
-`SR-ACTION-001`
+```text
+recommendationSource = BASELINE
+```
 
-Los dos Function plans deben depender de esa acción.
-
-No generar dos refactors equivalentes.
-
-## Caso 5 — Shared resource sin cambio
+## Caso 5 — Dependency provenance official research
 
 ### Entrada
 
-Mongo repository compartido ya compatible y arquitectónicamente correcto.
+Azure package unmapped investigado.
 
 ### Esperado
 
-Debe aparecer en el catálogo shared.
+Conservar:
 
-No debe crear una shared migration action innecesaria.
+`OFFICIAL_RESEARCH`
 
-## Caso 6 — Dos Cosmos diferentes
+No convertirlo a:
+
+`BASELINE`
+
+## Caso 6 — Dependency provenance learned
 
 ### Entrada
 
-CustomerRepository y ReportRepository utilizan Cosmos.
+Target proviene de `learnedPackages`.
 
 ### Esperado
 
-Deben permanecer como recursos diferentes si tienen responsabilidades distintas.
+Conservar:
 
-No fusionar por tecnología.
+`LEARNED_BASELINE`
 
-## Caso 7 — Ownership CAPABILITY
+## Caso 7 — Third-party research
 
 ### Entrada
 
-Varias Functions de Reports utilizan el mismo repository.
+Target propuesto mediante investigación externa.
+
+### Esperado
+
+Conservar:
+
+`EXTERNAL_RESEARCH`
+
+## Caso 8 — Proposed dependency sin aprobación
+
+### Entrada
+
+Assessment contiene:
+
+```text
+recommendationStatus = PROPOSED
+```
+
+y todavía requiere decisión.
+
+### Esperado
+
+Planning no la convierte en `APPROVED`.
+
+Debe registrar review cuando sea necesario.
+
+## Caso 9 — Shared resource consolidation
+
+### Entrada
+
+Dos analyses confirman el mismo ReportRepository Cosmos.
+
+### Esperado
+
+Crear un recurso:
+
+`SR-COSMOS-REPORTS`
+
+No dos.
+
+## Caso 10 — Shared resource action
+
+### Entrada
+
+El recurso compartido requiere adaptación.
+
+### Esperado
+
+Una única:
+
+`SR-ACTION-*`
+
+## Caso 11 — Function consumer adaptations
+
+### Entrada
+
+Dos Functions consumen el recurso pero solo una necesita adaptación local.
+
+### Esperado
+
+Solo esa Function recibe `FN-*` correspondiente.
+
+No duplicar shared action.
+
+## Caso 12 — Dos recursos misma tecnología
+
+### Entrada
+
+Customers y Reports usan Cosmos pero son recursos diferentes.
+
+### Esperado
+
+No fusionarlos únicamente por `@azure/cosmos`.
+
+## Caso 13 — Ownership CAPABILITY
+
+### Entrada
+
+Recurso pertenece naturalmente a Reports.
 
 ### Esperado
 
@@ -127,180 +197,196 @@ Ownership:
 
 `CAPABILITY`
 
-si la evidencia lo confirma.
+No mover automáticamente a repository/shared global.
 
-No promover automáticamente a `FUNCTION_APP`.
-
-## Caso 8 — Ownership desconocido
+## Caso 14 — Ownership desconocido
 
 ### Entrada
 
-No existe evidencia suficiente para determinar ownership.
+No hay evidencia suficiente.
 
 ### Esperado
 
-Debe conservar:
+Mantener desconocido.
 
-`UNKNOWN`
+No inventar owner.
 
-No inventar.
-
-Debe permitir planning independiente cuando sea seguro.
-
-## Caso 9 — Plan global
-
-### Esperado
-
-Debe coordinar:
-
-- target;
-- global changes;
-- architecture;
-- shared resource actions;
-- Function plans;
-- Durable workflows;
-- order;
-- risks;
-- unknowns;
-- verification criteria.
-
-Debe referenciar el catálogo shared en lugar de copiarlo.
-
-## Caso 10 — Plan por Function
-
-### Esperado
-
-Debe describir:
-
-- comportamiento a preservar;
-- requiredActions;
-- architecture target;
-- dependencies;
-- shared resource references;
-- preparation;
-- migration;
-- tests;
-- verification.
-
-No copiar completo `analysis.json`.
-
-## Caso 11 — Function ya v4
+## Caso 15 — Dependency ordering
 
 ### Entrada
 
-Programming Model v4 pero arquitectura necesita ajuste.
+Package global → repository shared → Function consumer.
 
 ### Esperado
 
-Debe:
+Representar mediante:
 
-- incluir preparation;
-- excluir migración v4.
+```text
+GLOBAL-* → SR-ACTION-* → FN-*
+```
 
-## Caso 12 — Function legacy
+cuando realmente exista esa dependencia.
+
+## Caso 16 — Sin shared layer
 
 ### Entrada
 
-Analysis incluye `REQUIRED_PLATFORM`.
+Dependency local a una sola Function.
 
 ### Esperado
 
-Debe planificar:
+No crear artificialmente:
 
-- preparation;
-- baseline;
-- Programming Model migration.
+`SR-ACTION-*`
 
-## Caso 13 — Durable workflow
+## Caso 17 — Function ya v4
 
 ### Entrada
 
-Starter, orchestrator y Activities.
+Programming Model v4 confirmado.
 
 ### Esperado
 
-Debe:
+No crear migration step PM v4.
 
-- conservar planes individuales;
-- coordinar migration como workflow;
-- evitar migraciones Durable aisladas.
-
-## Caso 14 — Falta un análisis
+## Caso 18 — Durable workflow
 
 ### Entrada
 
-Inventory contiene cinco Functions pero existen cuatro analyses.
+Varias Functions pertenecen a un workflow Durable.
 
 ### Esperado
 
-Debe:
+Planes por Function mantienen detalle.
 
-- registrar faltante;
-- no inventar información;
-- usar `PARTIAL` o `BLOCKED` según impacto.
+Plan global coordina migración del workflow.
 
-## Caso 15 — Unknown localizado
+## Caso 19 — Workflow output path
 
 ### Entrada
 
-Una Function está bloqueada por compatibilidad desconocida.
+Existe workflow Durable.
 
 ### Esperado
 
-No debe impedir planning de Functions independientes.
+Referencia de ejecución Durable debe apuntar a:
 
-## Caso 16 — Technical debt
+`.migration/workflows/<WorkflowName>/`
+
+No a un directorio ficticio bajo `functions/`.
+
+## Caso 20 — Global build
 
 ### Entrada
 
-Analysis incluye deuda y optimizaciones.
+Varias Functions pendientes.
 
 ### Esperado
 
-No deben convertirse en trabajo obligatorio salvo blocker explícito.
+Build global aparece después de las adaptaciones.
 
-## Caso 17 — Architecture structure
+No como gate por Function.
+
+## Caso 21 — Unknown localizado
 
 ### Entrada
 
-Capability simple.
+Una Function tiene unknown.
+
+Otras Functions son independientes.
 
 ### Esperado
 
-No debe planificar automáticamente:
+Plan:
 
-- application;
-- domain;
-- infrastructure;
+`PARTIAL`
 
-si no son necesarias.
+No bloquear innecesariamente todo.
 
-## Caso 18 — Build global
+## Caso 22 — Blocker global
 
-### Esperado
+### Entrada
 
-El plan reserva build global para verification.
-
-No lo exige tras cada Function.
-
-## Caso 19 — Neutralidad del ejecutor
+Target crítico no puede determinarse.
 
 ### Esperado
 
-Los planes deben ser utilizables manualmente por un developer.
+Plan:
 
-No depender de instrucciones específicas de IA.
+`BLOCKED`
+
+## Caso 23 — Architecture target
+
+### Entrada
+
+Analysis exige extraer lógica del adapter.
+
+### Esperado
+
+Plan refleja acción existente.
+
+No vuelve a diseñar arquitectura desde cero.
+
+## Caso 24 — Technical debt
+
+### Entrada
+
+Analysis contiene deuda no requerida.
+
+### Esperado
+
+Mantener fuera del execution scope.
+
+## Caso 25 — Optimization
+
+### Entrada
+
+Analysis identifica mejora de rendimiento.
+
+### Esperado
+
+No convertir en acción de migración.
+
+## Caso 26 — Baseline reference
+
+### Entrada
+
+Assessment utilizó:
+
+`node24-azure-functions-v4`
+
+### Esperado
+
+Plan global referencia explícitamente esa baseline.
+
+## Caso 27 — No version re-resolution
+
+### Entrada
+
+Assessment definió target `X`.
+
+### Esperado
+
+Planning no consulta latest ni reemplaza `X`.
+
+## Caso 28 — No learning promotion
+
+### Entrada
+
+Una recomendación parece buena.
+
+### Esperado
+
+Planning no modifica:
+
+`learnedPackages`
+
+ni `azurePackages`.
 
 ## Criterio general
 
-El skill debe mantener separadas:
+Planning debe coordinar:
 
-`shared resource catalog`
+`qué ya sabemos que hay que hacer`
 
-y:
-
-`shared resource migration action`
-
-y producir:
-
-`global coordination + local execution plans`
+sin volver a convertirse en analysis o assessment.

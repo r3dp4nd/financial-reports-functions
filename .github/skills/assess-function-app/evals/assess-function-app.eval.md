@@ -2,186 +2,497 @@
 
 ## Objetivo
 
-Validar que `assess-function-app` determine gaps técnicos y arquitectónicos globales sin invadir el análisis detallado
-por Function.
+Validar que assessment determine el gap global contra el target utilizando:
 
-## Caso 1 — Todo legacy
+- evidencia;
+- dependency baseline;
+- conocimiento aprendido;
+- investigación selectiva;
 
-### Entrada
+sin modificar código ni convertir recomendaciones nuevas en conocimiento aprobado.
 
-Inventory con:
-
-- Node.js 14;
-- Runtime v3;
-- Programming Model legacy;
-- arquitectura fuertemente acoplada.
-
-### Esperado
-
-Debe:
-
-- evaluar cada dimensión independientemente;
-- marcar cambios técnicos requeridos;
-- marcar arquitectura `CHANGE_REQUIRED`;
-- no proponer todavía archivos concretos a mover.
-
-## Caso 2 — Programming Model ya v4
+## Caso 1 — Node legacy
 
 ### Entrada
 
-- Node.js 20;
-- Runtime v4;
-- Programming Model v4.
+Inventory:
+
+```text
+Node 14
+```
+
+Target:
+
+```text
+Node 24
+```
 
 ### Esperado
 
-Debe producir:
+```text
+evidenceStatus = CONFIRMED
+actionStatus = REQUIRED
+```
 
-- Node.js → `REQUIRED`;
-- Runtime → `NOT_REQUIRED`;
-- Programming Model → `NOT_REQUIRED`.
-
-No remigrar v4.
-
-## Caso 3 — Arquitectura alineada
+## Caso 2 — Node target
 
 ### Entrada
 
-Repositorio con:
+Node declarado:
 
-- adapters delgados;
-- lógica por capability;
-- infraestructura aislada.
+`24`
 
 ### Esperado
 
-Architecture assessment:
+```text
+actionStatus = NOT_REQUIRED
+```
 
-`ALIGNED`
+si existe evidencia suficiente.
 
-No inventar refactor global.
-
-## Caso 4 — Arquitectura parcial
+## Caso 3 — Runtime desconocido
 
 ### Entrada
 
-Algunas Functions están desacopladas y otras siguen legacy.
+No existe evidencia segura del Runtime efectivo.
 
 ### Esperado
 
-Architecture assessment:
+```text
+evidenceStatus = UNKNOWN
+actionStatus = REQUIRES_VALIDATION
+```
 
-`PARTIALLY_ALIGNED`
+No leer CI/CD protegido.
 
-El detalle debe delegarse a `analyze-function`.
-
-## Caso 5 — Shared Cosmos
+## Caso 4 — Programming Model v4
 
 ### Entrada
 
-Discovery detecta repository Cosmos compartido por varias Functions.
+Inventory confirma v4.
 
 ### Esperado
 
-Debe:
+```text
+evidenceStatus = CONFIRMED
+actionStatus = NOT_REQUIRED
+```
 
-- reconocer impacto transversal;
-- conservar ownership;
-- evaluar compatibilidad o usar `REQUIRES_VALIDATION`;
-- no crear todavía shared action.
-
-## Caso 6 — Dos Cosmos distintos
+## Caso 5 — Programming Model legacy
 
 ### Entrada
 
-Dos repositories distintos usan Cosmos.
+Inventory confirma legacy.
 
 ### Esperado
 
-No fusionarlos como un único recurso solo por tecnología.
+```text
+actionStatus = REQUIRED
+```
 
-## Caso 7 — Shared resource ya correcto
+## Caso 6 — Durable ausente
 
 ### Entrada
 
-Recurso compartido correctamente aislado y compatible.
+No existe Durable.
 
 ### Esperado
 
-Acción:
+```text
+evidenceStatus = NOT_APPLICABLE
+```
+
+No generar migración Durable.
+
+## Caso 7 — Azure baselined misma versión
+
+### Entrada
+
+Dependency:
+
+```text
+@azure/cosmos 4.10.0
+```
+
+Baseline:
+
+```text
+4.10.0
+```
+
+### Esperado
+
+Classification:
+
+`AZURE_BASELINED`
+
+Target:
+
+`4.10.0`
+
+Action:
 
 `NOT_REQUIRED`
 
-No planificar refactor por uniformidad.
-
-## Caso 8 — Runtime desconocido
+## Caso 8 — Azure baselined versión anterior
 
 ### Entrada
 
-No hay evidencia suficiente.
+Dependency:
+
+```text
+@azure/cosmos ^3.10.5
+```
+
+Baseline:
+
+```text
+4.10.0
+```
 
 ### Esperado
 
-Runtime:
+```text
+classification = AZURE_BASELINED
+targetVersion = 4.10.0
+actionStatus = REQUIRED
+impactAnalysisRequired = true
+recommendationSource = BASELINE
+```
 
-`REQUIRES_VALIDATION`
-
-No inferir desde Programming Model.
-
-## Caso 9 — Durable ausente
-
-### Esperado
-
-Durable:
-
-`NOT_APPLICABLE`
-
-## Caso 10 — Dependencia antigua pero compatible
-
-### Esperado
-
-No marcar actualización obligatoria únicamente por antigüedad.
-
-## Caso 11 — Catálogo BEFORE
-
-### Esperado
-
-No debe modificar `current-state.md` para mostrar el target futuro.
-
-## Caso 12 — Evidencia parcial
+## Caso 9 — Azure package no mapeado
 
 ### Entrada
 
-Hay unknowns globales pero puede continuarse con análisis.
+Inventory contiene:
+
+`@azure/keyvault-secrets`
+
+pero baseline no contiene el package.
 
 ### Esperado
 
-Estado general:
+Classification:
 
-`PARTIAL`
+`AZURE_UNMAPPED`
 
-No bloquear innecesariamente.
+Debe investigar fuentes oficiales.
 
-## Caso 13 — Contradicción crítica
+Una nueva versión propuesta debe quedar:
+
+```text
+recommendationStatus = PROPOSED
+actionStatus = REQUIRES_VALIDATION
+```
+
+No actualizar baseline.
+
+## Caso 10 — Azure unmapped sin evidencia suficiente
 
 ### Entrada
 
-Inventory y evidencia observada son incompatibles en una dimensión fundamental.
+No puede determinarse con seguridad una versión target.
 
 ### Esperado
+
+```text
+targetVersion = null
+evidenceStatus = UNKNOWN
+actionStatus = REQUIRES_VALIDATION
+```
+
+No inventar target.
+
+## Caso 11 — Learned package
+
+### Entrada
+
+`learnedPackages` contiene:
+
+`uuid`
+
+con target aprobado.
+
+### Esperado
+
+Classification:
+
+`LEARNED`
+
+Recommendation source:
+
+`LEARNED_BASELINE`
+
+No tratar la recomendación como upgrade automático.
+
+## Caso 12 — Learned package ya compatible
+
+### Entrada
+
+Repo actual ya utiliza el mismo target aprendido.
+
+### Esperado
+
+Puede resultar:
+
+`NOT_REQUIRED`
+
+si el uso actual es compatible.
+
+No generar cambio solo porque existe learned knowledge.
+
+## Caso 13 — Learned package con contexto diferente
+
+### Entrada
+
+Experiencia anterior fue exitosa, pero el repo actual usa APIs diferentes.
+
+### Esperado
+
+Mantener necesidad de validación.
+
+No asumir compatibilidad por experiencia histórica.
+
+## Caso 14 — Third-party desconocido relevante
+
+### Entrada
+
+Dependency no Azure:
+
+`some-library`
+
+con evidencia de incompatibilidad con Node 24.
+
+### Esperado
+
+Classification:
+
+`UNMAPPED`
+
+Investigar fuentes primarias.
+
+Puede producir:
+
+```text
+recommendationStatus = PROPOSED
+actionStatus = REQUIRES_VALIDATION
+```
+
+## Caso 15 — Third-party desconocido irrelevante
+
+### Entrada
+
+Dependency no baseline.
+
+No existe evidencia de incompatibilidad.
+
+### Esperado
+
+Preservar.
+
+No investigar por antigüedad.
+
+No generar upgrade.
+
+## Caso 16 — Librería abandonada
+
+### Entrada
+
+Existe evidencia suficiente de que la librería actual no soporta el target y está abandonada.
+
+### Esperado
+
+Puede investigar reemplazo.
+
+Debe registrar riesgo y evidencia.
+
+No seleccionar alternativa solo por popularidad.
+
+## Caso 17 — Contradicción con baseline
+
+### Entrada
+
+Baseline contiene target X.
+
+Documentación oficial actual indica incompatibilidad con Node target.
+
+### Esperado
+
+No cambiar baseline automáticamente.
+
+Registrar contradicción.
+
+Resultado afectado:
 
 `REQUIRES_REVIEW`
 
-No escoger silenciosamente una de las versiones.
+## Caso 18 — Salto major
+
+### Entrada
+
+Dependency pasa de major 3 a major 4.
+
+### Esperado
+
+`impactAnalysisRequired = true`
+
+cuando aplique.
+
+No afirmar compatibilidad del source.
+
+## Caso 19 — Arquitectura alineada
+
+### Entrada
+
+Arquitectura observable cumple límites requeridos.
+
+### Esperado
+
+```text
+classification = ALIGNED
+```
+
+No crear acciones estructurales.
+
+## Caso 20 — Arquitectura parcialmente alineada
+
+### Entrada
+
+Parte del comportamiento está separado, parte sigue acoplado.
+
+### Esperado
+
+```text
+classification = PARTIALLY_ALIGNED
+```
+
+## Caso 21 — Shared resource candidate
+
+### Entrada
+
+Discovery reporta candidato Cosmos.
+
+### Esperado
+
+Assessment puede evaluar necesidad técnica.
+
+No consolidar ownership definitivo sin evidencia.
+
+## Caso 22 — Testing ausente
+
+### Entrada
+
+No existen tests.
+
+### Esperado
+
+Registrar situación global.
+
+No diseñar todavía tests específicos por Function.
+
+## Caso 23 — Evidence vs action
+
+### Entrada
+
+Versión actual no confirmada.
+
+### Esperado
+
+No producir:
+
+```text
+actionStatus = UNKNOWN
+```
+
+Usar:
+
+```text
+evidenceStatus = UNKNOWN
+actionStatus = REQUIRES_VALIDATION
+```
+
+## Caso 24 — Recommendation status
+
+### Entrada
+
+Nueva recomendación investigada.
+
+### Esperado
+
+Puede utilizar:
+
+`PROPOSED`
+
+No:
+
+`APPROVED`
+
+sin aprobación humana.
+
+## Caso 25 — No baseline mutation
+
+### Entrada
+
+Assessment encuentra un Azure SDK nuevo y determina una versión recomendable.
+
+### Esperado
+
+`dependency-baseline.json` permanece sin modificaciones.
+
+## Caso 26 — Partial
+
+### Entrada
+
+Algunas dimensiones están resueltas y otras requieren validación.
+
+### Esperado
+
+Status global puede ser:
+
+`PARTIAL`
+
+si análisis independiente todavía puede continuar.
+
+## Caso 27 — Blocked
+
+### Entrada
+
+Falta evidencia esencial que impide continuar de forma segura.
+
+### Esperado
+
+Status:
+
+`BLOCKED`
+
+## Caso 28 — Review
+
+### Entrada
+
+Existe decisión humana necesaria sobre target de dependencia crítica.
+
+### Esperado
+
+Status:
+
+`REQUIRES_REVIEW`
+
+cuando bloquea assessment global.
 
 ## Criterio general
 
-El assessment debe mantener separadas:
+Assessment debe responder:
 
-- plataforma;
-- arquitectura;
-- shared resources;
-- testing;
-- riesgos;
+`¿qué debe cambiar y con qué target respaldado?`
 
-sin convertirse en un plan de implementación.
+No:
+
+`¿cómo implementamos el cambio?`
+
+Y:
+
+`experiencia previa`
+
+debe mejorar la evidencia inicial,
+
+no convertirse en verdad automática.

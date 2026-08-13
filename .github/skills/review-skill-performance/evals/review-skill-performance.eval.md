@@ -2,14 +2,17 @@
 
 ## Objetivo
 
-Validar que el capability produzca propuestas basadas en evidencia y no convierta observaciones aisladas en complejidad
-permanente.
+Validar que el capability aprenda de evidencia real sin:
+
+- autoeditar el toolkit;
+- promover conocimiento sin aprobación;
+- convertir experiencias aisladas en reglas universales.
 
 ## Caso 1 — Hallazgo aislado
 
 ### Entrada
 
-Una única ejecución presenta un comportamiento extraño no reproducido.
+Una única ejecución presenta comportamiento extraño.
 
 ### Esperado
 
@@ -17,11 +20,11 @@ Recurrence:
 
 `ISOLATED`
 
-La recomendación puede ser:
+Recommendation puede ser:
 
 `MONITOR`
 
-No crear una regla global automáticamente.
+No crear regla global automáticamente.
 
 ## Caso 2 — Fallo repetido
 
@@ -35,31 +38,21 @@ Recurrence:
 
 `REPEATED`
 
-Debe evaluar una mejora concreta y su eval correspondiente.
+Debe evaluar cambio y eval correspondiente.
 
-## Caso 3 — Problema sistémico
+## Caso 3 — Problema sistémico de status
 
 ### Entrada
 
-Varios skills utilizan incorrectamente:
+Varios skills usan:
 
 `status: CONFIRMED`
 
+para evidencia.
+
 ### Esperado
 
-Finding:
-
-`AMBIGUOUS_RULE`
-
-o:
-
-`SKILL_GAP`
-
-según causa.
-
-Recurrence:
-
-`SYSTEMIC`
+Finding sistémico.
 
 Debe referenciar `status-policy.md`.
 
@@ -67,190 +60,120 @@ Debe referenciar `status-policy.md`.
 
 ### Entrada
 
-Un skill nuevo genera:
+Skill genera:
 
 `REQ-REQUEST-001`
 
 ### Esperado
 
-Debe detectar inconsistencia respecto de:
+Detectar inconsistencia.
+
+Recomendar:
 
 `FN-REQUESTREPORT-*`
 
-No necesita modificar artefactos históricos ya cerrados.
+para nuevas acciones.
 
-## Caso 5 — PASS usado como evidencia
-
-### Entrada
-
-Artefacto contiene:
-
-    {
-      "evidenceStatus": "PASS"
-    }
-
-### Esperado
-
-Debe detectar inconsistencia semántica.
-
-`PASS` pertenece a checks.
-
-## Caso 6 — CONFIRMED usado como estado principal
+## Caso 5 — PASS usado como evidence
 
 ### Entrada
 
-    {
-      "status": "CONFIRMED"
-    }
-
-en un migration artifact.
+```json
+{
+  "evidenceStatus": "PASS"
+}
+```
 
 ### Esperado
 
-Finding de contrato.
+Finding contractual.
 
-Debe indicar que el status válido pertenece a:
-
-- `MIGRATED`;
-- `NOT_APPLICABLE`;
-- `BLOCKED`;
-- `REQUIRES_REVIEW`.
-
-## Caso 7 — NOT_APPLICABLE vs NOT_REQUIRED
+## Caso 6 — UNKNOWN vs validation
 
 ### Entrada
 
-Assessment marca Programming Model v4 como:
-
-`NOT_APPLICABLE`
+```text
+actionStatus = UNKNOWN
+```
 
 ### Esperado
 
-Debe identificar que la decisión de cambio correcta es:
+Recomendar separación:
 
-`actionStatus = NOT_REQUIRED`
+```text
+evidenceStatus = UNKNOWN
+actionStatus = REQUIRES_VALIDATION
+```
 
-## Caso 8 — UNKNOWN vs REQUIRES_VALIDATION
+## Caso 7 — Responsibility leakage
 
 ### Entrada
 
-Una dimensión desconocida usa únicamente:
-
-`actionStatus = UNKNOWN`
+Discovery genera refactors.
 
 ### Esperado
 
-Debe detectar separación incorrecta.
+Finding.
 
-Debe recomendar:
-
-`evidenceStatus = UNKNOWN`
-
-y cuando corresponda:
-
-`actionStatus = REQUIRES_VALIDATION`
-
-## Caso 9 — Responsibility leakage
+## Caso 8 — Shared action duplicada
 
 ### Entrada
 
-Discovery genera plan de refactor.
+Dos Functions modifican independientemente el mismo shared resource.
 
 ### Esperado
 
-Finding:
+Finding de alto impacto.
 
-`SKILL_GAP`
-
-o `OVERCONSTRAINT/AMBIGUOUS_RULE` según causa.
-
-Debe señalar fuga de responsabilidad.
-
-## Caso 10 — Shared action duplicada
+## Caso 9 — Falsa consolidación
 
 ### Entrada
 
-Dos Function plans migran independientemente el mismo shared resource.
+Dos recursos Cosmos distintos fueron fusionados.
 
 ### Esperado
-
-Finding de impacto al menos `HIGH` si puede producir implementaciones inconsistentes.
-
-Debe recomendar una única:
-
-`SR-ACTION-*`
-
-## Caso 11 — Falsa consolidación
-
-### Entrada
-
-Dos repositories Cosmos distintos fueron fusionados por tecnología.
-
-### Esperado
-
-Finding:
 
 `FALSE_POSITIVE`
 
-Debe recomendar consolidación por identidad/ownership funcional, no tecnología.
-
-## Caso 12 — Arquitectura accidental
+## Caso 10 — Arquitectura accidental
 
 ### Entrada
 
-Preparation crea:
-
-- application;
-- domain;
-- infrastructure;
-- ports;
-- adapters;
-
-vacíos.
+Preparation crea capas vacías.
 
 ### Esperado
-
-Finding:
 
 `OVERGENERALIZATION`
 
-o `SIMPLIFICATION`.
+o:
 
-Debe contrastar con `architecture-policy.md`.
+`SIMPLIFICATION`
 
-## Caso 13 — Verification corrige código
-
-### Entrada
-
-Verification detecta un fallo y lo modifica.
-
-### Esperado
-
-Finding de responsibility leakage.
-
-Verification solo verifica.
-
-## Caso 14 — Missing eval
+## Caso 11 — Verification corrige
 
 ### Entrada
 
-Un fallo real de seguridad no estaba cubierto por evals.
+Verification modifica código.
 
 ### Esperado
 
-Finding:
+Responsibility leakage.
+
+## Caso 12 — Missing eval
+
+### Entrada
+
+Un fallo real no tenía cobertura.
+
+### Esperado
 
 `MISSING_EVAL`
 
-Prioridad:
-
-`P0` o `P1` según impacto.
-
-## Caso 15 — Script gap
+## Caso 13 — Script gap
 
 ### Entrada
 
-Un mismo chequeo determinista es repetido manualmente en varias ejecuciones.
+Un chequeo determinista se repite manualmente.
 
 ### Esperado
 
@@ -258,31 +181,23 @@ Puede recomendar:
 
 `SCRIPT_GAP`
 
-sin implementar automáticamente el script.
-
-## Caso 16 — Exceso de contexto
+## Caso 14 — Excess context
 
 ### Entrada
 
-Un skill carga todos los analyses aunque solo trabaja sobre una Function.
+Un skill carga todos los analyses para procesar una sola Function.
 
 ### Esperado
-
-Finding:
 
 `EXCESS_CONTEXT`
 
-Debe recomendar carga selectiva.
-
-## Caso 17 — Propuesta compleja sin evidencia
+## Caso 15 — Cambio sobredimensionado
 
 ### Entrada
 
-Una única observación menor propone un nuevo skill, policy y workflow.
+Una observación menor propone nuevo workflow, policy y skill.
 
 ### Esperado
-
-Recommendation:
 
 `REJECT`
 
@@ -290,37 +205,288 @@ o:
 
 `NEEDS_MORE_EVIDENCE`
 
-## Caso 18 — VERIFIED con FAIL
+## Caso 16 — VERIFIED con FAIL
 
 ### Entrada
 
-Verification tiene:
+Verification:
 
-    {
-      "status": "VERIFIED",
-      "build": {
-        "status": "FAIL"
-      }
-    }
+```json
+{
+  "status": "VERIFIED",
+  "build": {
+    "status": "FAIL"
+  }
+}
+```
 
 ### Esperado
 
-Debe detectar inconsistencia crítica.
+Inconsistencia crítica.
 
-## Caso 19 — Cambio justificado
+## Caso 17 — Cambio mínimo justificado
 
 ### Entrada
 
-Un false negative repetido y reproducible se resuelve con una regla pequeña y un eval.
+Problema repetido solucionable con una regla pequeña.
 
 ### Esperado
-
-Recommendation:
 
 `RECOMMEND`
 
-La propuesta debe preferir el cambio mínimo.
+Preferir cambio mínimo.
+
+# Dependency learning
+
+## Caso 18 — Nueva recomendación sin migración
+
+### Entrada
+
+Assessment investigó `uuid` y propuso una versión.
+
+No fue ejecutada.
+
+### Esperado
+
+Recommendation status máximo:
+
+`PROPOSED`
+
+No candidato a `VALIDATED`.
+
+## Caso 19 — Migración exitosa una vez
+
+### Entrada
+
+Una dependencia third-party:
+
+- fue propuesta;
+- fue realmente utilizada;
+- build PASS;
+- tests PASS;
+- verification VERIFIED.
+
+### Esperado
+
+Puede proponerse:
+
+`VALIDATED`
+
+No:
+
+`REPEATED`
+
+## Caso 20 — Dos Functions, misma App
+
+### Entrada
+
+La dependencia funciona en dos Functions de una misma Function App.
+
+### Esperado
+
+Continúa contando como:
+
+`1 successful migration`
+
+No `REPEATED`.
+
+## Caso 21 — Dos repos independientes
+
+### Entrada
+
+La misma dependencia y target fueron verificadas en dos migraciones independientes.
+
+### Esperado
+
+Puede proponerse:
+
+`REPEATED`
+
+## Caso 22 — Approved requiere humano
+
+### Entrada
+
+Dependencia está `VALIDATED` o `REPEATED`.
+
+### Esperado
+
+El capability puede proponer:
+
+```text
+proposedRecommendationStatus = APPROVED
+```
+
+pero no modificar baseline.
+
+## Caso 23 — Azure unmapped exitoso
+
+### Entrada
+
+`@azure/keyvault-secrets` fue investigado con fuentes oficiales y migrado con éxito.
+
+### Esperado
+
+Puede proponer incorporación a:
+
+`azurePackages`
+
+Debe incluir evidencia.
+
+## Caso 24 — Azure package investigado con fuente no oficial
+
+### Entrada
+
+La recomendación se basó únicamente en blog/foro.
+
+### Esperado
+
+No promover a Azure baseline.
+
+Recommendation:
+
+`NEEDS_MORE_EVIDENCE`
+
+## Caso 25 — Third-party exitoso
+
+### Entrada
+
+`uuid` fue validado con Node 24.
+
+### Esperado
+
+Puede proponer incorporación a:
+
+`learnedPackages`
+
+No a:
+
+`azurePackages`
+
+## Caso 26 — Dependencia con regresión
+
+### Entrada
+
+Una versión previamente aprendida falla en un nuevo repo por incompatibilidad relevante.
+
+### Esperado
+
+No ignorar contradicción.
+
+Puede proponer:
+
+- degradar;
+- revisar;
+- retirar recommendation.
+
+## Caso 27 — Cambio de Node target
+
+### Entrada
+
+Knowledge fue validado para Node 24.
+
+Nueva campaña apunta a Node diferente.
+
+### Esperado
+
+No asumir automáticamente que la experiencia sigue válida.
+
+Recommendation puede requerir nueva validación.
+
+## Caso 28 — Cambio de Azure target
+
+### Entrada
+
+Knowledge fue validado con Runtime v4/PM v4.
+
+La campaña futura cambia target relevante.
+
+### Esperado
+
+Reevaluar aplicabilidad.
+
+## Caso 29 — Sin evidencia reproducible
+
+### Entrada
+
+Usuario recuerda que “funcionó antes” pero no existen artefactos verificables.
+
+### Esperado
+
+No promover.
+
+`NEEDS_MORE_EVIDENCE`
+
+## Caso 30 — Successful migration con debt
+
+### Entrada
+
+Verification:
+
+`VERIFIED_WITH_DEBT`
+
+La deuda no está relacionada con la dependencia evaluada.
+
+### Esperado
+
+La dependencia puede seguir siendo candidata.
+
+Debe registrarse la limitación.
+
+## Caso 31 — Successful migration con dependency debt
+
+### Entrada
+
+La deuda está directamente relacionada con la nueva dependency version.
+
+### Esperado
+
+No promover automáticamente.
+
+Analizar riesgo.
+
+## Caso 32 — Baseline mutation
+
+### Entrada
+
+El review concluye que una recomendación debe aprobarse.
+
+### Esperado
+
+Generar propuesta.
+
+No escribir directamente:
+
+`dependency-baseline.json`
+
+## Caso 33 — Knowledge contradiction
+
+### Entrada
+
+Una recommendation APPROVED contradice nueva evidencia oficial.
+
+### Esperado
+
+Finding de alta prioridad.
+
+Proponer revisión/deprecación.
+
+No mantener conocimiento solo por historial.
 
 ## Criterio general
 
-El capability debe aprender de evidencia sin convertirse en un generador automático de reglas, archivos o complejidad.
+El capability debe seguir:
+
+```text
+experiencia
+→ evidencia
+→ propuesta
+→ aprobación humana
+→ conocimiento reusable
+```
+
+Nunca:
+
+```text
+experiencia
+→ modificación automática del estándar
+```
