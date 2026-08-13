@@ -1,0 +1,202 @@
+# Estado actual de la Function App
+
+> Fotografía del sistema antes de iniciar la migración.
+>
+> Este documento representa el estado observado del repositorio y no debe actualizarse para reflejar el resultado de la
+> migración.
+
+## Resumen
+
+<!--
+Descripción breve del propósito observable de la Function App.
+
+No inventar contexto funcional que no pueda inferirse o confirmarse.
+-->
+
+## Plataforma actual
+
+| Dimensión               | Estado | Evidencia |
+|-------------------------|--------|-----------|
+| Node.js                 |        |           |
+| Azure Functions Runtime |        |           |
+| Programming Model       |        |           |
+| TypeScript              |        |           |
+| Durable Functions       |        |           |
+| Package manager         |        |           |
+| Testing                 |        |           |
+
+Usar cuando corresponda:
+
+- `CONFIRMED`
+- `INFERRED`
+- `UNKNOWN`
+- `NOT_APPLICABLE`
+
+## Function Apps
+
+| Function App | Ruta | Estado |
+|--------------|------|--------|
+|              |      |        |
+
+## Functions
+
+| Function | Capability | Trigger | Programming Model | Durable Role | Detalle |
+|----------|------------|---------|-------------------|--------------|---------|
+|          |            |         |                   |              |         |
+
+El detalle debe apuntar a:
+
+`functions/<FunctionName>.md`
+
+## Capabilities observadas
+
+### <Capability>
+
+Functions relacionadas:
+
+- `<FunctionName>`
+
+Responsabilidad observable:
+
+<!-- Descripción breve. -->
+
+Estado de evidencia:
+
+`CONFIRMED | INFERRED | UNKNOWN`
+
+## Arquitectura actual
+
+### Organización
+
+<!--
+Describir la organización observable del código.
+
+Ejemplos:
+- entrypoints;
+- services;
+- repositories;
+- infraestructura;
+- shared;
+- separación o mezcla de responsabilidades.
+-->
+
+### Dirección de dependencias observable
+
+<!--
+Describir brevemente relaciones importantes.
+
+No presentar todavía la arquitectura objetivo.
+-->
+
+### Acoplamientos relevantes
+
+<!--
+Ejemplos:
+- lógica dentro de Azure entrypoints;
+- acceso directo a SDK;
+- process.env dentro de servicios;
+- recursos compartidos sin ownership.
+-->
+
+## Patrones observados
+
+| Patrón | Estado | Evidencia |
+|--------|--------|-----------|
+|        |        |           |
+
+Ejemplos posibles:
+
+- Durable Workflow
+- Repository
+- Outbox
+- Adapter
+- Service
+- Factory
+
+No inferir patrones únicamente por nombres.
+
+## Recursos compartidos
+
+| Recurso | Tipo | Ownership | Consumidores | Estado |
+|---------|------|-----------|--------------|--------|
+|         |      |           |              |        |
+
+El detalle estructurado vive en:
+
+`.migration/resources/shared-resources.json`
+
+cuando existan recursos compartidos confirmados.
+
+## Relaciones principales
+
+<!--
+Registrar únicamente relaciones relevantes entre Functions, capabilities y recursos.
+
+Puede utilizarse Mermaid si mejora realmente la comprensión.
+-->
+
+## Configuración requerida
+
+Solo registrar nombres de claves.
+
+| Clave | Consumidores | Estado |
+|-------|--------------|--------|
+|       |              |        |
+
+Nunca incluir valores.
+
+## Testing actual
+
+### Framework
+
+<!-- Jest / otro / no detectado -->
+
+### Estado
+
+- Tests existentes:
+- Functions con tests:
+- Functions sin tests:
+- Coverage observable:
+
+No utilizar ausencia de tests como evidencia automática de baja testabilidad.
+
+## Riesgos iniciales
+
+| Riesgo | Impacto | Evidencia |
+|--------|---------|-----------|
+|        |         |           |
+
+## Unknowns
+
+-
+
+No reemplazar unknowns por suposiciones.
+
+## Estado del análisis
+
+| Etapa                | Estado |
+|----------------------|--------|
+| Discovery            |        |
+| Assessment           |        |
+| Functions analizadas |        |
+| Plan de migración    |        |
+
+Esta sección puede actualizarse únicamente como navegación del proceso.
+
+No modificar las secciones que describen el estado técnico BEFORE.
+
+## Navegación
+
+### Functions
+
+- `functions/<FunctionName>.md`
+
+### Artefactos estructurados
+
+- `../repository/inventory.json`
+- `../repository/assessment.json`
+- `../resources/shared-resources.json` cuando aplique
+
+### Planificación
+
+- `../plans/migration-plan.md` cuando exista
