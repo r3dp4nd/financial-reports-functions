@@ -1,11 +1,7 @@
-import {CosmosClient} from "@azure/cosmos";
-
 describe("cosmos client", () => {
-
   const originalEnv = process.env;
 
   beforeEach(() => {
-
     jest.resetModules();
 
     process.env = {
@@ -16,7 +12,7 @@ describe("cosmos client", () => {
       COSMOS_REPORTS_CONTAINER: "reports",
       COSMOS_ORDERS_CONTAINER: "orders",
       COSMOS_PAYMENTS_CONTAINER: "payments",
-      COSMOS_CUSTOMERS_CONTAINER: "customers"
+      COSMOS_CUSTOMERS_CONTAINER: "customers",
     };
   });
 
@@ -25,18 +21,15 @@ describe("cosmos client", () => {
     jest.restoreAllMocks();
   });
 
-
   it("should create Cosmos client", async () => {
-
+    const {CosmosClient} = await import("@azure/cosmos");
     const cosmosModule = await import("./cosmos.client");
 
     expect(cosmosModule.cosmosClient)
       .toBeInstanceOf(CosmosClient);
   });
 
-
   it("should create reports container", async () => {
-
     const cosmosModule = await import("./cosmos.client");
 
     expect(cosmosModule.reportsContainer)
@@ -46,9 +39,7 @@ describe("cosmos client", () => {
       .toBe("reports");
   });
 
-
   it("should create orders container", async () => {
-
     const cosmosModule = await import("./cosmos.client");
 
     expect(cosmosModule.ordersContainer)
@@ -58,9 +49,7 @@ describe("cosmos client", () => {
       .toBe("orders");
   });
 
-
   it("should create payments container", async () => {
-
     const cosmosModule = await import("./cosmos.client");
 
     expect(cosmosModule.paymentsContainer)
@@ -70,9 +59,7 @@ describe("cosmos client", () => {
       .toBe("payments");
   });
 
-
   it("should create customers container", async () => {
-
     const cosmosModule = await import("./cosmos.client");
 
     expect(cosmosModule.customersContainer)
@@ -82,9 +69,7 @@ describe("cosmos client", () => {
       .toBe("customers");
   });
 
-
   it("should use the configured database and containers", async () => {
-
     const cosmosModule = await import("./cosmos.client");
 
     expect(cosmosModule.reportsContainer.id)
@@ -99,5 +84,4 @@ describe("cosmos client", () => {
     expect(cosmosModule.customersContainer.id)
       .toBe(process.env.COSMOS_CUSTOMERS_CONTAINER);
   });
-
 });

@@ -1,12 +1,12 @@
 import * as df from "durable-functions";
 import {ActivityHandler} from "durable-functions";
 
-import {GetPaymentsUseCase} from "../GenerateReport/application/get-payments.use-case";
+import {GetPaymentsUseCase} from "../../GenerateReport/application/get-payments.use-case";
 import {
   CosmosPaymentReportRepository
-} from "../GenerateReport/infrastructure/persistence/cosmos-payment-report.repository";
-import {paymentsContainer} from "../shared/infrastructure/azure/cosmos/cosmos.client";
-import {createGetPaymentsHandler} from "../GetPayments/handler";
+} from "../../GenerateReport/infrastructure/persistence/cosmos-payment-report.repository";
+import {paymentsContainer} from "../../shared/infrastructure/azure/cosmos/cosmos.client";
+import {createGetPaymentsHandler} from "../../GetPayments/handler";
 
 const repository = new CosmosPaymentReportRepository(paymentsContainer);
 
