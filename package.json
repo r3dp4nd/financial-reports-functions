@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "Azure Functions application for financial report processing.",
+  "main": "dist/{index.js,functions/*.js}",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc -p tsconfig.json",
@@ -14,10 +18,10 @@
   },
   "dependencies": {
     "@azure/cosmos": "^4.10.0",
-    "@azure/functions": "^3.5.1",
+    "@azure/functions": "~4.16.2",
     "@azure/service-bus": "^7.9.5",
     "@azure/storage-blob": "^12.33.0",
-    "durable-functions": "^2.1.4",
+    "durable-functions": "~3.5.0",
     "exceljs": "^4.4.0"
   },
   "devDependencies": {
