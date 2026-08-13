@@ -2,8 +2,8 @@
 
 ## Objetivo
 
-Conjunto de skills progresivos para comprender, preparar, migrar y verificar Azure Function Apps Node.js hacia el target
-técnico definido.
+Toolkit de skills para comprender, planificar, preparar, migrar y verificar Azure Function Apps Node.js hacia un target
+técnico y arquitectónico definido.
 
 Target actual:
 
@@ -12,11 +12,18 @@ Target actual:
 - Programming Model v4;
 - dependencias compatibles;
 - comportamiento protegido por tests;
-- arquitectura objetivo alineada con `financial-reports-functions`.
+- arquitectura alineada con `financial-reports-functions`;
+- menor acoplamiento futuro al runtime y SDKs.
 
-Los skills se ejecutan manualmente desde GitHub Copilot Chat.
+Los skills son capacidades independientes.
 
-No existe orquestación autónoma.
+La ejecución puede realizarse:
+
+- mediante GitHub Copilot Chat;
+- mediante otro agente compatible;
+- manualmente por un developer.
+
+No existe orquestación autónoma obligatoria.
 
 ## Principio
 
@@ -26,21 +33,21 @@ Flujo conceptual:
 
 `discover → assess → analyze → plan → prepare → migrate → verify`
 
-No todos los skills aplican en todos los repositorios.
+No todos los skills deben ejecutarse en todos los repositorios.
 
 Una dimensión que ya cumple el target debe preservarse.
 
-## Ejecutor
+## Independencia del ejecutor
 
-Los artefactos de análisis y planificación son independientes del ejecutor.
+Los artefactos de análisis y planificación describen intención técnica y criterios de resultado.
 
-Las acciones pueden realizarse:
+No deben depender de quién ejecute el cambio.
 
-- mediante skills;
-- mediante IA;
-- manualmente por un desarrollador.
+La misma acción debe poder ser realizada:
 
-El resultado esperado y los criterios de verificación deben ser los mismos.
+- por IA;
+- mediante skill;
+- manualmente.
 
 ## Políticas compartidas
 
@@ -51,23 +58,61 @@ Aplicar cuando corresponda:
 - `_shared/lessons-policy.md`
 - `_shared/architecture-policy.md`
 
+Las políticas compartidas tienen prioridad sobre instrucciones locales contradictorias.
+
+## Templates compartidos
+
+Los documentos Markdown generados deben utilizar cuando corresponda:
+
+- `_shared/templates/current-state.template.md`
+- `_shared/templates/function-current-state.template.md`
+- `_shared/templates/migration-plan.template.md`
+- `_shared/templates/function-migration-plan.template.md`
+- `_shared/templates/repository-preparation.template.md`
+- `_shared/templates/function-preparation.template.md`
+- `_shared/templates/function-migration.template.md`
+- `_shared/templates/durable-migration.template.md`
+- `_shared/templates/verification.template.md`
+
+Los templates definen presentación humana.
+
+Los JSON siguen siendo los contratos estructurados entre skills.
+
 ## Memoria de migración
 
-`.migration/` contiene la memoria persistente de la migración.
+Los artefactos de ejecución se almacenan bajo:
 
-Los siguientes skills deben consumir primero los artefactos existentes antes de volver a analizar el repositorio.
+`.migration/`
 
-JSON:
+Los siguientes skills deben consumir artefactos existentes antes de volver a inspeccionar el repositorio.
 
-- entrada estructurada para agentes y skills.
+No reconstruir información que ya tenga un owner claro.
 
-Markdown:
+## Modelo documental
 
-- documentación humana y soporte para developers.
+La migración conserva cuatro perspectivas:
 
-## Catálogo del estado actual
+`BEFORE → PLAN → EXECUTION → AFTER`
 
-Antes de modificar código debe existir una fotografía documentada del sistema.
+### BEFORE
+
+Describe cómo estaba el sistema antes de modificarlo.
+
+### PLAN
+
+Describe qué debe cambiar y en qué orden.
+
+### EXECUTION
+
+Registra qué cambios se realizaron realmente.
+
+### AFTER
+
+Verifica el estado final real.
+
+## Catálogo BEFORE
+
+El catálogo es documentación humana del sistema original.
 
 Documento principal:
 
@@ -77,13 +122,69 @@ Detalle por Function:
 
 `.migration/catalog/functions/<FunctionName>.md`
 
-El catálogo representa el estado anterior a la migración.
+Debe registrar cuando corresponda:
 
-No debe transformarse progresivamente en documentación de la arquitectura target.
+- plataforma actual;
+- Function Apps;
+- Functions;
+- triggers y bindings;
+- capabilities;
+- arquitectura observable;
+- patrones;
+- dependencias;
+- recursos compartidos;
+- configuración por nombre de clave;
+- relaciones;
+- testing;
+- riesgos;
+- unknowns.
+
+El catálogo no debe reescribirse después para aparentar el estado target.
+
+## Arquitectura objetivo
+
+Toda refactorización debe seguir:
+
+`_shared/architecture-policy.md`
+
+Principios principales:
+
+- Azure adapters bajo `src/functions/`;
+- lógica funcional organizada por capability;
+- infraestructura aislada cuando corresponda;
+- configuración desacoplada de lógica cuando sea necesario;
+- contratos internos solo cuando aporten límites reales;
+- shared resources con ownership explícito;
+- ninguna capa o carpeta vacía por convención.
+
+La arquitectura es obligatoria.
+
+La materialización de sus piezas es incremental.
+
+## Future-proofing
+
+El objetivo arquitectónico es reducir el impacto de futuras migraciones.
+
+Idealmente, cambios futuros de runtime o Programming Model deberían concentrarse principalmente en:
+
+- `src/functions/**`;
+- composición;
+- dependencias;
+- configuración.
+
+La lógica funcional y sus tests deberían permanecer estables cuando el comportamiento no cambie.
+
+Esto reduce acoplamiento.
+
+No garantiza compatibilidad futura automática.
 
 ## Recursos compartidos
 
-El discovery y los análisis deben identificar recursos compartidos relevantes.
+Un recurso compartido puede ser utilizado por múltiples:
+
+- Functions;
+- capabilities;
+- workflows.
 
 Ejemplos:
 
@@ -93,52 +194,74 @@ Ejemplos:
 - Service Bus;
 - Blob Storage;
 - HTTP clients;
-- repositorios;
-- configuración;
-- servicios comunes.
+- repositories;
+- services;
+- configuración común.
 
-Los recursos compartidos deben tener:
+No considerar dos recursos iguales únicamente porque utilicen la misma tecnología.
 
-- identificador;
-- tipo;
-- ownership;
-- consumidores;
-- configuración por nombre de clave;
-- evidencia.
+## Ownership de recursos
 
-La planificación debe coordinar su modificación una sola vez.
+Scopes iniciales:
 
-## Arquitectura objetivo
+- `REPOSITORY`
+- `FUNCTION_APP`
+- `CAPABILITY`
+- `WORKFLOW`
 
-Toda refactorización debe seguir:
+Cada recurso compartido debe tener ownership explícito cuando pueda confirmarse.
 
-`_shared/architecture-policy.md`
+Un recurso que necesite cambio debe tener una única acción propietaria.
 
-La arquitectura es requerida.
+Las Functions consumidoras declaran dependencia hacia esa acción.
 
-Las carpetas y capas se crean únicamente cuando tengan responsabilidad real.
+## Artefactos de recursos compartidos
 
-## Flujo principal
+Cuando existan shared resources confirmados, crear:
+
+`.migration/resources/shared-resources.json`
+
+`.migration/resources/shared-resources.md`
+
+Estos artefactos son consolidados por:
+
+`plan-function-migration`
+
+a partir de discovery y analyses.
+
+No crear la carpeta `resources/` cuando no existan recursos compartidos reales.
+
+## Flujo operativo
 
 ### 1. discover-function-app
 
-Construye:
+Pregunta:
 
-- inventario;
-- catálogo general inicial;
-- candidatos a recursos compartidos.
+`¿Qué existe actualmente?`
 
-Salida estructurada:
+Produce:
+
+- inventario estructurado;
+- catálogo BEFORE inicial;
+- arquitectura observable;
+- patrones;
+- shared resource candidates.
+
+Salida principal:
 
 `.migration/repository/inventory.json`
 
-Documentación principal:
+Catálogo:
 
 `.migration/catalog/current-state.md`
 
+No modifica código.
+
 ### 2. assess-function-app
 
-Determina el gap entre estado actual y target.
+Pregunta:
+
+`¿Qué tan lejos está globalmente del target?`
 
 Evalúa independientemente:
 
@@ -148,178 +271,398 @@ Evalúa independientemente:
 - Durable;
 - dependencias;
 - TypeScript;
-- tooling global.
+- testing;
+- arquitectura;
+- shared resources.
+
+Salida:
+
+`.migration/repository/assessment.json`
+
+No modifica código.
 
 ### 3. analyze-function
+
+Pregunta:
+
+`¿Cómo funciona esta Function y qué necesita?`
 
 Ejecutar por Function o unidad funcional coherente.
 
 Produce:
 
-- comportamiento actual;
+- comportamiento;
 - dependencias;
-- recursos compartidos utilizados;
+- recursos compartidos;
 - arquitectura actual;
-- gap arquitectónico;
+- arquitectura objetivo;
+- architecture gap;
 - testabilidad;
+- tests;
 - compatibilidad;
+- requiredActions;
+- deuda;
 - riesgos;
-- requiredActions.
+- unknowns.
 
-También crea o actualiza:
+Salida:
+
+`.migration/functions/<FunctionName>/analysis.json`
+
+Ficha humana BEFORE:
 
 `.migration/catalog/functions/<FunctionName>.md`
 
+No modifica código.
+
 ### 4. plan-function-migration
 
-Construye dos niveles de planificación:
+Pregunta:
 
-- plan global del repositorio/Function App;
-- plan específico por Function.
+`¿Cómo coordinamos y ejecutamos la migración?`
 
-Además coordina acciones sobre recursos compartidos.
+Produce dos niveles de planificación.
 
-Plan global:
+#### Plan global
 
 `.migration/plans/migration-plan.json`
 
 `.migration/plans/migration-plan.md`
 
-Plan por Function:
+Coordina:
+
+- target;
+- cambios globales;
+- arquitectura;
+- recursos compartidos;
+- Function plans;
+- Durable workflows;
+- dependencias;
+- orden;
+- riesgos;
+- verification criteria.
+
+#### Plan por Function
 
 `.migration/functions/<FunctionName>/migration-plan.json`
 
 `.migration/functions/<FunctionName>/migration-plan.md`
 
+Describe:
+
+- comportamiento a preservar;
+- acciones;
+- arquitectura objetivo;
+- dependencias;
+- recursos compartidos;
+- preparación;
+- migración;
+- tests;
+- verificación.
+
+No debe duplicar todo el análisis.
+
 ### 5. prepare-function-app
 
-Prepara cambios globales como:
+Pregunta:
+
+`¿Qué base global debe estar lista antes de preparar las Functions?`
+
+Puede aplicar cambios planificados sobre:
 
 - Node.js;
 - dependencias;
 - TypeScript;
 - Jest;
 - build;
+- scripts;
 - estructura base;
 - `host.json`;
-- `.funcignore`.
+- `.funcignore`;
+- shared resources globales.
 
-También prepara la base estructural requerida por la arquitectura.
+Salida:
+
+`.migration/repository/preparation.json`
+
+`.migration/repository/preparation.md`
+
+No modifica comportamiento funcional de una Function.
 
 ### 6. prepare-function
 
-Refactoriza una Function hacia la arquitectura objetivo y protege su comportamiento con tests.
+Pregunta:
 
-El refactor debe ser suficiente para alcanzar los límites arquitectónicos requeridos, pero sin crear capas vacías ni
-abstracciones innecesarias.
+`¿Cómo dejamos esta Function arquitectónicamente preparada y protegida?`
+
+Puede:
+
+- refactorizar hacia arquitectura objetivo;
+- separar Azure adapter;
+- organizar capability;
+- aislar infraestructura;
+- respetar shared resources;
+- aislar configuración;
+- agregar characterization tests;
+- agregar unit tests;
+- obtener baseline.
+
+Salida:
+
+`.migration/functions/<FunctionName>/preparation.json`
+
+`.migration/functions/<FunctionName>/preparation.md`
+
+Estado esperado cuando requiere migración:
+
+`READY_FOR_MIGRATION`
 
 ### 7. migrate-programming-model-v4
 
-Migra adapters Azure legacy no Durable cuando aplique.
+Pregunta:
 
-Una Function ya v4 debe producir:
+`¿Cómo migramos el adapter Azure legacy sin cambiar comportamiento?`
+
+Aplica únicamente cuando la Function necesita migración de Programming Model.
+
+Una Function ya v4:
 
 `NOT_APPLICABLE`
 
+Salida:
+
+`.migration/functions/<FunctionName>/migration.json`
+
+`.migration/functions/<FunctionName>/migration.md`
+
+No debe volver a refactorizar la capability.
+
 ### 8. migrate-durable-functions-v4
 
-Migra workflows Durable como unidades coherentes.
+Pregunta:
+
+`¿Cómo migramos este workflow Durable preservando su semántica?`
+
+La unidad de migración es el workflow.
+
+Puede incluir:
+
+- client;
+- starter;
+- orchestrator;
+- activities;
+- sub-orchestrators;
+- entities.
+
+Salida:
+
+`.migration/functions/<WorkflowName>/durable-migration.json`
+
+`.migration/functions/<WorkflowName>/durable-migration.md`
+
+No migrar Activities de forma independiente cuando dependan del workflow.
 
 ### 9. verify-function-app
 
-Gate técnico final.
+Pregunta:
+
+`¿La migración realmente terminó correctamente?`
+
+Compara:
+
+`BEFORE → PLAN → AFTER`
 
 Verifica:
 
-- instalación;
-- runtime usado;
+- Node.js;
+- installation;
 - typecheck;
-- build;
+- build global;
 - tests;
 - coverage;
-- registro de Functions;
+- Azure Functions Host cuando sea posible;
+- Functions esperadas;
+- Programming Model;
 - Durable;
+- arquitectura;
+- recursos compartidos;
 - legacy residual;
 - packaging;
-- arquitectura resultante;
-- deuda técnica;
+- deuda;
 - unknowns.
 
-## Plan global y planes por Function
+Salida:
 
-El plan global coordina:
+`.migration/verification/verification.json`
 
-- cambios globales;
-- recursos compartidos;
-- dependencias;
-- orden de ejecución;
-- workflows;
-- planes por Function.
+`.migration/verification/verification.md`
 
-El plan por Function describe:
+No corrige código.
 
-- comportamiento a preservar;
-- acciones concretas;
-- dependencias globales;
-- recursos compartidos de los que depende;
-- preparación;
-- migración;
-- verificación.
+## Flujo de mejora del toolkit
 
-No debe duplicar todo el análisis.
+`review-skill-performance` está separado del flujo operativo.
 
-## Navegación condicional
+Consume:
 
-No ejecutar los skills mecánicamente.
+- lessons;
+- resultados reales;
+- blockers;
+- reviews;
+- evals;
+- skills.
 
-Repositorio ya v4:
+Produce propuestas bajo:
 
-`discover → assess → analyze → plan → prepare/refactor → verify`
+`.skill-improvement/`
 
-Repositorio legacy:
+Nunca modifica automáticamente los skills.
 
-`discover → assess → analyze → plan → prepare → migrate → verify`
+Flujo:
 
-Durable:
+`evidencia → propuesta → revisión humana → cambio → evals`
 
-usar el skill especializado cuando corresponda.
+## Estructura esperada de `.migration`
 
-## Estados
+La estructura se crea incrementalmente.
 
-Evidencia:
+```text
+.migration/
+├── catalog/
+│   ├── current-state.md
+│   └── functions/
+│       └── <FunctionName>.md
+├── repository/
+│   ├── inventory.json
+│   ├── inventory.md
+│   ├── assessment.json
+│   ├── assessment.md
+│   ├── preparation.json
+│   └── preparation.md
+├── resources/
+│   ├── shared-resources.json
+│   └── shared-resources.md
+├── functions/
+│   └── <FunctionName>/
+│       ├── analysis.json
+│       ├── analysis.md
+│       ├── migration-plan.json
+│       ├── migration-plan.md
+│       ├── preparation.json
+│       ├── preparation.md
+│       ├── migration.json
+│       └── migration.md
+├── plans/
+│   ├── migration-plan.json
+│   └── migration-plan.md
+├── verification/
+│   ├── verification.json
+│   └── verification.md
+└── lessons/
+```
+
+No crear carpetas vacías.
+
+`resources/` solo existe cuando aplique.
+
+## Ownership de información
+
+Cada dato debe tener un owner principal.
+
+| Información                       | Owner                          |
+|-----------------------------------|--------------------------------|
+| Functions existentes              | `inventory.json`               |
+| Arquitectura observable BEFORE    | `inventory.json`               |
+| Catálogo humano BEFORE            | `catalog/**`                   |
+| Gap técnico global                | `assessment.json`              |
+| Gap arquitectónico global         | `assessment.json`              |
+| Shared resources consolidados     | `shared-resources.json`        |
+| Comportamiento por Function       | `analysis.json`                |
+| Architecture gap por Function     | `analysis.json`                |
+| requiredActions                   | `analysis.json`                |
+| Coordinación global               | global `migration-plan.json`   |
+| Pasos por Function                | Function `migration-plan.json` |
+| Cambios globales ejecutados       | `repository/preparation.json`  |
+| Refactor ejecutado                | Function `preparation.json`    |
+| Migración de plataforma ejecutada | `migration.json`               |
+| Resultado final                   | `verification.json`            |
+
+Referenciar al owner.
+
+No copiar información completa entre artefactos sin necesidad.
+
+## Identificadores
+
+Usar identificadores humanos simples.
+
+Ejemplos:
+
+- `GLOBAL-001`
+- `REQ-REQUEST-001`
+- `SR-COSMOS-REPORTS`
+- `SR-ACTION-001`
+- `RISK-001`
+
+No usar UUIDs ni hashes en el MVP.
+
+## Estados de evidencia
+
+Usar:
 
 - `CONFIRMED`
 - `INFERRED`
 - `UNKNOWN`
 - `NOT_APPLICABLE`
 
-Acción:
+No convertir inferencias en hechos.
+
+## Estados de acción
+
+Usar:
 
 - `REQUIRED`
 - `NOT_REQUIRED`
 - `REQUIRES_VALIDATION`
 
-Plan:
+## Estados de plan
+
+Usar:
 
 - `READY`
 - `PARTIAL`
 - `BLOCKED`
 
-Preparación:
+## Estados de preparación
 
+Usar según el skill:
+
+- `COMPLETED`
+- `PARTIAL`
 - `READY_FOR_MIGRATION`
+- `NOT_APPLICABLE`
 - `BLOCKED`
 - `REQUIRES_REVIEW`
-- `NOT_APPLICABLE`
 
-Migración:
+## Estados de migración
+
+Usar:
 
 - `MIGRATED`
+- `NOT_APPLICABLE`
 - `BLOCKED`
 - `REQUIRES_REVIEW`
-- `NOT_APPLICABLE`
 
-Verificación:
+## Estados de verificación
+
+Checks:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
+
+Estado final:
 
 - `VERIFIED`
 - `VERIFIED_WITH_DEBT`
@@ -328,24 +671,56 @@ Verificación:
 
 ## Invalidation
 
-Mantener reglas simples:
+Mantener invalidación simple.
 
-- cambio estructural importante → repetir discovery;
-- cambio de versiones/dependencias → repetir assessment;
-- cambio de una Function → repetir su analysis;
-- cambio de recursos compartidos → actualizar analyses afectados y plan;
-- cambios relevantes de analysis → regenerar plan global y planes afectados;
-- cambios posteriores a verification → volver a verificar.
+### Repetir discovery cuando
 
-No introducir hashes ni state machine compleja en el MVP.
+- cambia significativamente la estructura;
+- aparecen/eliminan Functions;
+- cambian registrations relevantes.
+
+### Repetir assessment cuando
+
+- cambian versiones;
+- cambian dependencias relevantes;
+- cambia significativamente la arquitectura global.
+
+### Repetir analysis cuando
+
+- cambia el slice de la Function;
+- cambia un shared resource relevante;
+- aparece nueva evidencia que invalida conclusiones.
+
+### Regenerar planes cuando
+
+- cambian requiredActions;
+- cambia ownership de shared resources;
+- cambian dependencias entre Functions;
+- cambia el assessment relevante.
+
+### Repetir verification cuando
+
+- se modifica código después del gate final;
+- cambia configuración necesaria para runtime;
+- se resuelve un blocker anterior.
+
+No usar hashes ni state machines complejas en el MVP.
 
 ## Build
 
-No exigir build completo después de cada Function.
+No exigir build global después de cada Function.
 
-Usar validaciones intermedias cuando aporten evidencia.
+Durante migración pueden existir estados intermedios temporalmente incompatibles.
 
-El build global es gate final de `verify-function-app`.
+Permitir:
+
+- tests selectivos;
+- typecheck selectivo;
+- validaciones estáticas.
+
+El build global completo es gate de:
+
+`verify-function-app`
 
 ## Tests
 
@@ -353,13 +728,13 @@ Secuencia preferida:
 
 `comportamiento actual`
 
-→ `refactor arquitectónico mínimo necesario`
+→ `refactor arquitectónico`
 
 → `tests`
 
 → `baseline verde`
 
-→ `migración`
+→ `migración de plataforma`
 
 → `mismos tests verdes`
 
@@ -370,26 +745,54 @@ No agregar integration tests en el alcance actual.
 Separar:
 
 - cambios obligatorios;
-- deuda técnica;
-- optimizaciones.
+- technical debt;
+- optimizations.
 
-La migración puede finalizar con deuda técnica documentada.
+Una migración puede finalizar:
 
-## Mejora del toolkit
+`VERIFIED_WITH_DEBT`
 
-Las lessons generadas por ejecuciones reales pueden ser analizadas mediante:
+La deuda no bloqueante no invalida una migración correcta.
 
-`review-skill-performance`
+## Seguridad
 
-Este capability propone mejoras, pero nunca modifica automáticamente los skills.
+La exclusión de contenido sensible ocurre antes de lectura.
+
+No leer automáticamente:
+
+- `.env*`;
+- `local.settings.json`;
+- secretos;
+- certificados;
+- claves privadas;
+- CI/CD protegido.
+
+Puede registrarse existencia o nombre de clave cuando sea necesario.
+
+Nunca valores.
+
+## Scripts internos
+
+Los scripts incluidos en los skills deben funcionar con Node.js 14 o superior.
+
+No depender del runtime target de la Function App.
+
+Si un script sirve únicamente a un skill:
+
+mantenerlo dentro de ese skill.
+
+Promoverlo a shared solo cuando múltiples skills necesiten exactamente la misma capacidad.
 
 ## Regla final
 
-El objetivo no es producir más cambios.
+El objetivo del toolkit no es generar la mayor cantidad posible de cambios.
 
 El objetivo es alcanzar el target con:
 
 - evidencia;
+- documentación comprensible;
 - comportamiento protegido;
-- arquitectura mantenible;
-- mínima dependencia futura del runtime y SDKs.
+- arquitectura consistente;
+- recursos compartidos coordinados;
+- mínima duplicación;
+- menor costo de futuras migraciones.
