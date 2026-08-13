@@ -6,18 +6,9 @@ jobs:
       vmImage: 'ubuntu-latest'
 
     steps:
-      # --------------------------------------------------------
-      # Source
-      # --------------------------------------------------------
-
       - checkout: self
         clean: true
         fetchDepth: 0
-
-
-      # --------------------------------------------------------
-      # Node.js
-      # --------------------------------------------------------
 
       - task: UseNode@1
         displayName: Use Node.js 24
@@ -27,65 +18,29 @@ jobs:
           checkLatest: false
           force32bit: false
 
-
-      # --------------------------------------------------------
-      # Dependencies
-      # --------------------------------------------------------
-
       - script: npm ci
         displayName: Install dependencies
-
-
-      # --------------------------------------------------------
-      # TypeScript
-      # --------------------------------------------------------
 
       - script: npm run typecheck
         displayName: Validate TypeScript compilation
 
-
-      # --------------------------------------------------------
-      # SonarQube
-      # --------------------------------------------------------
-
-      - task: SonarQubePrepare@8
-        displayName: Prepare SonarQube analysis
+      - task: SonarCloudPrepare@3
+        displayName: Prepare SonarQube Cloud analysis
 
         inputs:
-          SonarQube: '<SONAR-SERVICE-CONNECTION>'
-
+          SonarCloud: '<SONARQUBE-CLOUD-SERVICE-CONNECTION>'
+          organization: '<SONARQUBE-CLOUD-ORGANIZATION>'
           scannerMode: 'cli'
-
-          configMode: 'manual'
-
-          cliProjectKey: 'financial-reports-functions'
-
-          cliProjectName: 'Financial Reports Functions'
-
-          cliSources: '.'
-
-          extraProperties: |
-            sonar.qualitygate.wait=true
-
-
-      # --------------------------------------------------------
-      # Tests + Coverage
-      # --------------------------------------------------------
+          configMode: 'file'
 
       - script: npm run test:coverage
         displayName: Run tests with coverage
 
+      - task: SonarCloudAnalyze@3
+        displayName: Run SonarQube Cloud analysis
 
-      # --------------------------------------------------------
-      # SonarQube Analysis
-      # --------------------------------------------------------
-
-      - task: SonarQubeAnalyze@8
-        displayName: Run SonarQube analysis
-
-
-      - task: SonarQubePublish@8
-        displayName: Publish SonarQube Quality Gate
+      - task: SonarCloudPublish@3
+        displayName: Publish SonarQube Cloud Quality Gate
 
         inputs:
           pollingTimeoutSec: '300'

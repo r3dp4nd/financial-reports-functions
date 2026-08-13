@@ -6,15 +6,12 @@ on:
       SONAR_TOKEN:
         required: true
 
-      SONAR_HOST_URL:
-        required: true
-
 
 jobs:
   validate:
     name: Validate
 
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     permissions:
       contents: read
@@ -47,12 +44,11 @@ jobs:
         run: npm run test:coverage
 
 
-      - name: SonarQube analysis
+      - name: SonarQube Cloud analysis
         uses: SonarSource/sonarqube-scan-action@v8.2.1
 
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
         with:
           args: >
