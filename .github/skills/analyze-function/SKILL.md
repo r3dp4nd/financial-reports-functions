@@ -25,6 +25,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 ## Precondiciones
 
@@ -34,7 +35,7 @@ Deben existir:
 
 `.migration/repository/assessment.json`
 
-La Function debe existir en el inventory.
+La Function debe existir en inventory.
 
 ## Entradas
 
@@ -45,7 +46,7 @@ Consumir primero:
 - inventory;
 - assessment;
 - catálogo actual cuando sea útil;
-- shared resources detectados.
+- shared resource candidates.
 
 Analizar una Function o unidad funcional coherente por ejecución.
 
@@ -57,7 +58,7 @@ Leer únicamente el slice necesario para comprender:
 - comportamiento;
 - dependencias directas;
 - infraestructura;
-- recursos compartidos;
+- shared resources;
 - tests;
 - relaciones.
 
@@ -115,7 +116,7 @@ Ejemplos:
 - encapsular configuración;
 - introducir un contract;
 - mover implementación hacia capability;
-- corregir ownership de un recurso compartido.
+- corregir ownership.
 
 Registrar acciones `STRUCTURAL` cuando corresponda.
 
@@ -123,13 +124,21 @@ Registrar acciones `STRUCTURAL` cuando corresponda.
 
 Confirmar para la Function:
 
-- resourceId;
+- `resourceId`;
 - usage;
-- ownership;
-- status;
+- ownership observable;
+- `evidenceStatus`;
 - configuración asociada.
 
-No planificar aquí una segunda modificación de un shared resource.
+Ejemplo:
+
+    {
+      "resourceId": "SR-COSMOS-REPORTS",
+      "usage": "Persist report request",
+      "evidenceStatus": "CONFIRMED"
+    }
+
+No planificar aquí una segunda modificación del recurso.
 
 ## Dependencias
 
@@ -146,6 +155,8 @@ Clasificar cuando corresponda:
 - configuration;
 - third-party;
 - Node runtime.
+
+Cada hallazgo de compatibilidad debe utilizar `evidenceStatus` cuando sea necesario.
 
 ## Testabilidad
 
@@ -166,6 +177,10 @@ Usar:
 - `MEDIUM`
 - `LOW`
 
+Este valor es una clasificación específica de testabilidad.
+
+No reemplaza `evidenceStatus`.
+
 La ausencia de tests no determina por sí sola la testabilidad.
 
 ## Tests
@@ -184,12 +199,16 @@ No proponer integration tests.
 
 ## Node.js 24
 
-Clasificar hallazgos como:
+Cada hallazgo puede usar una clasificación específica:
 
 - `CONFIRMED_COMPATIBLE`
 - `CHANGE_REQUIRED`
 - `REQUIRES_VALIDATION`
 - `NOT_APPLICABLE`
+
+Cuando sea útil, acompañarla de:
+
+`evidenceStatus`
 
 No asumir compatibilidad por compilación.
 
@@ -201,7 +220,7 @@ no generar acción de migración.
 
 Si es legacy:
 
-identificar puntos de adaptación requeridos.
+identificar puntos de adaptación.
 
 ## Durable
 
@@ -209,7 +228,7 @@ Identificar rol y contexto mínimo del workflow cuando aplique.
 
 No migrar Durable.
 
-## Categorías
+## Categorías de acciones
 
 Usar:
 
@@ -220,20 +239,77 @@ Usar:
 - `TECHNICAL_DEBT`
 - `OPTIMIZATION`
 
+## IDs de acciones
+
+Las acciones propias de una Function usan:
+
+`FN-<FUNCTION>-NNN`
+
+Ejemplos:
+
+- `FN-REQUESTREPORT-001`
+- `FN-REQUESTREPORT-002`
+- `FN-COMPLETEREPORT-001`
+
+El ID no codifica el tipo de acción.
+
+El tipo vive en:
+
+`type`
+
 ## requiredActions
 
 Cada acción debe contener como mínimo:
 
-- id;
-- type;
-- action;
-- reason;
-- evidence;
-- status.
+- `id`;
+- `type`;
+- `action`;
+- `reason`;
+- `evidenceStatus`;
+- `evidence`.
 
-Referenciar `resourceId` cuando afecte un recurso compartido.
+Ejemplo:
 
-No convertir deuda u optimización en acción obligatoria.
+    {
+      "id": "FN-REQUESTREPORT-001",
+      "type": "STRUCTURAL",
+      "action": "Extraer lógica funcional del Azure adapter.",
+      "reason": "El entrypoint contiene comportamiento funcional.",
+      "evidenceStatus": "CONFIRMED",
+      "evidence": []
+    }
+
+Referenciar `resourceId` cuando la acción esté relacionada con un recurso compartido.
+
+No utilizar:
+
+`status: CONFIRMED`
+
+dentro de una acción.
+
+Utilizar:
+
+`evidenceStatus: CONFIRMED`
+
+## Acción vs recurso compartido
+
+Si la Function consume un recurso compartido que necesita transformación global:
+
+la acción Function debe expresar únicamente su dependencia o adaptación local.
+
+No duplicar la transformación propietaria del recurso.
+
+## Technical debt
+
+Registrar separadamente.
+
+No convertir automáticamente en `requiredActions`.
+
+## Optimization
+
+Registrar separadamente.
+
+Siempre fuera de alcance de migración salvo cambio explícito del proyecto.
 
 ## Salidas estructuradas
 
@@ -243,8 +319,12 @@ Crear:
 
 `.migration/functions/<FunctionName>/analysis.md`
 
-`analysis.json` es el owner de:
+## analysis.json
 
+Debe ser owner de:
+
+- function;
+- capability;
 - behavior;
 - dependencies;
 - sharedResources;
@@ -254,12 +334,27 @@ Crear:
 - configuration;
 - relationships;
 - testability;
-- tests;
-- compatibility;
+- existingTests;
+- proposedTests;
+- node24Compatibility;
+- programmingModel;
+- durableRole;
 - requiredActions;
-- debt;
+- technicalDebt;
+- optimizations;
 - risks;
-- unknowns.
+- unknowns;
+- evidence.
+
+No necesita un `status` principal mientras el análisis haya podido completarse.
+
+Si el análisis completo no puede realizarse, registrar:
+
+- blocker;
+- unknown;
+- review requirement;
+
+sin inventar conclusiones.
 
 ## Catálogo por Function
 
@@ -271,9 +366,9 @@ Usar:
 
 `../_shared/templates/function-current-state.template.md`
 
-Este documento representa el BEFORE.
+Este documento representa BEFORE.
 
-No actualizarlo posteriormente para representar el estado migrado.
+No incluir como estado implementado lo que solo pertenece al target.
 
 ## Lecciones
 
@@ -289,11 +384,12 @@ El skill termina cuando:
 
 - comportamiento fue documentado;
 - arquitectura actual y target fueron comparadas;
-- resources fueron confirmados;
+- shared resources fueron confirmados cuando existía evidencia;
 - testabilidad fue evaluada;
 - tests fueron propuestos;
 - compatibilidad fue evaluada;
-- requiredActions fueron generadas;
+- requiredActions usan IDs `FN-*`;
+- evidencia interna usa `evidenceStatus`;
 - ficha BEFORE fue creada;
 - deuda y optimización quedaron separadas;
 - se generaron analysis y lessons.
@@ -306,7 +402,7 @@ No debe:
 - agregar tests;
 - aplicar arquitectura;
 - actualizar dependencias;
-- generar el plan;
+- generar planes;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;

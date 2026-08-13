@@ -2,16 +2,23 @@
 
 ## Objetivo
 
-Definir el significado común de estados utilizados por los skills y evitar que una misma palabra represente conceptos
-diferentes.
+Definir una semántica común para los estados utilizados por los skills.
 
-Los estados se dividen por responsabilidad.
+Separar siempre:
 
-No crear un estado nuevo cuando uno existente represente correctamente el caso.
+- evidencia;
+- necesidad de cambio;
+- decisión humana;
+- estado de ejecución;
+- resultado de verificación.
 
-## 1. Estado de evidencia
+No usar `status` para representar conceptos diferentes.
 
-Usar únicamente para indicar qué tan sustentada está una afirmación.
+## Evidence status
+
+Campo:
+
+`evidenceStatus`
 
 Valores:
 
@@ -26,7 +33,7 @@ Existe evidencia directa suficiente.
 
 ### INFERRED
 
-Existe evidencia parcial y la conclusión debe mantenerse explícitamente como inferencia.
+Existe evidencia parcial que permite una conclusión razonable, pero no definitiva.
 
 ### UNKNOWN
 
@@ -34,13 +41,19 @@ No existe evidencia suficiente.
 
 ### NOT_APPLICABLE
 
-La dimensión no aplica al caso analizado.
+La dimensión no aplica.
 
-Estos estados no indican si una migración debe ejecutarse.
+`evidenceStatus` responde:
 
-## 2. Decisión de cambio
+`¿Qué tan sustentada está esta afirmación?`
 
-Usar para indicar si una dimensión necesita trabajo.
+No indica si debe ejecutarse un cambio.
+
+## Action status
+
+Campo:
+
+`actionStatus`
 
 Valores:
 
@@ -50,45 +63,67 @@ Valores:
 
 ### REQUIRED
 
-Existe evidencia suficiente de que el cambio es necesario.
+Existe evidencia suficiente de que un cambio o validación posterior es necesaria para alcanzar el target.
 
 ### NOT_REQUIRED
 
-La dimensión ya satisface el target o no requiere modificación.
+No se necesita cambio.
+
+Puede significar que:
+
+- la dimensión ya satisface el target;
+- el recurso ya es compatible;
+- no existe trabajo necesario sobre ese elemento.
 
 ### REQUIRES_VALIDATION
 
-Todavía falta evidencia técnica para decidir.
+Falta evidencia técnica para decidir si el cambio es necesario.
 
 Ejemplos:
 
 - compatibilidad de una dependencia;
 - Runtime desplegado no observable;
-- comportamiento que requiere ejecución adicional para confirmarse.
+- comportamiento que necesita ejecución adicional.
 
-`REQUIRES_VALIDATION` no significa necesariamente revisión humana.
+`actionStatus` responde:
 
-## 3. Revisión humana
+`¿Necesitamos hacer algo sobre esta dimensión?`
+
+## Revisión humana
 
 Usar:
 
 `REQUIRES_REVIEW`
 
-cuando continuar requiere una decisión humana y no únicamente obtener más evidencia técnica.
+cuando exista suficiente información sobre el problema, pero continuar requiera una decisión humana.
 
 Ejemplos:
 
-- comportamiento contradictorio;
 - refactor significativo fuera del alcance aprobado;
-- riesgo de instancias Durable activas;
+- comportamiento contradictorio;
 - decisión arquitectónica ambigua;
-- cambio que podría modificar comportamiento.
+- riesgo sobre instancias Durable activas;
+- posible modificación de contrato observable.
 
-No usar `REQUIRES_REVIEW` como equivalente de `UNKNOWN`.
+No usar `REQUIRES_REVIEW` como sinónimo de:
 
-## 4. Estado de assessment
+- `UNKNOWN`;
+- `REQUIRES_VALIDATION`;
+- `BLOCKED`.
 
-Usar:
+## Status principal
+
+El campo:
+
+`status`
+
+se reserva para representar el estado principal del artefacto o ejecución.
+
+No usarlo para evidencia interna.
+
+## Assessment
+
+Estados:
 
 - `READY_FOR_ANALYSIS`
 - `PARTIAL`
@@ -101,19 +136,19 @@ Existe evidencia suficiente para comenzar análisis por Function.
 
 ### PARTIAL
 
-Existen unknowns, pero parte del trabajo puede continuar de forma segura.
+Existen unknowns o validaciones pendientes, pero puede continuar trabajo independiente seguro.
 
 ### BLOCKED
 
-No puede continuar la siguiente etapa necesaria sin resolver un impedimento conocido.
+Existe un impedimento conocido que impide continuar la siguiente etapa necesaria.
 
 ### REQUIRES_REVIEW
 
-Existe una decisión humana pendiente.
+Existe una decisión humana global pendiente.
 
-## 5. Estado de planificación
+## Planning
 
-Usar:
+Estados:
 
 - `READY`
 - `PARTIAL`
@@ -121,22 +156,23 @@ Usar:
 
 ### READY
 
-El plan tiene evidencia suficiente para ejecutar sus acciones.
+El plan tiene evidencia suficiente para ejecutar las acciones requeridas.
 
 ### PARTIAL
 
-Parte del plan es ejecutable y otra permanece pendiente.
+Parte del plan puede ejecutarse y otra permanece pendiente.
 
 ### BLOCKED
 
-No existe un camino seguro para ejecutar las acciones necesarias actualmente.
+No existe actualmente un camino seguro para ejecutar las acciones necesarias.
 
-Cuando la planificación necesite una decisión humana, registrar el motivo como `REQUIRES_REVIEW` en el elemento afectado
-y mantener el plan `PARTIAL` o `BLOCKED` según impacto.
+Cuando una acción particular necesite decisión humana:
 
-No agregar `REQUIRES_REVIEW` como cuarto estado global del plan.
+registrar `REQUIRES_REVIEW` sobre esa acción o riesgo.
 
-## 6. Preparación global
+No agregar `REQUIRES_REVIEW` como estado global adicional del plan.
+
+## Global preparation
 
 `prepare-function-app` usa:
 
@@ -145,23 +181,7 @@ No agregar `REQUIRES_REVIEW` como cuarto estado global del plan.
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-### COMPLETED
-
-Todas las acciones globales aplicables fueron ejecutadas.
-
-### PARTIAL
-
-Se completaron acciones independientes y quedan otras pendientes.
-
-### BLOCKED
-
-Una condición conocida impide completar preparación necesaria.
-
-### REQUIRES_REVIEW
-
-El siguiente cambio requiere decisión humana.
-
-## 7. Preparación por Function
+## Function preparation
 
 `prepare-function` usa:
 
@@ -170,23 +190,7 @@ El siguiente cambio requiere decisión humana.
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-### READY_FOR_MIGRATION
-
-La Function cumple las precondiciones necesarias para realizar su siguiente migración de plataforma.
-
-### NOT_APPLICABLE
-
-No necesita preparación adicional.
-
-### BLOCKED
-
-Existe una dependencia o fallo conocido que impide continuar.
-
-### REQUIRES_REVIEW
-
-La preparación requiere una decisión humana.
-
-## 8. Migración
+## Migration
 
 Los skills de migración usan:
 
@@ -195,25 +199,9 @@ Los skills de migración usan:
 - `BLOCKED`
 - `REQUIRES_REVIEW`
 
-### MIGRATED
+## Verification checks
 
-La responsabilidad específica del skill fue completada.
-
-### NOT_APPLICABLE
-
-La migración específica no era necesaria.
-
-### BLOCKED
-
-Existe un impedimento técnico conocido.
-
-### REQUIRES_REVIEW
-
-Existe una decisión humana pendiente.
-
-## 9. Checks de verificación
-
-Cada check de `verify-function-app` usa:
+Usar:
 
 - `PASS`
 - `FAIL`
@@ -223,17 +211,17 @@ Cada check de `verify-function-app` usa:
 
 ### PASS
 
-La comprobación fue ejecutada y satisface el criterio.
+La comprobación fue ejecutada y cumple el criterio.
 
 ### FAIL
 
-La comprobación fue ejecutada y no satisface el criterio.
+La comprobación fue ejecutada y no cumple el criterio.
 
 ### NOT_EXECUTED
 
 La comprobación aplicaba pero no pudo ejecutarse.
 
-Debe incluir razón.
+Debe registrar el motivo.
 
 ### NOT_APPLICABLE
 
@@ -241,11 +229,11 @@ La comprobación no aplica.
 
 ### REQUIRES_REVIEW
 
-El resultado no puede clasificarse correctamente sin decisión humana.
+El resultado necesita interpretación o decisión humana.
 
-## 10. Estado final de migración
+## Final verification
 
-`verify-function-app` usa:
+Estados:
 
 - `VERIFIED`
 - `VERIFIED_WITH_DEBT`
@@ -266,34 +254,76 @@ Existe al menos un blocker que impide cerrar la migración.
 
 ### REQUIRES_REVIEW
 
-La evidencia no permite una conclusión final sin intervención humana.
+No puede emitirse una conclusión final sin decisión humana.
 
-## Blocked vs Requires Review
+## UNKNOWN vs REQUIRES_VALIDATION
 
-Usar `BLOCKED` cuando sabemos cuál es el impedimento técnico.
+`UNKNOWN` describe evidencia.
+
+Ejemplo:
+
+    {
+      "evidenceStatus": "UNKNOWN"
+    }
+
+`REQUIRES_VALIDATION` describe la acción necesaria.
+
+Ejemplo:
+
+    {
+      "evidenceStatus": "UNKNOWN",
+      "actionStatus": "REQUIRES_VALIDATION"
+    }
+
+## NOT_APPLICABLE vs NOT_REQUIRED
+
+`NOT_APPLICABLE` pertenece principalmente a evidencia o ejecución.
+
+Ejemplo:
+
+Durable no existe:
+
+    {
+      "evidenceStatus": "NOT_APPLICABLE"
+    }
+
+`NOT_REQUIRED` significa que la dimensión existe o fue evaluada pero no necesita cambio.
+
+Ejemplo:
+
+Programming Model ya es v4:
+
+    {
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "NOT_REQUIRED"
+    }
+
+Si posteriormente se invoca el skill de migración v4:
+
+    {
+      "status": "NOT_APPLICABLE"
+    }
+
+## PARTIAL vs BLOCKED
+
+Usar `PARTIAL` cuando existe trabajo independiente seguro.
+
+Usar `BLOCKED` cuando no puede continuar el trabajo necesario.
+
+## BLOCKED vs REQUIRES_REVIEW
+
+Usar `BLOCKED` cuando el impedimento técnico es conocido.
 
 Ejemplo:
 
 `tests = FAIL`
 
-Usar `REQUIRES_REVIEW` cuando existe evidencia pero la siguiente decisión no puede tomarse automáticamente.
-
-Ejemplo:
-
-un refactor necesario puede cambiar un contrato observable y el alcance no fue aprobado.
-
-## Partial vs Blocked
-
-Usar `PARTIAL` cuando existe trabajo independiente seguro que puede continuar.
-
-Usar `BLOCKED` cuando no existe trabajo necesario que pueda continuar de forma segura.
+Usar `REQUIRES_REVIEW` cuando el siguiente paso depende de una decisión humana.
 
 ## Principio
-
-Los estados representan la condición actual.
-
-No deben utilizarse como instrucciones.
 
 No convertir incertidumbre en éxito.
 
 No convertir deuda no bloqueante en bloqueo.
+
+No utilizar la misma propiedad para evidencia, acción y ejecución.

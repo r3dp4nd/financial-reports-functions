@@ -7,15 +7,12 @@ description: Consolida los recursos compartidos confirmados y construye el plan 
 
 ## Objetivo
 
-Transformar la evidencia acumulada en una vista consolidada de recursos compartidos y en planes ejecutables neutrales
-respecto del ejecutor.
+Transformar la evidencia acumulada en:
 
-Debe producir:
-
-1. catálogo estructurado de shared resources confirmados;
+1. catálogo consolidado de shared resources;
 2. plan global;
-3. plan por Function;
-4. acciones propietarias para recursos compartidos que necesiten cambio;
+3. planes por Function;
+4. acciones propietarias para shared resources;
 5. orden y dependencias;
 6. criterios de verificación.
 
@@ -29,6 +26,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 ## Precondiciones
 
@@ -38,11 +36,11 @@ Deben existir:
 
 `.migration/repository/assessment.json`
 
-y los análisis requeridos:
+y los analyses requeridos:
 
 `.migration/functions/<FunctionName>/analysis.json`
 
-Si faltan análisis necesarios:
+Si faltan análisis:
 
 - no inventar acciones;
 - identificar impacto;
@@ -67,29 +65,25 @@ El análisis determina qué necesita cada Function.
 Este skill:
 
 1. consolida hechos transversales;
-2. resuelve ownership cuando exista suficiente evidencia;
-3. planifica cambios;
-4. coordina dependencias.
+2. resuelve ownership cuando existe evidencia;
+3. genera acciones globales o compartidas;
+4. construye planes ejecutables;
+5. coordina dependencias.
 
-No debe confundir:
+No confundir:
 
-`descripción del estado actual`
+`estado actual`
 
 con:
 
-`acción de migración`.
+`acción futura`.
 
-## Fase 1 — Consolidar shared resources
+## Fase 1 — Shared resources
 
-Antes de construir los planes, consolidar los candidatos provenientes de:
+Consolidar candidatos provenientes de:
 
 - inventory;
-- analyses por Function.
-
-Crear esta consolidación únicamente cuando existan shared resources confirmados o suficientemente identificados para ser
-útiles.
-
-## Artefactos de shared resources
+- analyses.
 
 Crear cuando aplique:
 
@@ -99,111 +93,132 @@ Crear cuando aplique:
 
 Estos artefactos describen el estado consolidado observado.
 
-No son parte del migration plan.
+No son migration plans.
+
+## Shared resource IDs
+
+Usar:
+
+`SR-<TYPE>-<NAME>`
+
+Ejemplos:
+
+- `SR-COSMOS-REPORTS`
+- `SR-SERVICEBUS-OUTBOX`
+- `SR-SQL-CUSTOMERS`
+
+Los IDs representan recursos persistentes.
+
+No representan acciones.
 
 ## shared-resources.json
 
-Es el owner estructurado de:
+Cada recurso debe separar:
 
-- shared resource id;
-- name;
-- type;
-- ownership;
-- paths;
-- consumers;
-- configuration keys;
-- status;
-- evidence.
-
-No debe contener todavía pasos de ejecución.
-
-Puede contener una evaluación como:
-
-- `REQUIRED`
-- `NOT_REQUIRED`
-- `REQUIRES_VALIDATION`
-
-si ya existe evidencia del assessment, pero no debe contener el procedimiento de migración.
-
-## shared-resources.md
-
-Debe ser una vista humana breve del mismo catálogo consolidado.
-
-Debe explicar:
-
-- qué recursos son compartidos;
-- ownership;
-- consumidores;
-- configuración por nombre de clave;
-- riesgos relevantes;
-- unknowns.
-
-No duplicar el plan.
-
-## Consolidación
-
-Para cada candidato:
-
-1. reunir evidencia de consumidores;
-2. confirmar o descartar reuse real;
-3. determinar ownership cuando sea posible;
-4. evitar fusiones por tecnología;
-5. registrar unknowns cuando persistan.
+- `evidenceStatus`;
+- `actionStatus`.
 
 Ejemplo:
 
-`CustomerRepository` y `ReportRepository`
+    {
+      "id": "SR-COSMOS-REPORTS",
+      "name": "ReportRepository",
+      "type": "COSMOS_DB",
+      "ownership": {
+        "scope": "CAPABILITY",
+        "owner": "Reports"
+      },
+      "consumers": [
+        "RequestReport",
+        "GenerateReport"
+      ],
+      "configurationKeys": [
+        "COSMOS_DATABASE"
+      ],
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "REQUIRES_VALIDATION",
+      "evidence": []
+    }
 
-no se fusionan únicamente porque ambos utilicen Cosmos DB.
+No usar:
+
+`status: CONFIRMED`
+
+para representar evidencia.
 
 ## Ownership
 
-Usar:
+Scopes:
 
 - `REPOSITORY`
 - `FUNCTION_APP`
 - `CAPABILITY`
 - `WORKFLOW`
 
-Si ownership no puede confirmarse:
+Si no puede confirmarse ownership:
 
-mantenerlo `UNKNOWN`.
+mantenerlo desconocido.
 
-No bloquear toda la planificación si existen acciones independientes.
+No inventar un owner para completar el artefacto.
 
-## Principio de recurso compartido
+## Consolidación
 
-Un shared resource describe:
+Para cada candidato:
 
-`qué existe y quién depende de él`
+1. reunir consumidores;
+2. confirmar o descartar reuse;
+3. determinar ownership;
+4. evitar fusiones por tecnología;
+5. evaluar necesidad de cambio;
+6. registrar evidencia y unknowns.
 
-Una shared resource action describe:
+## Fase 2 — Acciones compartidas
 
-`qué cambio debe ejecutarse sobre él`
+Un recurso que necesite cambio debe tener una única acción propietaria.
 
-Son conceptos diferentes.
+IDs:
 
-## Fase 2 — Shared resource actions
-
-Después de consolidar shared resources, identificar cuáles necesitan modificación.
-
-Cada recurso que requiera cambio debe tener una única acción propietaria.
+- `SR-ACTION-001`
+- `SR-ACTION-002`
 
 Ejemplo:
 
-`SR-ACTION-001`
+    {
+      "id": "SR-ACTION-001",
+      "resourceId": "SR-COSMOS-REPORTS",
+      "type": "STRUCTURAL",
+      "action": "Adaptar la infraestructura compartida de ReportRepository.",
+      "dependsOn": []
+    }
 
-La acción pertenece al plan global.
+La acción pertenece al plan.
 
-Debe referenciar:
+El recurso pertenece al catálogo.
 
-`resourceId`
+## Global actions
 
-Las Functions consumidoras deben referenciar la acción mediante:
+Usar:
 
-`dependsOn`
+- `GLOBAL-001`
+- `GLOBAL-002`
 
-No duplicar la transformación dentro de planes individuales.
+Ejemplo:
+
+    {
+      "id": "GLOBAL-001",
+      "type": "REQUIRED_NODE",
+      "action": "Actualizar target Node.js a 24."
+    }
+
+## Function actions
+
+Los planes individuales referencian las acciones:
+
+`FN-*`
+
+producidas por `analyze-function`.
+
+No renombrarlas durante planning.
 
 ## Plan global
 
@@ -213,29 +228,60 @@ Crear:
 
 `.migration/plans/migration-plan.md`
 
-Usar para Markdown:
+Usar:
 
 `../_shared/templates/migration-plan.template.md`
 
-El plan global coordina:
+## Estado del plan
 
+El campo principal:
+
+`status`
+
+usa únicamente:
+
+- `READY`
+- `PARTIAL`
+- `BLOCKED`
+
+Ejemplo:
+
+    {
+      "status": "READY"
+    }
+
+No utilizar:
+
+`status: CONFIRMED`
+
+en el plan.
+
+## migration-plan.json global
+
+Debe contener:
+
+- schemaVersion;
+- status;
 - target;
-- global changes;
-- architecture;
-- shared resource actions;
-- Function plans;
-- Durable workflows;
+- architectureTarget;
+- globalChanges;
+- sharedResourceActions;
+- functionPlans;
+- durableWorkflows;
 - dependencies;
-- execution order;
+- executionOrder;
 - risks;
 - unknowns;
-- verification criteria.
-
-No debe volver a describir en detalle los shared resources.
+- verificationCriteria;
+- evidence.
 
 Debe referenciar:
 
 `.migration/resources/shared-resources.json`
+
+cuando exista.
+
+No copiar el catálogo completo de recursos.
 
 ## Plan por Function
 
@@ -245,12 +291,17 @@ Crear:
 
 `.migration/functions/<FunctionName>/migration-plan.md`
 
-Usar para Markdown:
+Usar:
 
 `../_shared/templates/function-migration-plan.template.md`
 
-Cada plan debe contener:
+## migration-plan.json por Function
 
+Debe contener:
+
+- schemaVersion;
+- function;
+- status;
 - behaviorToPreserve;
 - architectureTarget;
 - requiredActions;
@@ -264,119 +315,89 @@ Cada plan debe contener:
 - risks;
 - unknowns.
 
-No copiar el análisis completo.
+`requiredActions` debe referenciar IDs:
 
-## Shared resources en Function plans
+`FN-*`
 
-Una Function debe referenciar únicamente los recursos que consume.
+No copiar nuevamente las acciones completas salvo que sea indispensable para ejecución humana.
+
+## Dependencias
+
+Usar IDs existentes.
 
 Ejemplo:
 
-    sharedResources:
-      - SR-COSMOS-REPORTS
+    {
+      "dependsOn": [
+        "GLOBAL-001",
+        "SR-ACTION-001"
+      ]
+    }
 
-Si necesita que el recurso sea modificado antes:
-
-    dependsOn:
-      - SR-ACTION-001
-
-No repetir en el plan individual cómo se migra el recurso global.
-
-## Arquitectura
-
-Planificar convergencia hacia:
-
-`../_shared/architecture-policy.md`
-
-Debe quedar claro:
-
-- qué permanece en Azure adapter;
-- qué pertenece a capability;
-- qué infraestructura debe aislarse;
-- qué contracts son necesarios;
-- qué shared resources tienen ownership.
-
-No planificar carpetas vacías.
-
-## Cambios globales
-
-Consolidar únicamente cambios transversales respaldados por assessment y analyses.
-
-Ejemplos:
-
-- Node.js;
-- Runtime;
-- dependencies;
-- TypeScript;
-- Jest;
-- build;
-- estructura base;
-- `.funcignore`.
+No generar dependencias implícitas únicamente por orden textual.
 
 ## Function ya v4
 
-No incluir migración del Programming Model.
+Si Programming Model ya es v4:
 
-Puede incluir:
+no crear migration step de Programming Model.
 
-- architecture;
-- testability;
-- Node compatibility;
-- dependency changes.
-
-## Function legacy
-
-Cuando corresponda:
-
-incluir `REQUIRED_PLATFORM`.
+Puede existir preparación arquitectónica o de testabilidad.
 
 ## Durable
 
-Mantener planes por Function para trazabilidad.
+Mantener planes por Function para detalle.
 
-Coordinar la migración de cada workflow como una unidad.
+Coordinar el cambio de plataforma como workflow cuando aplique.
 
 ## Orden
 
-Secuencia preferida cuando aplique:
+Secuencia preferida:
 
-1. global changes;
-2. shared resource actions necesarias;
-3. preparation/refactor por Function;
+1. global actions;
+2. shared resource actions;
+3. Function preparation;
 4. baseline;
-5. migration de adapters legacy;
-6. migration Durable;
-7. adaptaciones restantes;
-8. build global;
+5. non-Durable platform migration;
+6. Durable workflow migration;
+7. remaining adaptations;
+8. global build;
 9. verification.
 
-No ejecutar etapas `NOT_APPLICABLE`.
+Omitir acciones no necesarias.
 
 ## Build
 
-No exigir build global después de cada Function.
+El build global completo pertenece a verification.
 
-El build completo pertenece al gate final.
+No convertirlo en gate por Function.
 
 ## Unknowns
 
 Un unknown bloquea únicamente acciones dependientes.
 
-Permitir trabajo independiente seguro.
+Usar `PARTIAL` cuando trabajo independiente pueda continuar.
 
-## Estados
+## Revisión humana
 
-Usar:
+Si una acción requiere decisión humana:
 
-- `READY`
-- `PARTIAL`
-- `BLOCKED`
+registrar explícitamente:
 
-para plan global y planes individuales cuando corresponda.
+`REQUIRES_REVIEW`
+
+sobre el elemento afectado o riesgo.
+
+El plan global se mantiene:
+
+- `PARTIAL`;
+- o `BLOCKED`;
+
+según impacto.
 
 ## Neutralidad del ejecutor
 
-Las acciones deben describir intención técnica.
+Las acciones deben describir resultados técnicos.
 
 Evitar:
 
@@ -394,13 +415,13 @@ Cuando existan shared resources:
 
 `.migration/resources/shared-resources.md`
 
-Siempre que la planificación pueda realizarse:
+Plan global:
 
 `.migration/plans/migration-plan.json`
 
 `.migration/plans/migration-plan.md`
 
-Y por Function incluida:
+Por Function:
 
 `.migration/functions/<FunctionName>/migration-plan.json`
 
@@ -419,14 +440,16 @@ Crear:
 El skill termina cuando:
 
 - inventory, assessment y analyses fueron consumidos;
-- shared resource candidates fueron consolidados o descartados;
-- ownership quedó confirmado o explícitamente desconocido;
-- shared-resources.json fue creado cuando aplicaba;
-- cada shared change tiene una única acción propietaria;
+- shared resources fueron consolidados;
+- `evidenceStatus` y `actionStatus` se usan correctamente;
+- cada shared change tiene una acción propietaria;
+- global actions usan `GLOBAL-*`;
+- shared actions usan `SR-ACTION-*`;
+- Function actions conservan `FN-*`;
 - existe plan global;
 - cada Function incluida tiene plan;
 - no existen acciones duplicadas;
-- arquitectura objetivo está reflejada;
+- arquitectura está reflejada;
 - Durable está coordinado;
 - riesgos y unknowns permanecen visibles;
 - planes son neutrales respecto del ejecutor;

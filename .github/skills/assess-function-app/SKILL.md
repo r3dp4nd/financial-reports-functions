@@ -7,7 +7,7 @@ description: Evalúa una Azure Function App descubierta previamente y determina 
 
 ## Objetivo
 
-Determinar el gap global entre el estado actual de la Function App y el target de migración.
+Determinar el gap global entre el estado actual de la Function App y el target.
 
 Debe responder qué dimensiones:
 
@@ -27,6 +27,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 ## Precondiciones
 
@@ -40,7 +41,7 @@ Si existen contradicciones o información insuficiente:
 
 - registrarlas;
 - no reconstruir discovery;
-- usar `REQUIRES_VALIDATION` o `REQUIRES_REVIEW`.
+- utilizar los estados definidos en `status-policy.md`.
 
 ## Entradas
 
@@ -68,6 +69,27 @@ Evaluar frente a:
 
 El target no implica optimización.
 
+## Modelo de dimensión
+
+Cada dimensión evaluada debe separar cuando corresponda:
+
+- `current`;
+- `target`;
+- `evidenceStatus`;
+- `actionStatus`;
+- `evidence`.
+
+Ejemplo:
+
+    {
+      "current": "20",
+      "target": "24",
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "REQUIRED"
+    }
+
+No utilizar `status` para representar evidencia interna.
+
 ## Dimensiones técnicas
 
 Evaluar independientemente:
@@ -81,15 +103,7 @@ Evaluar independientemente:
 - testing;
 - capacidad global de validación.
 
-No convertir todas estas dimensiones en una sola conclusión.
-
-## Acción
-
-Usar:
-
-- `REQUIRED`
-- `NOT_REQUIRED`
-- `REQUIRES_VALIDATION`
+No convertir estas dimensiones en una única conclusión genérica.
 
 ## Node.js
 
@@ -100,6 +114,15 @@ Determinar:
 - necesidad de cambio;
 - riesgos globales.
 
+Ejemplo:
+
+    {
+      "current": "14",
+      "target": "24",
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "REQUIRED"
+    }
+
 No considerar una declaración de Node.js como evidencia suficiente de compatibilidad del source.
 
 ## Azure Functions Runtime
@@ -108,29 +131,45 @@ Determinar la versión cuando exista evidencia suficiente.
 
 No confundir Runtime con Programming Model.
 
-Cuando dependa de infraestructura externa no observable:
+Cuando no pueda observarse:
 
-`REQUIRES_VALIDATION`
+    {
+      "current": null,
+      "target": "v4",
+      "evidenceStatus": "UNKNOWN",
+      "actionStatus": "REQUIRES_VALIDATION"
+    }
+
+No leer CI/CD protegido para resolverlo.
 
 ## Programming Model
 
 Si está confirmado v4:
 
-`NOT_REQUIRED`
+    {
+      "current": "v4",
+      "target": "v4",
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "NOT_REQUIRED"
+    }
 
-Si está confirmado legacy y el target exige v4:
+Si está confirmado legacy:
 
-`REQUIRED`
+`actionStatus = REQUIRED`
 
-Si existe estado mixto o contradictorio:
+cuando el target exige v4.
 
-`REQUIRES_VALIDATION`
+Si existe evidencia contradictoria:
+
+- mantener la contradicción;
+- no seleccionar silenciosamente una versión;
+- usar `UNKNOWN` o revisión según corresponda.
 
 ## Durable Functions
 
 Si no existe:
 
-`NOT_APPLICABLE`
+`evidenceStatus = NOT_APPLICABLE`
 
 Si existe:
 
@@ -141,11 +180,11 @@ evaluar globalmente:
 - workflows observables;
 - necesidad de migración especializada.
 
-El detalle pertenece a análisis posteriores.
+El detalle pertenece al análisis posterior.
 
 ## Dependencias
 
-Evaluar únicamente dependencias relevantes para:
+Evaluar únicamente paquetes relevantes para:
 
 - Node.js 24;
 - Azure Functions;
@@ -155,7 +194,12 @@ Evaluar únicamente dependencias relevantes para:
 - tests;
 - infraestructura compartida.
 
-No exigir actualización solo por antigüedad.
+Cada dependencia relevante debe separar:
+
+- evidencia;
+- necesidad de cambio.
+
+No actualizar por antigüedad.
 
 ## TypeScript
 
@@ -187,44 +231,59 @@ Evaluar globalmente frente a:
 
 Considerar:
 
-- ubicación de adapters;
+- adapters;
 - mezcla runtime/lógica;
 - organización por capability;
 - acoplamiento a SDKs;
 - configuración;
 - contracts;
 - infraestructura;
-- ownership de shared resources.
+- ownership.
 
-Usar:
+La conclusión arquitectónica puede usar:
 
 - `ALIGNED`
 - `PARTIALLY_ALIGNED`
 - `CHANGE_REQUIRED`
 - `REQUIRES_VALIDATION`
 
-No decidir todavía archivos concretos a mover o interfaces a crear.
+Este campo representa una clasificación arquitectónica, no un `status` transversal.
+
+Ejemplo:
+
+    {
+      "classification": "PARTIALLY_ALIGNED",
+      "evidenceStatus": "CONFIRMED"
+    }
+
+No decidir todavía archivos concretos a mover.
 
 ## Shared resources assessment
 
 Evaluar candidatos detectados durante discovery.
 
-Considerar:
+Para cada recurso usar cuando corresponda:
 
-- tipo;
-- consumers;
-- ownership;
-- impacto transversal;
-- compatibilidad técnica;
-- incertidumbre.
+- `evidenceStatus`;
+- `actionStatus`.
 
-No consolidar dos recursos únicamente porque utilicen la misma tecnología.
+Ejemplo:
+
+    {
+      "resourceId": "SR-COSMOS-REPORTS",
+      "evidenceStatus": "CONFIRMED",
+      "actionStatus": "REQUIRES_VALIDATION"
+    }
+
+No fusionar recursos únicamente porque compartan tecnología.
 
 ## Riesgos globales
 
-Registrar únicamente riesgos relevantes como:
+Registrar únicamente riesgos relevantes.
 
-- dependencia compartida con muchos consumidores;
+Ejemplos:
+
+- recurso compartido con muchos consumidores;
 - SDK construido repetidamente;
 - configuración transversal acoplada;
 - workflow Durable complejo;
@@ -242,51 +301,74 @@ Crear:
 
 `.migration/repository/assessment.md`
 
-`assessment.json` es el owner del gap global.
+## assessment.json
 
-Debe contener:
+Debe contener como mínimo:
 
+- schemaVersion;
 - target;
-- technical dimensions;
-- architecture assessment;
-- shared resources assessment;
-- testing assessment;
+- technicalDimensions;
+- architectureAssessment;
+- sharedResourcesAssessment;
+- testingAssessment;
 - risks;
 - unknowns;
-- external evidence;
+- externalEvidence;
 - status.
+
+`status` principal usa:
+
+- `READY_FOR_ANALYSIS`
+- `PARTIAL`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+## Ejemplo conceptual
+
+    {
+      "schemaVersion": "1",
+      "status": "READY_FOR_ANALYSIS",
+      "technicalDimensions": {
+        "node": {
+          "current": "14",
+          "target": "24",
+          "evidenceStatus": "CONFIRMED",
+          "actionStatus": "REQUIRED"
+        },
+        "runtime": {
+          "current": null,
+          "target": "v4",
+          "evidenceStatus": "UNKNOWN",
+          "actionStatus": "REQUIRES_VALIDATION"
+        },
+        "programmingModel": {
+          "current": "v4",
+          "target": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "actionStatus": "NOT_REQUIRED"
+        }
+      }
+    }
 
 ## Markdown
 
-`assessment.md` debe ser una síntesis humana del assessment.
-
-No necesita template dedicado mientras su estructura siga siendo pequeña.
-
-Debe responder:
+`assessment.md` debe responder:
 
 - qué ya cumple;
-- qué cambia;
-- qué requiere validación;
-- cuál es el estado arquitectónico;
-- qué recursos compartidos son relevantes;
-- qué riesgos permanecen.
+- qué necesita cambio;
+- qué necesita validación;
+- estado arquitectónico;
+- recursos compartidos relevantes;
+- riesgos;
+- unknowns.
+
+No generar el plan.
 
 ## Catálogo
 
 No modificar las secciones BEFORE de:
 
 `.migration/catalog/current-state.md`
-
-Puede referenciarse, pero no reescribirse para mostrar el target.
-
-## Estado general
-
-Usar:
-
-- `READY_FOR_ANALYSIS`
-- `PARTIAL`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
 
 ## Lecciones
 
@@ -301,12 +383,13 @@ Crear:
 El skill termina cuando:
 
 - inventory y catálogo fueron consumidos;
-- las dimensiones técnicas fueron evaluadas por separado;
+- dimensiones técnicas fueron evaluadas independientemente;
+- evidencia y acción están separadas;
 - arquitectura global fue evaluada;
 - shared resources fueron considerados;
 - lo satisfecho quedó como `NOT_REQUIRED`;
 - unknowns permanecen visibles;
-- riesgos globales quedaron registrados;
+- riesgos fueron registrados;
 - no se modificó código;
 - se generaron assessment y lessons.
 
