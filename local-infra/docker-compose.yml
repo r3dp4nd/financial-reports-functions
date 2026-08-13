@@ -25,11 +25,13 @@ services:
       - "8081:8081"
       - "8080:8080"
       - "1234:1234"
-    volumes:
-      - cosmos-data:/data
     environment:
       PROTOCOL: http
       ENABLE_EXPLORER: "true"
+      ENABLE_INIT_DATA: "true"
+    volumes:
+      - cosmos-data:/data
+      - ./cosmos-init:/init:ro
 
   servicebus:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
@@ -39,7 +41,7 @@ services:
       - "5672:5672"
       - "5300:5300"
     volumes:
-      - ./servicebus-config.json:/ServiceBus_Emulator/ConfigFiles/Config.json
+      - ./servicebus-config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
     environment:
       SQL_SERVER: mssql
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
