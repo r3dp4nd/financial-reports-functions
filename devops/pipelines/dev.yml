@@ -10,14 +10,17 @@ name: function-dev-$(Date:yyyyMMdd).$(Rev:r)
 
 parameters:
   - name: runTests
+    displayName: Run tests
     type: boolean
     default: true
 
   - name: runCoverage
+    displayName: Run coverage
     type: boolean
     default: false
 
   - name: runSonar
+    displayName: Run SonarQube
     type: boolean
     default: false
 
@@ -40,7 +43,15 @@ stages:
 
           buildCommand: 'npm run build:prod'
 
-          artifactName: 'function-app'
+          testCommand: 'npm test'
+
+          coverageCommand: 'npm run test:coverage'
+
+          sonarServiceConnection: '<SONAR-SERVICE-CONNECTION>'
+
+          sonarProjectKey: '<SONAR-PROJECT-KEY>'
+
+          sonarProjectName: '<SONAR-PROJECT-NAME>'
 
 
   - stage: Deploy_DEV
@@ -63,9 +74,5 @@ stages:
           functionAppName: '<FUNCTION-APP-DEV>'
 
           artifactSource: 'current'
-
-          artifactName: 'function-app'
-
-          republishArtifact: false
 
           isFlexConsumption: false

@@ -8,7 +8,7 @@ name: function-uat-$(Date:yyyyMMdd).$(Rev:r)
 resources:
   pipelines:
 
-    - pipeline: dev
+    - pipeline: release
 
       source: '<DEV-PIPELINE-NAME>'
 
@@ -31,8 +31,6 @@ stages:
 
           functionAppName: '<FUNCTION-APP-UAT>'
 
-          artifactSource: 'dev'
-
-          artifactName: 'function-app'
+          artifactSource: 'release'
 
           isFlexConsumption: false

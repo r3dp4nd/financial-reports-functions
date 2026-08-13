@@ -60,6 +60,8 @@ jobs:
 
         inputs:
           version: '24.x'
+          checkLatest: false
+          force32bit: false
 
 
       - script: |
@@ -78,33 +80,48 @@ jobs:
             displayName: Prepare SonarQube
 
             inputs:
-              SonarQube: ${{ parameters.sonarServiceConnection }}
+              SonarQube:
+                ${{ parameters.sonarServiceConnection }}
 
-              scannerMode: 'cli'
+              scannerMode:
+                'cli'
 
-              configMode: 'manual'
+              configMode:
+                'manual'
 
-              cliProjectKey: ${{ parameters.sonarProjectKey }}
+              cliProjectKey:
+                ${{ parameters.sonarProjectKey }}
 
-              cliProjectName: ${{ parameters.sonarProjectName }}
+              cliProjectName:
+                ${{ parameters.sonarProjectName }}
 
-              cliSources: '.'
+              cliSources:
+                '.'
 
 
       - ${{ if eq(parameters.runCoverage, true) }}:
 
-          - script: ${{ parameters.coverageCommand }}
-            displayName: Run tests with coverage
+          - script:
+              ${{ parameters.coverageCommand }}
+
+            displayName:
+              Run tests with coverage
 
 
       - ${{ elseif eq(parameters.runTests, true) }}:
 
-          - script: ${{ parameters.testCommand }}
-            displayName: Run tests
+          - script:
+              ${{ parameters.testCommand }}
+
+            displayName:
+              Run tests
 
 
-      - script: ${{ parameters.buildCommand }}
-        displayName: Build production application
+      - script:
+          ${{ parameters.buildCommand }}
+
+        displayName:
+          Build production application
 
 
       - ${{ if eq(parameters.runSonar, true) }}:
@@ -118,10 +135,11 @@ jobs:
 
 
       - task: CopyFiles@2
-        displayName: Prepare deployment package
+        displayName: Prepare Function App package
 
         inputs:
-          SourceFolder: '$(Build.SourcesDirectory)'
+          SourceFolder:
+            '$(Build.SourcesDirectory)'
 
           Contents: |
             dist/**
@@ -129,36 +147,46 @@ jobs:
             package.json
             package-lock.json
 
-          TargetFolder: '$(Build.ArtifactStagingDirectory)/package'
+          TargetFolder:
+            '$(Build.ArtifactStagingDirectory)/package'
 
-          CleanTargetFolder: true
+          CleanTargetFolder:
+            true
 
 
       - script: npm ci --omit=dev
         displayName: Install production dependencies
 
-        workingDirectory: '$(Build.ArtifactStagingDirectory)/package'
+        workingDirectory:
+          '$(Build.ArtifactStagingDirectory)/package'
 
 
       - task: ArchiveFiles@2
-        displayName: Create Function App package
+        displayName: Create deployment ZIP
 
         inputs:
-          rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
+          rootFolderOrFile:
+            '$(Build.ArtifactStagingDirectory)/package'
 
-          includeRootFolder: false
+          includeRootFolder:
+            false
 
-          archiveType: 'zip'
+          archiveType:
+            'zip'
 
-          archiveFile: '$(Build.ArtifactStagingDirectory)/function-app.zip'
+          archiveFile:
+            '$(Build.ArtifactStagingDirectory)/function-app.zip'
 
-          replaceExistingArchive: true
+          replaceExistingArchive:
+            true
 
 
       - task: PublishPipelineArtifact@1
-        displayName: Publish Function App artifact
+        displayName: Publish deployment artifact
 
         inputs:
-          targetPath: '$(Build.ArtifactStagingDirectory)/function-app.zip'
+          targetPath:
+            '$(Build.ArtifactStagingDirectory)/function-app.zip'
 
-          artifact: ${{ parameters.artifactName }}
+          artifact:
+            ${{ parameters.artifactName }}

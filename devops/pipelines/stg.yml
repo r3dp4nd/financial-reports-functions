@@ -33,6 +33,4 @@ stages:
 
           artifactSource: 'release'
 
-          artifactName: 'function-app'
-
           isFlexConsumption: false
