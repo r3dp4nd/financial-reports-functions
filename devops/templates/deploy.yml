@@ -38,17 +38,14 @@ jobs:
       runOnce:
         deploy:
           steps:
-
-            # Evita la descarga automática de todos los artifacts.
             - download: none
 
 
-            # Artifact generado dentro del mismo pipeline.
+            # Artifact produced by this pipeline.
             - ${{ if eq(parameters.artifactSource, 'current') }}:
 
                 - download: current
                   artifact: ${{ parameters.artifactName }}
-
 
                 - task: AzureFunctionApp@2
                   displayName: Deploy Azure Function App
@@ -65,24 +62,11 @@ jobs:
                     deploymentMethod: 'auto'
 
 
-                - ${{ if eq(parameters.publishArtifact, true) }}:
-
-                    - task: PublishPipelineArtifact@1
-                      displayName: Promote release artifact
-
-                      inputs:
-                        targetPath: '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
-
-                        artifact: ${{ parameters.artifactName }}
-
-
-            # Artifact procedente del pipeline anterior.
+            # Artifact received from previous CD pipeline.
             - ${{ if ne(parameters.artifactSource, 'current') }}:
 
                 - download: ${{ parameters.artifactSource }}
-
                   artifact: ${{ parameters.artifactName }}
-
 
                 - task: AzureFunctionApp@2
                   displayName: Deploy Azure Function App

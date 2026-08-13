@@ -9,12 +9,10 @@ name: cd-dev-$(Date:yyyyMMdd).$(Rev:r)
 
 
 stages:
-
   - stage: Build
     displayName: Build release
 
     jobs:
-
       - template: ../templates/build.yml
 
 
@@ -27,7 +25,6 @@ stages:
     condition: succeeded()
 
     jobs:
-
       - template: ../templates/deploy.yml
 
         parameters:
