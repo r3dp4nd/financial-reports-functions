@@ -16,7 +16,10 @@ const CI_CD_PATH_PATTERNS = [/(^|\/)\.github\/workflows(\/|$)/i, /(^|\/)azure-pi
 const SOURCE_EXTENSIONS = new Set([".js", ".cjs", ".mjs", ".ts", ".tsx"]);
 
 function normalizeRelativePath(filePath) {
-  return path.relative(ROOT, filePath).split(path.sep).join("/");
+  return path
+    .relative(ROOT, filePath)
+    .split(path.sep)
+    .join("/");
 }
 
 function isExcludedDirectory(name) {
@@ -35,7 +38,7 @@ function isSensitiveFile(relativePath) {
   });
 }
 
-function isCiCdFile(relativePath) {
+function isCiCdPath(relativePath) {
   return CI_CD_PATH_PATTERNS.some(function (pattern) {
     return pattern.test(relativePath);
   });
@@ -44,6 +47,7 @@ function isCiCdFile(relativePath) {
 function readJsonSafe(filePath, warnings) {
   try {
     const content = fs.readFileSync(filePath, "utf8");
+
     return JSON.parse(content);
   } catch (error) {
     warnings.push({
@@ -83,6 +87,7 @@ function walkDirectory(directory, state) {
 
   entries.forEach(function (entry) {
     const absolutePath = path.join(directory, entry.name);
+
     const relativePath = normalizeRelativePath(absolutePath);
 
     if (entry.isDirectory()) {
@@ -90,7 +95,7 @@ function walkDirectory(directory, state) {
         return;
       }
 
-      if (isCiCdFile(relativePath)) {
+      if (isCiCdPath(relativePath)) {
         state.sensitiveFilesDetected.push({
           path: relativePath, classification: "CI_CD", contentRead: false
         });
@@ -99,6 +104,7 @@ function walkDirectory(directory, state) {
       }
 
       walkDirectory(absolutePath, state);
+
       return;
     }
 
@@ -114,7 +120,7 @@ function walkDirectory(directory, state) {
       return;
     }
 
-    if (isCiCdFile(relativePath)) {
+    if (isCiCdPath(relativePath)) {
       state.sensitiveFilesDetected.push({
         path: relativePath, classification: "CI_CD", contentRead: false
       });
@@ -130,7 +136,7 @@ function walkDirectory(directory, state) {
 
 function findFunctionAppCandidates(files, warnings) {
   const hostJsonFiles = files.filter(function (file) {
-    return path.basename(file.absolutePath) === "host.json";
+    return (path.basename(file.absolutePath) === "host.json");
   });
 
   return hostJsonFiles.map(function (hostFile) {
@@ -148,16 +154,20 @@ function findFunctionAppCandidates(files, warnings) {
 
     const hasDurableFunctionsDependency = Object.prototype.hasOwnProperty.call(dependencies, "durable-functions");
 
-    let confidence = "UNKNOWN";
+    let status = "UNKNOWN";
 
     if (hasPackageJson && hasAzureFunctionsDependency) {
-      confidence = "CONFIRMED";
+      status = "CONFIRMED";
     } else if (hasPackageJson) {
-      confidence = "INFERRED";
+      status = "INFERRED";
     }
 
     return {
-      id: path.basename(appRoot) || ".", path: normalizeRelativePath(appRoot) || ".", status: confidence,
+      id: path.basename(appRoot) || ".",
+
+      path: normalizeRelativePath(appRoot) || ".",
+
+      status: status,
 
       packageJson: {
         detected: hasPackageJson, path: hasPackageJson ? normalizeRelativePath(packageJsonPath) : null
@@ -169,10 +179,15 @@ function findFunctionAppCandidates(files, warnings) {
 
       package: packageJson ? {
         name: packageJson.name || null,
+
         version: packageJson.version || null,
+
         main: packageJson.main || null,
+
         engines: packageJson.engines || {},
+
         dependencies: packageJson.dependencies || {},
+
         devDependencies: packageJson.devDependencies || {}
       } : null,
 
@@ -184,7 +199,13 @@ function findFunctionAppCandidates(files, warnings) {
 
       durableFunctionsDetected: hasDurableFunctionsDependency,
 
-      functions: [], environmentKeys: []
+      programmingModel: {
+        version: null, status: "UNKNOWN", evidence: []
+      },
+
+      functions: [],
+
+      environmentKeys: []
     };
   });
 }
@@ -208,10 +229,17 @@ function discoverLegacyFunctions(app, files, warnings) {
     if (!definition) {
       return {
         name: path.basename(path.dirname(file.absolutePath)),
+
         path: file.relativePath,
+
         programmingModel: "UNKNOWN",
+
         trigger: null,
+
         bindings: [],
+
+        durableRole: null,
+
         status: "UNKNOWN"
       };
     }
@@ -219,93 +247,69 @@ function discoverLegacyFunctions(app, files, warnings) {
     const bindings = Array.isArray(definition.bindings) ? definition.bindings : [];
 
     const triggerBinding = bindings.find(function (binding) {
-      return (binding && typeof binding.type === "string" && binding.type.toLowerCase().endsWith("trigger"));
+      return (binding && typeof binding.type === "string" && binding.type
+        .toLowerCase()
+        .endsWith("trigger"));
     });
 
     return {
       name: path.basename(path.dirname(file.absolutePath)),
+
       path: file.relativePath,
+
       programmingModel: "v3-or-earlier",
+
       trigger: triggerBinding ? triggerBinding.type : null,
+
       bindings: bindings
         .filter(function (binding) {
-          return binding && typeof binding.type === "string";
+          return (binding && typeof binding.type === "string");
         })
         .map(function (binding) {
           return {
-            name: binding.name || null, type: binding.type, direction: binding.direction || null
+            name: binding.name || null,
+
+            type: binding.type,
+
+            direction: binding.direction || null
           };
         }),
+
+      durableRole: determineLegacyDurableRole(triggerBinding),
+
       status: "CONFIRMED"
     };
   });
 }
 
-function extractProcessEnvKeys(source) {
-  const keys = new Set();
+function determineLegacyDurableRole(triggerBinding) {
+  if (!triggerBinding) {
+    return null;
+  }
 
-  const dotPattern = /process\.env\.([A-Za-z_][A-Za-z0-9_]*)/g;
+  if (triggerBinding.type === "orchestrationTrigger") {
+    return "orchestrator";
+  }
 
-  const bracketPattern = /process\.env\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\]/g;
+  if (triggerBinding.type === "activityTrigger") {
+    return "activity";
+  }
+
+  return null;
+}
+
+function findAllRegistrations(source, pattern) {
+  const matches = [];
 
   let match;
 
-  while ((match = dotPattern.exec(source)) !== null) {
-    keys.add(match[1]);
+  pattern.lastIndex = 0;
+
+  while ((match = pattern.exec(source)) !== null) {
+    matches.push(match[1]);
   }
 
-  while ((match = bracketPattern.exec(source)) !== null) {
-    keys.add(match[1]);
-  }
-
-  return Array.from(keys);
-}
-
-function discoverEnvironmentKeys(app, files, warnings) {
-  const appRoot = path.resolve(ROOT, app.path);
-  const usage = {};
-
-  files.forEach(function (file) {
-    if (!belongsToFunctionApp(file.absolutePath, appRoot)) {
-      return;
-    }
-
-    const extension = path.extname(file.absolutePath);
-
-    if (!SOURCE_EXTENSIONS.has(extension)) {
-      return;
-    }
-
-    const source = readTextSafe(file.absolutePath, warnings);
-
-    if (source === null) {
-      return;
-    }
-
-    const keys = extractProcessEnvKeys(source);
-
-    keys.forEach(function (key) {
-      if (!usage[key]) {
-        usage[key] = [];
-      }
-
-      usage[key].push(file.relativePath);
-    });
-  });
-
-  return Object.keys(usage)
-    .sort()
-    .map(function (key) {
-      return {
-        name: key, references: usage[key].sort()
-      };
-    });
-}
-
-function buildRepositoryMetadata() {
-  return {
-    root: ".", name: path.basename(ROOT)
-  };
+  return matches;
 }
 
 function discoverV4Registrations(app, files, warnings) {
@@ -314,15 +318,15 @@ function discoverV4Registrations(app, files, warnings) {
   const registrations = [];
 
   const registrationPatterns = [{
-    type: "http", pattern: /\bapp\.http\s*\(\s*["'`]([^"'`]+)["'`]/
+    type: "http", pattern: /\bapp\.http\s*\(\s*["'`]([^"'`]+)["'`]/g
   }, {
-    type: "timer", pattern: /\bapp\.timer\s*\(\s*["'`]([^"'`]+)["'`]/
+    type: "timer", pattern: /\bapp\.timer\s*\(\s*["'`]([^"'`]+)["'`]/g
   }, {
-    type: "serviceBusQueue", pattern: /\bapp\.serviceBusQueue\s*\(\s*["'`]([^"'`]+)["'`]/
+    type: "serviceBusQueue", pattern: /\bapp\.serviceBusQueue\s*\(\s*["'`]([^"'`]+)["'`]/g
   }, {
-    type: "serviceBusTopic", pattern: /\bapp\.serviceBusTopic\s*\(\s*["'`]([^"'`]+)["'`]/
+    type: "serviceBusTopic", pattern: /\bapp\.serviceBusTopic\s*\(\s*["'`]([^"'`]+)["'`]/g
   }, {
-    type: "cosmosDB", pattern: /\bapp\.cosmosDB\s*\(\s*["'`]([^"'`]+)["'`]/
+    type: "cosmosDB", pattern: /\bapp\.cosmosDB\s*\(\s*["'`]([^"'`]+)["'`]/g
   }];
 
   files.forEach(function (file) {
@@ -343,20 +347,18 @@ function discoverV4Registrations(app, files, warnings) {
     }
 
     registrationPatterns.forEach(function (candidate) {
-      const match = candidate.pattern.exec(source);
+      const names = findAllRegistrations(source, candidate.pattern);
 
-      if (!match) {
-        return;
-      }
-
-      registrations.push({
-        name: match[1],
-        path: file.relativePath,
-        programmingModel: "v4",
-        trigger: candidate.type,
-        bindings: [],
-        durableRole: null,
-        status: "CONFIRMED"
+      names.forEach(function (name) {
+        registrations.push({
+          name: name,
+          path: file.relativePath,
+          programmingModel: "v4",
+          trigger: candidate.type,
+          bindings: [],
+          durableRole: null,
+          status: "CONFIRMED"
+        });
       });
     });
   });
@@ -372,9 +374,9 @@ function discoverDurableV4Registrations(app, files, warnings) {
   const durablePatterns = [{
     role: "orchestrator",
     trigger: "orchestrationTrigger",
-    pattern: /\bdf\.app\.orchestration\s*\(\s*["'`]([^"'`]+)["'`]/
+    pattern: /\bdf\.app\.orchestration\s*\(\s*["'`]([^"'`]+)["'`]/g
   }, {
-    role: "activity", trigger: "activityTrigger", pattern: /\bdf\.app\.activity\s*\(\s*["'`]([^"'`]+)["'`]/
+    role: "activity", trigger: "activityTrigger", pattern: /\bdf\.app\.activity\s*\(\s*["'`]([^"'`]+)["'`]/g
   }];
 
   files.forEach(function (file) {
@@ -395,20 +397,18 @@ function discoverDurableV4Registrations(app, files, warnings) {
     }
 
     durablePatterns.forEach(function (candidate) {
-      const match = candidate.pattern.exec(source);
+      const names = findAllRegistrations(source, candidate.pattern);
 
-      if (!match) {
-        return;
-      }
-
-      registrations.push({
-        name: match[1],
-        path: file.relativePath,
-        programmingModel: "v4",
-        trigger: candidate.trigger,
-        bindings: [],
-        durableRole: candidate.role,
-        status: "CONFIRMED"
+      names.forEach(function (name) {
+        registrations.push({
+          name: name,
+          path: file.relativePath,
+          programmingModel: "v4",
+          trigger: candidate.trigger,
+          bindings: [],
+          durableRole: candidate.role,
+          status: "CONFIRMED"
+        });
       });
     });
   });
@@ -452,6 +452,74 @@ function determineProgrammingModel(app, legacyFunctions, v4Functions) {
 
   return {
     version: null, status: "UNKNOWN", evidence: []
+  };
+}
+
+function extractProcessEnvKeys(source) {
+  const keys = new Set();
+
+  const dotPattern = /process\.env\.([A-Za-z_][A-Za-z0-9_]*)/g;
+
+  const bracketPattern = /process\.env\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\]/g;
+
+  let match;
+
+  while ((match = dotPattern.exec(source)) !== null) {
+    keys.add(match[1]);
+  }
+
+  while ((match = bracketPattern.exec(source)) !== null) {
+    keys.add(match[1]);
+  }
+
+  return Array.from(keys);
+}
+
+function discoverEnvironmentKeys(app, files, warnings) {
+  const appRoot = path.resolve(ROOT, app.path);
+
+  const usage = {};
+
+  files.forEach(function (file) {
+    if (!belongsToFunctionApp(file.absolutePath, appRoot)) {
+      return;
+    }
+
+    const extension = path.extname(file.absolutePath);
+
+    if (!SOURCE_EXTENSIONS.has(extension)) {
+      return;
+    }
+
+    const source = readTextSafe(file.absolutePath, warnings);
+
+    if (source === null) {
+      return;
+    }
+
+    const keys = extractProcessEnvKeys(source);
+
+    keys.forEach(function (key) {
+      if (!usage[key]) {
+        usage[key] = [];
+      }
+
+      usage[key].push(file.relativePath);
+    });
+  });
+
+  return Object.keys(usage)
+    .sort()
+    .map(function (key) {
+      return {
+        name: key, references: usage[key].sort()
+      };
+    });
+}
+
+function buildRepositoryMetadata() {
+  return {
+    root: ".", name: path.basename(ROOT)
   };
 }
 
