@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": false,
+    "inlineSourceMap": false,
+    "inlineSources": false,
+    "removeComments": true,
+    "noEmitOnError": true,
+    "declaration": false,
+    "incremental": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "test-results",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "local-infra/**"
+  ]
+}
