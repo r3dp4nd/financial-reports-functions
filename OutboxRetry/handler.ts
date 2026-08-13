@@ -1,14 +1,13 @@
-import {AzureFunction, Context} from "@azure/functions";
-
+import {InvocationContext, Timer} from "@azure/functions";
 import {RetryOutboxUseCase} from "../OutboxDispatcher/application/retry-outbox.use-case";
 
 export interface OutboxRetryHandlerDependencies {
   useCase: RetryOutboxUseCase;
 }
 
-export function createOutboxRetryHandler(dependencies: OutboxRetryHandlerDependencies): AzureFunction {
+export function createOutboxRetryHandler(dependencies: OutboxRetryHandlerDependencies) {
 
-  return async function (context: Context): Promise<void> {
+  return async function (_timer: Timer, context: InvocationContext): Promise<void> {
 
     const result = await dependencies.useCase.execute();
 

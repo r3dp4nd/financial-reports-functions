@@ -1,3 +1,4 @@
+import {app} from "@azure/functions";
 import {RetryOutboxUseCase} from "../OutboxDispatcher/application/retry-outbox.use-case";
 import {CosmosOutboxRepository} from "../OutboxDispatcher/infrastructure/cosmos-outbox.repository";
 import {ServiceBusOutboxPublisher} from "../OutboxDispatcher/infrastructure/service-bus-outbox.publisher";
@@ -6,7 +7,7 @@ import {
   reportGeneratedSender,
   reportRequestsSender
 } from "../shared/infrastructure/azure/service-bus/service-bus.client";
-import {createOutboxRetryHandler} from "./handler";
+import {createOutboxRetryHandler} from "../OutboxRetry/handler";
 
 const repository = new CosmosOutboxRepository(reportsContainer);
 
@@ -21,8 +22,19 @@ const useCase = new RetryOutboxUseCase(
   () => new Date().toISOString()
 );
 
-const outboxRetry = createOutboxRetryHandler({
+const handler = createOutboxRetryHandler({
   useCase
 });
 
-export default outboxRetry;
+app.timer("OutboxRetry", {
+  schedule: "0 */1 * * * *",
+  runOnStartup: false,
+  retry: {
+    strategy: "fixedDelay",
+    delayInterval: {
+      seconds: 10
+    },
+    maxRetryCount: 3
+  },
+  handler
+});
