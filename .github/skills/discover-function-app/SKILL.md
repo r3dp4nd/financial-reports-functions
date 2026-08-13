@@ -1,6 +1,6 @@
 ---
 name: discover-function-app
-description: Descubre de forma segura una Azure Function App antes de migrarla o refactorizarla. Inventaría metadata, Functions, triggers, bindings, configuración requerida, Programming Model, Durable Functions y relaciones observables, sin modificar código ni leer archivos sensibles.
+description: Descubre de forma segura una Azure Function App antes de migrarla o refactorizarla. Inventaría estructura, Functions, triggers, bindings, configuración requerida, Programming Model y Durable Functions sin modificar código ni leer información sensible.
 ---
 
 # Discover Function App
@@ -10,29 +10,26 @@ description: Descubre de forma segura una Azure Function App antes de migrarla o
 Construir una fotografía segura y reutilizable de una Azure Function App antes de analizar, planificar o modificar
 código.
 
+## Políticas
+
+Aplicar:
+
+- `../_shared/evidence-policy.md`
+- `../_shared/security-policy.md`
+- `../_shared/lessons-policy.md`
+
 ## Entradas
 
-- Repositorio objetivo.
-- Política global de seguridad.
-- Artefactos existentes en `.migration/`, si existen.
+- repositorio objetivo;
+- artefactos existentes en `.migration/`, cuando existan.
 
-## Reglas
+## Principio
 
-- No modificar código.
-- No leer archivos sensibles.
-- No leer valores de `local.settings.json`, `.env`, certificados, secretos o credenciales.
-- No leer archivos CI/CD sensibles salvo copia sanitizada y aprobada.
-- Detectar `process.env` únicamente por nombre de clave.
-- Reutilizar evidencia existente cuando siga siendo válida.
-- No repetir manualmente descubrimientos deterministas ya realizados por scripts.
-- Leer únicamente el contexto necesario.
-- No presentar inferencias como hechos.
-- Contrastar afirmaciones de plataforma con documentación oficial vigente.
-- Registrar como `UNKNOWN` aquello que no pueda confirmarse.
+Preferir descubrimiento determinista antes que razonamiento.
 
-## Uso de scripts
+No utilizar IA para volver a descubrir hechos que puede obtener el script interno.
 
-Los scripts incluidos en este skill forman parte de su implementación.
+## Script de inventario
 
 Ejecutar primero:
 
@@ -40,39 +37,37 @@ Ejecutar primero:
 
 sobre el repositorio objetivo.
 
-El script es la fuente primaria para obtener hechos estructurales del repositorio.
-
-El agente debe:
-
-- preferir el script para descubrimiento determinista;
-- interpretar su salida JSON;
-- no reimplementar manualmente lo que el script ya detecta;
-- leer código selectivamente solo cuando sea necesario para completar relaciones o significado;
-- registrar una lección aprendida ante falsos positivos, falsos negativos o casos no soportados.
-
-Los scripts deben mantenerse compatibles con Node.js 14 o superior.
-
-## Ejecución
-
-### 1. Inventario determinista
-
-Consumir la salida de `scripts/inventory.js` para obtener, cuando exista evidencia:
+El script es la fuente primaria para:
 
 - Function Apps;
 - `package.json`;
 - `host.json`;
-- versión declarada de Node.js;
-- dependencias;
 - Functions legacy;
 - Functions Programming Model v4;
-- triggers y bindings detectados;
+- triggers y bindings detectables;
 - Durable Functions detectadas;
-- nombres de claves `process.env`;
+- dependencias;
+- versión Node.js declarada;
+- claves `process.env`;
 - archivos sensibles detectados sin lectura.
 
-No volver a descubrir manualmente estos datos salvo que exista una inconsistencia.
+Los scripts de este skill deben permanecer compatibles con Node.js 14 o superior.
 
-### 2. Análisis selectivo
+## Uso de la salida
+
+Consumir la salida JSON del script.
+
+No repetir manualmente esos descubrimientos salvo que exista una inconsistencia.
+
+Cuando el script produzca:
+
+- falso positivo;
+- falso negativo;
+- caso no soportado;
+
+registrarlo como lección aprendida.
+
+## Análisis selectivo
 
 Usando el inventario y únicamente el código necesario, identificar cuando exista evidencia:
 
@@ -83,149 +78,120 @@ Usando el inventario y únicamente el código necesario, identificar cuando exis
 - infraestructura compartida;
 - patrones arquitectónicos existentes.
 
-Clasificar cada conclusión como:
+No realizar todavía evaluación de compatibilidad ni planificación de cambios.
 
-- `CONFIRMED`
-- `INFERRED`
-- `UNKNOWN`
-- `NOT_APPLICABLE`
+## Configuración
 
-No realizar todavía evaluación de compatibilidad, refactor ni planificación de migración.
+Usar únicamente nombres de claves detectadas mediante referencias como:
 
-### 3. Configuración requerida
+`process.env.KEY`
 
-Usar las claves `process.env` detectadas por el script.
+Registrar:
 
-Registrar únicamente:
-
-- nombre de la clave;
+- nombre;
 - archivos donde se utiliza;
-- Functions o capacidades relacionadas cuando pueda determinarse.
+- Function relacionada cuando pueda confirmarse.
 
-Nunca registrar valores.
+Nunca resolver valores.
 
-Si futuras validaciones locales requieren configuración, indicar al desarrollador qué claves deben proporcionarse
-mediante un `local.settings.json` sanitizado o expresamente aprobado.
+Cuando futuras validaciones necesiten configuración local, indicar las claves requeridas para que el desarrollador
+proporcione una configuración sanitizada o aprobada.
 
-No abrir automáticamente un `local.settings.json` existente.
+## Programming Model
 
-### 4. Evidencia externa
+Detectar cuando exista evidencia:
 
-Toda afirmación sobre:
+- modelo legacy;
+- Programming Model v4;
+- estado mixto;
+- estado desconocido.
 
-- Azure Functions Runtime;
-- Programming Model;
-- Node.js;
-- Durable Functions;
-- SDKs;
-- soporte o compatibilidad;
+No asumir que toda Function App necesita migración de Programming Model.
 
-debe apoyarse en documentación oficial vigente cuando sea necesaria para confirmar el hecho.
+Una aplicación que ya está completamente en v4 debe quedar identificada como tal.
 
-Guardar únicamente referencias mínimas necesarias.
+## Durable Functions
 
-No copiar documentación completa.
+Detectar cuando exista evidencia de:
+
+- Durable client;
+- starter;
+- orchestrator;
+- activity;
+- sub-orchestrator.
+
+El discovery no migra ni analiza todavía el workflow en profundidad.
 
 ## Salidas
 
 Crear:
 
-- `.migration/repository/inventory.json`
-- `.migration/repository/inventory.md`
-- `.migration/lessons/discover-function-app/lessons.json`
-- `.migration/lessons/discover-function-app/lessons.md`
+`.migration/repository/inventory.json`
 
-Crear únicamente las carpetas necesarias.
+`.migration/repository/inventory.md`
 
-## `inventory.json`
+Y:
 
-Debe contener información estructurada reutilizable por otros skills.
+`.migration/lessons/discover-function-app/lessons.json`
 
-Como mínimo:
+`.migration/lessons/discover-function-app/lessons.md`
 
-- metadata de ejecución;
+## inventory.json
+
+Debe contener como mínimo:
+
+- metadata;
 - repositorio;
 - Function Apps;
 - Node.js declarado;
-- Azure Functions Runtime cuando pueda confirmarse;
+- Runtime cuando pueda determinarse;
 - Programming Model;
 - dependencias relevantes;
 - Functions;
 - triggers y bindings;
 - Durable Functions;
 - configuración requerida;
-- relaciones detectadas;
-- evidencia;
-- desconocidos.
+- relaciones;
+- observaciones;
+- unknowns;
+- evidencia.
 
-No incluir valores sensibles.
+No incluir secretos.
 
-Los siguientes estados son válidos:
+## inventory.md
 
-- `CONFIRMED`
-- `INFERRED`
-- `UNKNOWN`
-- `NOT_APPLICABLE`
-
-## `inventory.md`
-
-Debe permitir al desarrollador comprender rápidamente:
+Debe explicar brevemente:
 
 - qué Function Apps existen;
 - qué Functions fueron encontradas;
-- Runtime, Node.js y Programming Model detectados;
+- Node.js, Runtime y Programming Model observables;
 - configuración requerida;
 - workflows o relaciones relevantes;
-- arquitectura observable;
-- hechos confirmados;
+- hechos;
 - inferencias;
-- desconocidos.
+- unknowns.
 
 No debe ser una copia textual del JSON.
 
-No debe incluir todavía:
-
-- versiones recomendadas;
-- plan de migración;
-- refactors;
-- optimizaciones;
-- deuda técnica detallada.
-
 ## Lecciones aprendidas
 
-Registrar únicamente observaciones que puedan mejorar futuras ejecuciones:
+Aplicar:
 
-- casos no contemplados;
-- falsos positivos;
-- falsos negativos;
-- fallos de detección;
-- contexto innecesario;
-- patrones reutilizables;
-- oportunidades de simplificación;
-- propuestas de mejora del skill o de sus scripts.
-
-Si no existe una lección relevante, generar el artefacto con una colección vacía.
-
-No modificar automáticamente este skill ni sus scripts.
-
-Toda mejora requiere revisión humana antes de incorporarse.
+`../_shared/lessons-policy.md`
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- `scripts/inventory.js` fue ejecutado correctamente;
+- `scripts/inventory.js` fue ejecutado;
 - su salida fue revisada;
 - las Function Apps fueron identificadas;
 - las Functions fueron inventariadas;
 - las claves de configuración fueron registradas sin valores;
-- el Programming Model fue identificado o marcado como `UNKNOWN`;
-- las relaciones relevantes fueron documentadas cuando exista evidencia;
-- hechos e inferencias están diferenciados;
-- no se reanalizaron manualmente hechos ya obtenidos por el script;
+- Programming Model fue identificado o marcado como desconocido;
+- relaciones relevantes fueron documentadas cuando existe evidencia;
 - no se leyeron archivos sensibles;
-- se generaron los artefactos de inventario;
-- se generaron los artefactos de lecciones aprendidas.
+- se generaron inventory y lessons.
 
 ## Fuera de alcance
 
@@ -233,14 +199,15 @@ Este skill no debe:
 
 - modificar código;
 - actualizar dependencias;
-- migrar Node.js;
-- migrar Azure Functions Runtime;
-- migrar Programming Model;
+- evaluar compatibilidad Node.js 24 en profundidad;
 - agregar tests;
-- refactorizar arquitectura;
-- optimizar código;
+- refactorizar;
+- migrar Runtime;
+- migrar Programming Model;
+- migrar Durable;
+- optimizar;
 - generar el plan de migración.
 
-El siguiente skill sugerido, después de revisión humana del inventario, es:
+El siguiente skill sugerido es:
 
 `assess-function-app`
