@@ -23,6 +23,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/status-policy.md`
 
 La arquitectura se utiliza únicamente como referencia para describir el estado actual.
 
@@ -130,7 +131,7 @@ Registrar cuando sea posible:
 - consumers;
 - configuration keys;
 - ownership observado;
-- status;
+- `evidenceStatus`;
 - evidence.
 
 Scopes iniciales:
@@ -145,6 +146,33 @@ En esta etapa siguen siendo candidatos.
 No consolidar definitivamente ownership ni consumidores cuando la evidencia requiera análisis por Function.
 
 No fusionar recursos únicamente porque utilicen la misma tecnología.
+
+## Evidence status
+
+Para candidatos y hallazgos que necesiten expresar certeza usar:
+
+- `CONFIRMED`
+- `INFERRED`
+- `UNKNOWN`
+- `NOT_APPLICABLE`
+
+mediante el campo:
+
+`evidenceStatus`
+
+Ejemplo:
+
+    {
+      "id": "SR-COSMOS-REPORTS",
+      "type": "COSMOS_DB",
+      "evidenceStatus": "INFERRED"
+    }
+
+No utilizar:
+
+`status: CONFIRMED`
+
+para representar evidencia.
 
 ## Configuración
 
@@ -257,7 +285,7 @@ El skill termina cuando:
 - configuración fue registrada sin valores;
 - Programming Model quedó identificado o `UNKNOWN`;
 - arquitectura y patrones observables quedaron registrados;
-- recursos compartidos candidatos quedaron registrados;
+- recursos compartidos candidatos quedaron registrados usando `evidenceStatus`;
 - se creó `current-state.md`;
 - no se generó `inventory.md`;
 - no se leyeron archivos sensibles;

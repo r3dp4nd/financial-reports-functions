@@ -540,6 +540,10 @@ Crear incrementalmente.
 │       ├── preparation.md
 │       ├── migration.json
 │       └── migration.md
+├── workflows/
+│   └── <WorkflowName>/
+│       ├── durable-migration.json
+│       └── durable-migration.md
 ├── plans/
 │   ├── migration-plan.json
 │   └── migration-plan.md
@@ -550,6 +554,8 @@ Crear incrementalmente.
 ```
 
 `resources/` solo existe cuando aplique.
+
+`workflows/` solo existe cuando existan workflows Durable.
 
 No crear carpetas vacías.
 

@@ -78,6 +78,28 @@ Puede contener:
 
 Los planes por Function aportan trazabilidad, pero no fragmentan la migración del workflow.
 
+## Artefactos de workflow
+
+Los artefactos Durable viven bajo:
+
+`.migration/workflows/<WorkflowName>/`
+
+No almacenarlos bajo:
+
+`.migration/functions/<WorkflowName>/`
+
+salvo que el workflow sea además una entidad Function real y exista un artefacto propio de esa Function.
+
+La separación es:
+
+```text
+functions/
+→ artefactos de Functions
+
+workflows/
+→ artefactos de workflows Durable
+```
+
 ## Dependencia durable-functions
 
 La versión target de:
@@ -222,7 +244,7 @@ El build global pertenece a verification.
 
 Crear:
 
-`.migration/functions/<WorkflowName>/durable-migration.json`
+`.migration/workflows/<WorkflowName>/durable-migration.json`
 
 Debe contener:
 
@@ -274,7 +296,7 @@ Ejemplo:
 
 Crear:
 
-`.migration/functions/<WorkflowName>/durable-migration.md`
+`.migration/workflows/<WorkflowName>/durable-migration.md`
 
 Usar:
 

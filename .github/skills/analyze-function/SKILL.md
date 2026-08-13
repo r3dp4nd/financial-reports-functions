@@ -198,7 +198,7 @@ Ejemplo:
 
     {
       "id": "FN-REQUESTREPORT-003",
-      "type": "REQUIRED_NODE",
+      "type": "REQUIRED_DEPENDENCY",
       "action": "Adaptar el consumidor al SDK Cosmos target.",
       "reason": "El cambio aprobado de SDK afecta una API utilizada por la Function.",
       "dependency": "@azure/cosmos",
@@ -304,10 +304,39 @@ Usar:
 
 - `REQUIRED_PLATFORM`
 - `REQUIRED_NODE`
+- `REQUIRED_DEPENDENCY`
 - `REQUIRED_TESTABILITY`
 - `STRUCTURAL`
 - `TECHNICAL_DEBT`
 - `OPTIMIZATION`
+
+### REQUIRED_PLATFORM
+
+Cambio necesario por Azure Functions Runtime o Programming Model.
+
+### REQUIRED_NODE
+
+Cambio necesario específicamente por Node.js 24.
+
+### REQUIRED_DEPENDENCY
+
+Cambio necesario por compatibilidad o adaptación de una dependencia aprobada.
+
+### REQUIRED_TESTABILITY
+
+Cambio necesario para proteger comportamiento mediante tests.
+
+### STRUCTURAL
+
+Cambio arquitectónico necesario para cumplir los límites definidos.
+
+### TECHNICAL_DEBT
+
+Problema conocido no necesario para completar la migración.
+
+### OPTIMIZATION
+
+Mejora no requerida para migración.
 
 ## IDs de acciones
 
@@ -348,6 +377,8 @@ Ejemplo:
       "evidenceStatus": "CONFIRMED",
       "evidence": []
     }
+
+Referenciar `dependency` cuando corresponda.
 
 Referenciar `resourceId` cuando la acción esté relacionada con un recurso compartido.
 
@@ -461,6 +492,7 @@ El skill termina cuando:
 - tests fueron propuestos;
 - compatibilidad fue evaluada;
 - requiredActions usan IDs `FN-*`;
+- dependency adaptations usan `REQUIRED_DEPENDENCY`;
 - evidencia interna usa `evidenceStatus`;
 - ficha BEFORE fue creada;
 - deuda y optimización quedaron separadas;

@@ -111,7 +111,7 @@ Ejemplo:
 
     {
       "id": "GLOBAL-002",
-      "type": "DEPENDENCY",
+      "type": "REQUIRED_DEPENDENCY",
       "package": "@azure/functions",
       "from": "^1.2.3",
       "to": "4.16.2"
@@ -125,6 +125,7 @@ Ejemplo:
 
     {
       "id": "SR-ACTION-001",
+      "type": "REQUIRED_DEPENDENCY",
       "resourceId": "SR-COSMOS-REPORTS",
       "package": "@azure/cosmos",
       "from": "^3.10.5",
@@ -242,16 +243,6 @@ IDs:
 - `SR-ACTION-001`
 - `SR-ACTION-002`
 
-Ejemplo:
-
-    {
-      "id": "SR-ACTION-001",
-      "resourceId": "SR-COSMOS-REPORTS",
-      "type": "STRUCTURAL",
-      "action": "Adaptar la infraestructura compartida de ReportRepository.",
-      "dependsOn": []
-    }
-
 La acción pertenece al plan.
 
 El recurso pertenece al catálogo.
@@ -280,6 +271,20 @@ Los planes individuales referencian las acciones:
 producidas por `analyze-function`.
 
 No renombrarlas durante planning.
+
+## Categorías
+
+Mantener la misma taxonomía de acciones definida en analysis:
+
+- `REQUIRED_PLATFORM`
+- `REQUIRED_NODE`
+- `REQUIRED_DEPENDENCY`
+- `REQUIRED_TESTABILITY`
+- `STRUCTURAL`
+- `TECHNICAL_DEBT`
+- `OPTIMIZATION`
+
+Planning no debe crear una taxonomy diferente.
 
 ## Orden de dependencias
 
@@ -320,18 +325,6 @@ usa únicamente:
 - `READY`
 - `PARTIAL`
 - `BLOCKED`
-
-Ejemplo:
-
-    {
-      "status": "READY"
-    }
-
-No utilizar:
-
-`status: CONFIRMED`
-
-en el plan.
 
 ## migration-plan.json global
 
@@ -522,6 +515,7 @@ El skill termina cuando:
 - versiones target no fueron redefinidas;
 - shared resources fueron consolidados;
 - `evidenceStatus` y `actionStatus` se usan correctamente;
+- dependency actions usan `REQUIRED_DEPENDENCY`;
 - cada shared change tiene una acción propietaria;
 - global actions usan `GLOBAL-*`;
 - shared actions usan `SR-ACTION-*`;
