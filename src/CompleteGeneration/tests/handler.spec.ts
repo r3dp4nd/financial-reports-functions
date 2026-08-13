@@ -1,6 +1,6 @@
-import {CompleteGenerationUseCase} from "../GenerateReport/application/complete-generation.use-case";
-import {ReportGenerationRepository} from "../GenerateReport/domain/report-generation.repository";
-import {createCompleteGenerationHandler} from "./handler";
+import {CompleteGenerationUseCase} from "../../GenerateReport/application/complete-generation.use-case";
+import {ReportGenerationRepository} from "../../GenerateReport/domain/report-generation.repository";
+import {createCompleteGenerationHandler} from "../handler";
 
 describe("CompleteGeneration handler", () => {
 

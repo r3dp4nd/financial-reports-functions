@@ -1,10 +1,9 @@
 import {app, InvocationContext} from "@azure/functions";
 
 import * as df from "durable-functions";
-
 import {DurableGenerateReportClient} from "../StartGenerateReport/durable-generate-report.client";
-
 import {createStartGenerateReportHandler} from "../StartGenerateReport/handler";
+
 
 app.serviceBusQueue("StartGenerateReport", {
   queueName: "%SERVICE_BUS_REPORT_REQUESTS_QUEUE%",
