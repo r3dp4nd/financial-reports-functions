@@ -8,11 +8,16 @@ on:
 
 jobs:
   build:
+    name: Build release
+
     uses: ./.github/workflows/reusable-build.yml
 
 
   deploy-dev:
-    needs: build
+    name: Deploy DEV
+
+    needs:
+      - build
 
     uses: ./.github/workflows/reusable-deploy.yml
 
@@ -21,7 +26,10 @@ jobs:
 
 
   deploy-uat:
-    needs: deploy-dev
+    name: Deploy UAT
+
+    needs:
+      - deploy-dev
 
     uses: ./.github/workflows/reusable-deploy.yml
 
@@ -30,7 +38,10 @@ jobs:
 
 
   deploy-stg:
-    needs: deploy-uat
+    name: Deploy STG
+
+    needs:
+      - deploy-uat
 
     uses: ./.github/workflows/reusable-deploy.yml
 
@@ -39,7 +50,10 @@ jobs:
 
 
   deploy-prd:
-    needs: deploy-stg
+    name: Deploy PRD
+
+    needs:
+      - deploy-stg
 
     uses: ./.github/workflows/reusable-deploy.yml
 

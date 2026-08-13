@@ -39,6 +39,7 @@ jobs:
 
       - name: Prepare deployment package
         shell: bash
+
         run: |
           rm -rf "${RUNNER_TEMP}/function-app"
           mkdir -p "${RUNNER_TEMP}/function-app"
@@ -51,12 +52,14 @@ jobs:
 
       - name: Install production dependencies
         working-directory: ${{ runner.temp }}/function-app
+
         run: npm ci --omit=dev
 
 
       - name: Create deployment ZIP
         working-directory: ${{ runner.temp }}/function-app
         shell: bash
+
         run: |
           zip -r "${RUNNER_TEMP}/function-app.zip" .
 

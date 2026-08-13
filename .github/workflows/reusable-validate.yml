@@ -5,6 +5,7 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
+
       SONAR_HOST_URL:
         required: true
 
@@ -17,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
         with:
           fetch-depth: 0

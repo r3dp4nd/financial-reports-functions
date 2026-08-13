@@ -44,4 +44,5 @@ jobs:
 
         with:
           app-name: ${{ vars.AZURE_FUNCTIONAPP_NAME }}
+
           package: ${{ runner.temp }}/release/function-app.zip
