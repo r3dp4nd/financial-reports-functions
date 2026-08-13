@@ -1,22 +1,23 @@
 ---
 name: plan-function-migration
-description: Construye el plan global y los planes por Function para migrar una Azure Function App, coordinando arquitectura, recursos compartidos, dependencias, workflows y acciones previamente identificadas sin modificar código.
+description: Consolida los recursos compartidos confirmados y construye el plan global y los planes por Function para migrar una Azure Function App, coordinando arquitectura, dependencias, workflows y acciones previamente identificadas sin modificar código.
 ---
 
 # Plan Function Migration
 
 ## Objetivo
 
-Transformar la evidencia acumulada en planes ejecutables y neutrales respecto del ejecutor.
+Transformar la evidencia acumulada en una vista consolidada de recursos compartidos y en planes ejecutables neutrales
+respecto del ejecutor.
 
 Debe producir:
 
-- plan global;
-- plan por Function;
-- coordinación de shared resources;
-- orden de ejecución;
-- dependencias;
-- criterios de verificación.
+1. catálogo estructurado de shared resources confirmados;
+2. plan global;
+3. plan por Function;
+4. acciones propietarias para recursos compartidos que necesiten cambio;
+5. orden y dependencias;
+6. criterios de verificación.
 
 No modifica código.
 
@@ -41,7 +42,7 @@ y los análisis requeridos:
 
 `.migration/functions/<FunctionName>/analysis.json`
 
-Si faltan análisis:
+Si faltan análisis necesarios:
 
 - no inventar acciones;
 - identificar impacto;
@@ -54,65 +55,155 @@ Consumir:
 - inventory;
 - assessment;
 - analyses;
-- shared resource information;
-- catálogo cuando ayude a navegación.
+- catálogo BEFORE cuando ayude a navegación;
+- shared resource candidates.
 
-No volver a analizar código por defecto.
+No volver a analizar source por defecto.
 
 ## Principio
 
-El análisis determina qué necesita una Function.
+El análisis determina qué necesita cada Function.
 
-El plan determina:
+Este skill:
 
-- qué se ejecuta;
-- en qué orden;
-- qué depende de qué;
-- qué se realiza una sola vez;
-- cómo se verifica.
+1. consolida hechos transversales;
+2. resuelve ownership cuando exista suficiente evidencia;
+3. planifica cambios;
+4. coordina dependencias.
 
-Las acciones deben poder ser ejecutadas por IA o manualmente.
+No debe confundir:
 
-## Recursos compartidos consolidados
+`descripción del estado actual`
 
-Consolidar:
+con:
+
+`acción de migración`.
+
+## Fase 1 — Consolidar shared resources
+
+Antes de construir los planes, consolidar los candidatos provenientes de:
+
+- inventory;
+- analyses por Function.
+
+Crear esta consolidación únicamente cuando existan shared resources confirmados o suficientemente identificados para ser
+útiles.
+
+## Artefactos de shared resources
+
+Crear cuando aplique:
 
 `.migration/resources/shared-resources.json`
 
-cuando existan shared resources confirmados.
-
-Usar:
-
 `.migration/resources/shared-resources.md`
 
-como vista humana.
+Estos artefactos describen el estado consolidado observado.
 
-Crear esta carpeta únicamente cuando existan recursos compartidos reales.
+No son parte del migration plan.
 
-Cada recurso debe tener:
+## shared-resources.json
 
-- id;
+Es el owner estructurado de:
+
+- shared resource id;
+- name;
 - type;
 - ownership;
-- consumers;
 - paths;
+- consumers;
 - configuration keys;
 - status;
 - evidence.
 
-## Shared resource action
+No debe contener todavía pasos de ejecución.
 
-Cada recurso que necesite cambio debe tener una única acción propietaria.
+Puede contener una evaluación como:
+
+- `REQUIRED`
+- `NOT_REQUIRED`
+- `REQUIRES_VALIDATION`
+
+si ya existe evidencia del assessment, pero no debe contener el procedimiento de migración.
+
+## shared-resources.md
+
+Debe ser una vista humana breve del mismo catálogo consolidado.
+
+Debe explicar:
+
+- qué recursos son compartidos;
+- ownership;
+- consumidores;
+- configuración por nombre de clave;
+- riesgos relevantes;
+- unknowns.
+
+No duplicar el plan.
+
+## Consolidación
+
+Para cada candidato:
+
+1. reunir evidencia de consumidores;
+2. confirmar o descartar reuse real;
+3. determinar ownership cuando sea posible;
+4. evitar fusiones por tecnología;
+5. registrar unknowns cuando persistan.
+
+Ejemplo:
+
+`CustomerRepository` y `ReportRepository`
+
+no se fusionan únicamente porque ambos utilicen Cosmos DB.
+
+## Ownership
+
+Usar:
+
+- `REPOSITORY`
+- `FUNCTION_APP`
+- `CAPABILITY`
+- `WORKFLOW`
+
+Si ownership no puede confirmarse:
+
+mantenerlo `UNKNOWN`.
+
+No bloquear toda la planificación si existen acciones independientes.
+
+## Principio de recurso compartido
+
+Un shared resource describe:
+
+`qué existe y quién depende de él`
+
+Una shared resource action describe:
+
+`qué cambio debe ejecutarse sobre él`
+
+Son conceptos diferentes.
+
+## Fase 2 — Shared resource actions
+
+Después de consolidar shared resources, identificar cuáles necesitan modificación.
+
+Cada recurso que requiera cambio debe tener una única acción propietaria.
 
 Ejemplo:
 
 `SR-ACTION-001`
 
-Las Functions consumidoras deben referenciarla mediante:
+La acción pertenece al plan global.
+
+Debe referenciar:
+
+`resourceId`
+
+Las Functions consumidoras deben referenciar la acción mediante:
 
 `dependsOn`
 
-No duplicar la misma transformación en varios planes.
+No duplicar la transformación dentro de planes individuales.
 
 ## Plan global
 
@@ -122,23 +213,29 @@ Crear:
 
 `.migration/plans/migration-plan.md`
 
-Usar para el Markdown:
+Usar para Markdown:
 
 `../_shared/templates/migration-plan.template.md`
 
 El plan global coordina:
 
 - target;
-- cambios globales;
-- arquitectura;
-- shared resources;
+- global changes;
+- architecture;
+- shared resource actions;
 - Function plans;
 - Durable workflows;
 - dependencies;
-- order;
+- execution order;
 - risks;
 - unknowns;
 - verification criteria.
+
+No debe volver a describir en detalle los shared resources.
+
+Debe referenciar:
+
+`.migration/resources/shared-resources.json`
 
 ## Plan por Function
 
@@ -148,7 +245,7 @@ Crear:
 
 `.migration/functions/<FunctionName>/migration-plan.md`
 
-Usar para el Markdown:
+Usar para Markdown:
 
 `../_shared/templates/function-migration-plan.template.md`
 
@@ -169,6 +266,22 @@ Cada plan debe contener:
 
 No copiar el análisis completo.
 
+## Shared resources en Function plans
+
+Una Function debe referenciar únicamente los recursos que consume.
+
+Ejemplo:
+
+    sharedResources:
+      - SR-COSMOS-REPORTS
+
+Si necesita que el recurso sea modificado antes:
+
+    dependsOn:
+      - SR-ACTION-001
+
+No repetir en el plan individual cómo se migra el recurso global.
+
 ## Arquitectura
 
 Planificar convergencia hacia:
@@ -177,11 +290,11 @@ Planificar convergencia hacia:
 
 Debe quedar claro:
 
-- dónde termina el adapter Azure;
-- dónde vive la capability;
-- qué infraestructura se aísla;
-- qué contracts son realmente necesarios;
-- qué ownership tienen shared resources.
+- qué permanece en Azure adapter;
+- qué pertenece a capability;
+- qué infraestructura debe aislarse;
+- qué contracts son necesarios;
+- qué shared resources tienen ownership.
 
 No planificar carpetas vacías.
 
@@ -209,7 +322,7 @@ Puede incluir:
 - architecture;
 - testability;
 - Node compatibility;
-- dependency work.
+- dependency changes.
 
 ## Function legacy
 
@@ -221,33 +334,33 @@ incluir `REQUIRED_PLATFORM`.
 
 Mantener planes por Function para trazabilidad.
 
-Coordinar la migración del workflow como unidad.
+Coordinar la migración de cada workflow como una unidad.
 
 ## Orden
 
 Secuencia preferida cuando aplique:
 
-1. cambios globales;
-2. recursos compartidos;
-3. preparación/refactor por Function;
+1. global changes;
+2. shared resource actions necesarias;
+3. preparation/refactor por Function;
 4. baseline;
-5. migración de adapters;
-6. migración Durable;
+5. migration de adapters legacy;
+6. migration Durable;
 7. adaptaciones restantes;
 8. build global;
 9. verification.
 
-No ejecutar pasos `NOT_APPLICABLE`.
+No ejecutar etapas `NOT_APPLICABLE`.
 
 ## Build
 
-No exigir build global por Function.
+No exigir build global después de cada Function.
 
-El build completo es gate final.
+El build completo pertenece al gate final.
 
 ## Unknowns
 
-Bloquear únicamente acciones realmente dependientes del unknown.
+Un unknown bloquea únicamente acciones dependientes.
 
 Permitir trabajo independiente seguro.
 
@@ -259,11 +372,13 @@ Usar:
 - `PARTIAL`
 - `BLOCKED`
 
-tanto para plan global como para planes individuales cuando corresponda.
+para plan global y planes individuales cuando corresponda.
 
 ## Neutralidad del ejecutor
 
-Evitar instrucciones como:
+Las acciones deben describir intención técnica.
+
+Evitar:
 
 `El agente debe...`
 
@@ -271,7 +386,25 @@ Preferir:
 
 `Extraer la lógica funcional del Azure adapter hacia la capability Reports.`
 
-El plan describe intención técnica y resultado.
+## Salidas
+
+Cuando existan shared resources:
+
+`.migration/resources/shared-resources.json`
+
+`.migration/resources/shared-resources.md`
+
+Siempre que la planificación pueda realizarse:
+
+`.migration/plans/migration-plan.json`
+
+`.migration/plans/migration-plan.md`
+
+Y por Function incluida:
+
+`.migration/functions/<FunctionName>/migration-plan.json`
+
+`.migration/functions/<FunctionName>/migration-plan.md`
 
 ## Lecciones
 
@@ -286,16 +419,18 @@ Crear:
 El skill termina cuando:
 
 - inventory, assessment y analyses fueron consumidos;
-- shared resources fueron consolidados;
-- cada shared change tiene ownership único;
+- shared resource candidates fueron consolidados o descartados;
+- ownership quedó confirmado o explícitamente desconocido;
+- shared-resources.json fue creado cuando aplicaba;
+- cada shared change tiene una única acción propietaria;
 - existe plan global;
 - cada Function incluida tiene plan;
 - no existen acciones duplicadas;
 - arquitectura objetivo está reflejada;
 - Durable está coordinado;
 - riesgos y unknowns permanecen visibles;
-- los planes son neutrales respecto del ejecutor;
-- se generaron planes y lessons.
+- planes son neutrales respecto del ejecutor;
+- se generaron plans y lessons.
 
 ## Fuera de alcance
 

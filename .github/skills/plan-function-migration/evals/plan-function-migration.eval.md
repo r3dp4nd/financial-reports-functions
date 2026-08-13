@@ -2,10 +2,10 @@
 
 ## Objetivo
 
-Validar que el skill produzca un plan global y planes por Function, coordinando arquitectura, shared resources y
-dependencias sin duplicar análisis.
+Validar que el skill consolide correctamente shared resources antes de construir un plan global y planes por Function,
+sin duplicar análisis ni mezclar catálogo con planificación.
 
-## Caso 1 — Plan completo
+## Caso 1 — Plan completo sin shared resources
 
 ### Entrada
 
@@ -13,7 +13,8 @@ Existen:
 
 - inventory;
 - assessment;
-- analyses de todas las Functions.
+- analyses de todas las Functions;
+- ningún shared resource real.
 
 ### Esperado
 
@@ -23,30 +24,149 @@ Debe crear:
 
 `.migration/plans/migration-plan.md`
 
-y por Function:
+y planes por Function.
 
-`.migration/functions/<FunctionName>/migration-plan.json`
+No debe crear:
 
-`.migration/functions/<FunctionName>/migration-plan.md`
+`.migration/resources/`
 
-## Caso 2 — Plan global
+si no existe un recurso compartido real.
+
+## Caso 2 — Shared resource confirmado
+
+### Entrada
+
+RequestReport y GenerateReport confirman consumo del mismo `ReportRepository`.
+
+### Esperado
+
+Debe crear:
+
+`.migration/resources/shared-resources.json`
+
+con el recurso consolidado.
+
+Debe registrar:
+
+- resourceId;
+- type;
+- ownership;
+- consumers;
+- paths;
+- configuration keys;
+- status;
+- evidence.
+
+## Caso 3 — Shared resources son descriptivos
+
+### Entrada
+
+Recurso compartido necesita posteriormente migración.
+
+### Esperado
+
+`shared-resources.json` debe describir el recurso.
+
+No debe contener los pasos detallados de migración.
+
+La acción debe vivir en:
+
+`migration-plan.json`
+
+como `SR-ACTION-*`.
+
+## Caso 4 — Acción propietaria única
+
+### Entrada
+
+RequestReport y GenerateReport usan el mismo repository Cosmos que requiere cambio.
+
+### Esperado
+
+Debe generar una sola acción:
+
+`SR-ACTION-001`
+
+Los dos Function plans deben depender de esa acción.
+
+No generar dos refactors equivalentes.
+
+## Caso 5 — Shared resource sin cambio
+
+### Entrada
+
+Mongo repository compartido ya compatible y arquitectónicamente correcto.
+
+### Esperado
+
+Debe aparecer en el catálogo shared.
+
+No debe crear una shared migration action innecesaria.
+
+## Caso 6 — Dos Cosmos diferentes
+
+### Entrada
+
+CustomerRepository y ReportRepository utilizan Cosmos.
+
+### Esperado
+
+Deben permanecer como recursos diferentes si tienen responsabilidades distintas.
+
+No fusionar por tecnología.
+
+## Caso 7 — Ownership CAPABILITY
+
+### Entrada
+
+Varias Functions de Reports utilizan el mismo repository.
+
+### Esperado
+
+Ownership:
+
+`CAPABILITY`
+
+si la evidencia lo confirma.
+
+No promover automáticamente a `FUNCTION_APP`.
+
+## Caso 8 — Ownership desconocido
+
+### Entrada
+
+No existe evidencia suficiente para determinar ownership.
+
+### Esperado
+
+Debe conservar:
+
+`UNKNOWN`
+
+No inventar.
+
+Debe permitir planning independiente cuando sea seguro.
+
+## Caso 9 — Plan global
 
 ### Esperado
 
 Debe coordinar:
 
 - target;
-- cambios globales;
-- arquitectura;
-- shared resources;
+- global changes;
+- architecture;
+- shared resource actions;
 - Function plans;
 - Durable workflows;
-- orden;
-- riesgos;
+- order;
+- risks;
 - unknowns;
 - verification criteria.
 
-## Caso 3 — Plan por Function
+Debe referenciar el catálogo shared en lugar de copiarlo.
+
+## Caso 10 — Plan por Function
 
 ### Esperado
 
@@ -54,88 +174,30 @@ Debe describir:
 
 - comportamiento a preservar;
 - requiredActions;
-- arquitectura objetivo;
-- dependencias;
-- shared resources;
-- preparación;
-- migración;
+- architecture target;
+- dependencies;
+- shared resource references;
+- preparation;
+- migration;
 - tests;
-- verificación.
+- verification.
 
-No debe copiar completo `analysis.json`.
+No copiar completo `analysis.json`.
 
-## Caso 4 — Shared Cosmos
-
-### Entrada
-
-RequestReport y GenerateReport consumen el mismo repository Cosmos y este necesita cambio.
-
-### Esperado
-
-Debe crear una única shared resource action.
-
-Ejemplo:
-
-`SR-ACTION-001`
-
-Ambos Function plans deben depender de ella.
-
-No generar dos migraciones del repository.
-
-## Caso 5 — Shared Mongo sin cambio
+## Caso 11 — Function ya v4
 
 ### Entrada
 
-Recurso Mongo compartido confirmado compatible y correctamente aislado.
+Programming Model v4 pero arquitectura necesita ajuste.
 
 ### Esperado
 
-Debe quedar:
+Debe:
 
-`NOT_REQUIRED`
+- incluir preparation;
+- excluir migración v4.
 
-No inventar refactor.
-
-## Caso 6 — Shared resource con ownership CAPABILITY
-
-### Entrada
-
-Recurso utilizado por varias Functions de una misma capability.
-
-### Esperado
-
-Debe preservar ownership `CAPABILITY`.
-
-No promover a global por conveniencia.
-
-## Caso 7 — Dependencia entre plans
-
-### Entrada
-
-Function necesita un shared resource antes de refactorizar.
-
-### Esperado
-
-El Function plan debe declarar:
-
-`dependsOn`
-
-hacia la acción compartida.
-
-## Caso 8 — Function ya v4
-
-### Entrada
-
-Analysis indica Programming Model v4, pero necesita arquitectura y tests.
-
-### Esperado
-
-El plan debe:
-
-- incluir preparación/refactor;
-- excluir migración de Programming Model.
-
-## Caso 9 — Function legacy
+## Caso 12 — Function legacy
 
 ### Entrada
 
@@ -143,9 +205,13 @@ Analysis incluye `REQUIRED_PLATFORM`.
 
 ### Esperado
 
-El plan debe incluir migración v4 después de preparación y baseline.
+Debe planificar:
 
-## Caso 10 — Durable workflow
+- preparation;
+- baseline;
+- Programming Model migration.
+
+## Caso 13 — Durable workflow
 
 ### Entrada
 
@@ -155,23 +221,45 @@ Starter, orchestrator y Activities.
 
 Debe:
 
-- mantener planes por Function para trazabilidad;
-- agrupar ejecución de migración a nivel workflow;
-- no planificar Activities como migraciones independientes de plataforma.
+- conservar planes individuales;
+- coordinar migration como workflow;
+- evitar migraciones Durable aisladas.
 
-## Caso 11 — Arquitectura
+## Caso 14 — Falta un análisis
 
 ### Entrada
 
-Varias Functions requieren extracción de lógica del adapter.
+Inventory contiene cinco Functions pero existen cuatro analyses.
 
 ### Esperado
 
-Cada Function plan debe definir su cambio estructural.
+Debe:
 
-El plan global debe coordinar estructura común sin duplicar acciones.
+- registrar faltante;
+- no inventar información;
+- usar `PARTIAL` o `BLOCKED` según impacto.
 
-## Caso 12 — No carpetas vacías
+## Caso 15 — Unknown localizado
+
+### Entrada
+
+Una Function está bloqueada por compatibilidad desconocida.
+
+### Esperado
+
+No debe impedir planning de Functions independientes.
+
+## Caso 16 — Technical debt
+
+### Entrada
+
+Analysis incluye deuda y optimizaciones.
+
+### Esperado
+
+No deben convertirse en trabajo obligatorio salvo blocker explícito.
+
+## Caso 17 — Architecture structure
 
 ### Entrada
 
@@ -179,64 +267,40 @@ Capability simple.
 
 ### Esperado
 
-El plan no debe ordenar crear todas las capas estándar por convención.
+No debe planificar automáticamente:
 
-## Caso 13 — Falta un análisis
+- application;
+- domain;
+- infrastructure;
 
-### Entrada
+si no son necesarias.
 
-Inventory tiene cinco Functions, cuatro analizadas.
-
-### Esperado
-
-Debe:
-
-- registrar faltante;
-- no inventar plan;
-- usar `PARTIAL` o `BLOCKED`.
-
-## Caso 14 — Unknown localizado
-
-### Entrada
-
-Una Function tiene incompatibilidad pendiente, otras son independientes.
+## Caso 18 — Build global
 
 ### Esperado
 
-Debe permitir avanzar trabajo seguro independiente.
+El plan reserva build global para verification.
 
-## Caso 15 — Technical debt
+No lo exige tras cada Function.
 
-### Entrada
-
-Analysis contiene deuda y optimización.
+## Caso 19 — Neutralidad del ejecutor
 
 ### Esperado
 
-No incluirlas como trabajo obligatorio salvo que sean blocker explícito.
+Los planes deben ser utilizables manualmente por un developer.
 
-## Caso 16 — Build global
+No depender de instrucciones específicas de IA.
 
-### Esperado
+## Criterio general
 
-El plan debe reservar el build completo para verificación final.
+El skill debe mantener separadas:
 
-No exigirlo después de cada Function.
+`shared resource catalog`
 
-## Caso 17 — Neutralidad de ejecución
+y:
 
-### Entrada
+`shared resource migration action`
 
-Plan será ejecutado manualmente por un developer.
+y producir:
 
-### Esperado
-
-Las acciones deben ser comprensibles sin depender de instrucciones internas de un agente.
-
-Ejemplo válido:
-
-`Extraer acceso Cosmos detrás de ReportRepository.`
-
-Ejemplo no deseado:
-
-`El agente debe crear la interfaz...`
+`global coordination + local execution plans`

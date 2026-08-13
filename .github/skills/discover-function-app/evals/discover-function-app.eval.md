@@ -2,8 +2,8 @@
 
 ## Objetivo
 
-Validar que `discover-function-app` produzca una fotografía segura y útil del estado actual del repositorio, incluyendo
-arquitectura observable, catálogo inicial y recursos compartidos candidatos.
+Validar que `discover-function-app` produzca una fotografía segura y útil del estado actual, con un contrato JSON
+estructurado y un único catálogo Markdown humano.
 
 ## Caso 1 — Function App legacy
 
@@ -27,9 +27,9 @@ Debe:
 - detectar triggers y bindings;
 - registrar nombres de configuración sin valores;
 - identificar Programming Model legacy;
-- generar `inventory.json`;
-- generar `inventory.md`;
+- generar `.migration/repository/inventory.json`;
 - generar `.migration/catalog/current-state.md`;
+- no generar `.migration/repository/inventory.md`;
 - no modificar código.
 
 ## Caso 2 — Varias Function Apps
@@ -66,7 +66,7 @@ Debe:
 - detectar `COSMOS_DATABASE`;
 - no resolver su valor;
 - no leer archivos sensibles;
-- registrar únicamente existencia/ruta cuando corresponda.
+- registrar únicamente existencia o ruta cuando corresponda.
 
 ## Caso 4 — Programming Model v4
 
@@ -83,7 +83,7 @@ Repositorio con:
 Debe:
 
 - detectar Programming Model v4;
-- inventariar las Functions;
+- inventariar Functions;
 - no sugerir migración del modelo.
 
 ## Caso 5 — Estado mixto
@@ -100,7 +100,7 @@ Repositorio con:
 Debe:
 
 - conservar ambas evidencias;
-- registrar estado mixto o `UNKNOWN` cuando corresponda;
+- registrar estado mixto o `UNKNOWN` según corresponda;
 - no asumir que toda la App está migrada.
 
 ## Caso 6 — Arquitectura observable
@@ -111,14 +111,14 @@ Repositorio donde:
 
 - entrypoints contienen lógica funcional;
 - Cosmos SDK se construye directamente;
-- existen servicios y repositories parciales.
+- existen services y repositories parciales.
 
 ### Esperado
 
-El catálogo debe registrar como hechos o inferencias justificadas:
+Debe registrar:
 
 - organización actual;
-- acoplamiento observable;
+- acoplamientos observables;
 - patrones;
 - infraestructura utilizada.
 
@@ -131,14 +131,14 @@ No debe proponer todavía refactor detallado.
 Repositorio con:
 
 - Durable workflow;
-- repository claro;
-- outbox explícito.
+- Repository claro;
+- Outbox explícito.
 
 ### Esperado
 
 Debe registrar patrones únicamente cuando exista evidencia.
 
-No inferir patrones por nombres ambiguos.
+No inferir patrones por naming ambiguo.
 
 ## Caso 8 — Shared resource candidato
 
@@ -148,37 +148,37 @@ Dos Functions importan el mismo `CosmosReportRepository`.
 
 ### Esperado
 
-Debe detectar un candidato a recurso compartido con:
+Debe registrar un candidato con:
 
 - id;
-- tipo;
+- type;
 - paths;
-- consumidores;
+- consumidores observables;
 - evidencia.
 
-No debe modificarlo ni decidir todavía su migración.
+No debe considerarlo todavía consolidado definitivamente.
 
-## Caso 9 — Ownership observable
+## Caso 9 — Ownership todavía incierto
 
 ### Entrada
 
-Un repository es utilizado únicamente dentro de una capability con varias Functions.
+Un recurso parece compartido pero no puede confirmarse si pertenece a una capability o a toda la Function App.
 
 ### Esperado
 
-Debe considerar ownership:
+Debe usar:
 
-`CAPABILITY`
+`INFERRED` o `UNKNOWN`
 
-cuando exista evidencia suficiente.
+según evidencia.
 
-No promoverlo automáticamente a `FUNCTION_APP` o `REPOSITORY`.
+No decidir ownership definitivo.
 
 ## Caso 10 — Shared falso positivo
 
 ### Entrada
 
-Dos Functions utilizan Cosmos DB pero mediante repositories funcionalmente diferentes.
+Dos Functions utilizan Cosmos DB mediante repositories funcionalmente diferentes.
 
 ### Esperado
 
@@ -203,7 +203,7 @@ Debe:
 - registrar relaciones iniciales;
 - no analizar ni migrar el workflow en profundidad.
 
-## Caso 12 — Current state
+## Caso 12 — Catálogo current-state
 
 ### Entrada
 
@@ -211,19 +211,37 @@ Discovery completo.
 
 ### Esperado
 
-`.migration/catalog/current-state.md` debe permitir responder:
+`.migration/catalog/current-state.md` debe permitir comprender:
 
 - qué sistema existe;
-- qué Functions tiene;
-- qué arquitectura observable presenta;
-- qué patrones existen;
-- qué recursos compartidos se detectaron;
-- qué configuración requiere;
-- qué unknowns quedan.
+- qué Functions contiene;
+- plataforma observable;
+- arquitectura actual;
+- patrones;
+- shared resource candidates;
+- configuración requerida;
+- riesgos;
+- unknowns.
 
-No debe documentar la arquitectura target como si ya existiera.
+No debe describir el target como ya implementado.
 
-## Caso 13 — Información insuficiente
+## Caso 13 — No inventory.md
+
+### Entrada
+
+Ejecución exitosa de discovery.
+
+### Esperado
+
+No debe generar:
+
+`.migration/repository/inventory.md`
+
+La única vista humana de discovery es:
+
+`.migration/catalog/current-state.md`
+
+## Caso 14 — Información insuficiente
 
 ### Entrada
 
@@ -237,11 +255,11 @@ Debe:
 - identificar evidencia disponible;
 - no inventar.
 
-## Caso 14 — Script incompleto
+## Caso 15 — Script incompleto
 
 ### Entrada
 
-El script no detecta una estructura real posteriormente encontrada mediante análisis selectivo.
+El script no detecta una estructura real encontrada posteriormente mediante análisis selectivo.
 
 ### Esperado
 
@@ -259,4 +277,5 @@ Debe respetar:
 - progressive disclosure;
 - evidencia;
 - catálogo BEFORE;
-- separación entre discovery y assessment.
+- separación entre discovery, assessment y planning;
+- ausencia de Markdown redundante.

@@ -1,6 +1,6 @@
 ---
 name: discover-function-app
-description: Descubre de forma segura una Azure Function App antes de migrarla o refactorizarla. Inventaría estructura, Functions, triggers, bindings, configuración, Programming Model, Durable Functions, arquitectura observable y recursos compartidos sin modificar código ni leer información sensible.
+description: Descubre de forma segura una Azure Function App antes de migrarla o refactorizarla. Inventaría estructura, Functions, triggers, bindings, configuración, Programming Model, Durable Functions, arquitectura observable y recursos compartidos candidatos sin modificar código ni leer información sensible.
 ---
 
 # Discover Function App
@@ -24,7 +24,7 @@ Aplicar:
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
 
-La arquitectura se usa únicamente como referencia de análisis.
+La arquitectura se utiliza únicamente como referencia para describir el estado actual.
 
 Este skill no refactoriza.
 
@@ -92,7 +92,7 @@ No diseñar todavía la arquitectura futura.
 
 ## Patrones
 
-Registrar patrones únicamente con evidencia.
+Registrar patrones únicamente cuando exista evidencia.
 
 Ejemplos:
 
@@ -108,7 +108,7 @@ No inferir un patrón únicamente por naming.
 
 ## Recursos compartidos candidatos
 
-Detectar recursos usados por múltiples Functions o capabilities cuando exista evidencia.
+Detectar recursos usados por múltiples Functions, capabilities o workflows cuando exista evidencia.
 
 Ejemplos:
 
@@ -124,12 +124,12 @@ Ejemplos:
 
 Registrar cuando sea posible:
 
-- id;
+- id candidato;
 - type;
 - paths;
 - consumers;
 - configuration keys;
-- ownership;
+- ownership observado;
 - status;
 - evidence.
 
@@ -140,7 +140,11 @@ Scopes iniciales:
 - `CAPABILITY`
 - `WORKFLOW`
 
-No fusionar recursos únicamente porque usen la misma tecnología.
+En esta etapa siguen siendo candidatos.
+
+No consolidar definitivamente ownership ni consumidores cuando la evidencia requiera análisis por Function.
+
+No fusionar recursos únicamente porque utilicen la misma tecnología.
 
 ## Configuración
 
@@ -161,7 +165,7 @@ Identificar:
 - mixed;
 - unknown.
 
-No asumir que toda Function App requiere migración del Programming Model.
+No asumir que toda Function App requiere migración de Programming Model.
 
 ## Durable
 
@@ -176,22 +180,40 @@ Identificar cuando exista evidencia:
 
 No analizar todavía el workflow en profundidad.
 
-## Salidas estructuradas
+## Salida estructurada
 
 Crear:
 
 `.migration/repository/inventory.json`
 
-`.migration/repository/inventory.md`
+`inventory.json` es el owner de los hechos estructurados producidos durante discovery.
 
-`inventory.json` es el owner de los hechos estructurados de discovery.
+Debe contener cuando corresponda:
+
+- repository;
+- Function Apps;
+- platform observable;
+- dependencies;
+- Functions;
+- triggers;
+- bindings;
+- configuration keys;
+- relationships;
+- architecture observations;
+- patterns;
+- shared resource candidates;
+- sensitive files detected;
+- warnings;
+- unknowns;
+- evidence.
 
 No incluir:
 
 - recomendaciones;
-- plan;
+- acciones de migración;
+- architecture target;
 - refactors;
-- decisiones de migración.
+- migration plan.
 
 ## Catálogo BEFORE
 
@@ -203,9 +225,15 @@ Usar:
 
 `../_shared/templates/current-state.template.md`
 
-El catálogo representa el estado anterior a la migración.
+Este es el único documento Markdown humano generado por discovery.
 
-No convertirlo en documentación del target.
+No generar:
+
+`.migration/repository/inventory.md`
+
+El catálogo debe representar exclusivamente el estado anterior a la migración.
+
+No convertirlo posteriormente en documentación del target.
 
 ## Lecciones
 
@@ -231,6 +259,7 @@ El skill termina cuando:
 - arquitectura y patrones observables quedaron registrados;
 - recursos compartidos candidatos quedaron registrados;
 - se creó `current-state.md`;
+- no se generó `inventory.md`;
 - no se leyeron archivos sensibles;
 - se generaron inventory y lessons.
 
@@ -243,6 +272,7 @@ No debe:
 - actualizar dependencias;
 - agregar tests;
 - evaluar detalladamente Node.js 24;
+- consolidar definitivamente shared resources;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;

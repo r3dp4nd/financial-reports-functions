@@ -534,7 +534,6 @@ La estructura se crea incrementalmente.
 │       └── <FunctionName>.md
 ├── repository/
 │   ├── inventory.json
-│   ├── inventory.md
 │   ├── assessment.json
 │   ├── assessment.md
 │   ├── preparation.json
