@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1",
+  "skill": "discover-function-app",
+  "lessons": [
+    {
+      "type": "OBSERVATION",
+      "description": "Se detectaron Durable Activities relacionadas con un mismo orchestrator.",
+      "status": "PROPOSED",
+      "proposedImprovement": "Evaluar si el discovery debe construir explícitamente un grafo Durable."
+    }
+  ]
+}

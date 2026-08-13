@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "1",
+  "skill": "discover-function-app",
+  "status": "completed",
+  "generatedAt": "2026-08-13T13:33:00-05:00",
+  "repository": {
+    "name": "financial-reports-functions",
+    "root": ".",
+    "language": "TypeScript",
+    "packageManager": "npm"
+  },
+  "functionApps": [
+    {
+      "id": "financial-reports-functions",
+      "path": ".",
+      "runtime": {
+        "version": "3",
+        "status": "CONFIRMED",
+        "evidence": [
+          "repository configuration"
+        ]
+      },
+      "node": {
+        "version": "14",
+        "status": "CONFIRMED",
+        "evidence": [
+          "package.json"
+        ]
+      },
+      "programmingModel": {
+        "version": "3",
+        "status": "CONFIRMED",
+        "evidence": [
+          "@azure/functions dependency",
+          "function.json files"
+        ]
+      },
+      "typescript": {
+        "version": "4.0.0",
+        "status": "CONFIRMED",
+        "evidence": [
+          "package.json"
+        ]
+      },
+      "durableFunctions": {
+        "detected": true,
+        "status": "CONFIRMED"
+      },
+      "functions": [
+        {
+          "name": "RequestReport",
+          "path": "RequestReport",
+          "trigger": "httpTrigger",
+          "bindings": [],
+          "durableRole": null,
+          "status": "CONFIRMED"
+        },
+        {
+          "name": "ReportOrchestrator",
+          "path": "ReportOrchestrator",
+          "trigger": "orchestrationTrigger",
+          "bindings": [],
+          "durableRole": "orchestrator",
+          "status": "CONFIRMED"
+        }
+      ],
+      "environment": {
+        "requiredKeys": [
+          {
+            "name": "COSMOS_DATABASE",
+            "usedBy": [
+              "RequestReport"
+            ]
+          },
+          {
+            "name": "SERVICE_BUS_CONNECTION",
+            "usedBy": [
+              "CompleteReport"
+            ]
+          }
+        ]
+      },
+      "relationships": [
+        {
+          "from": "RequestReport",
+          "to": "ReportOrchestrator",
+          "type": "starts",
+          "status": "INFERRED",
+          "evidence": [
+            "source code invocation"
+          ]
+        }
+      ],
+      "architecture": {
+        "observations": [
+          {
+            "type": "DURABLE_WORKFLOW",
+            "description": "Se detectó un flujo Durable compuesto por starter, orchestrator y activities.",
+            "status": "INFERRED"
+          }
+        ]
+      },
+      "unknowns": []
+    }
+  ],
+  "evidence": {
+    "repository": [
+      "package.json",
+      "host.json",
+      "function.json",
+      "source code"
+    ],
+    "officialSources": [
+      {
+        "provider": "Microsoft",
+        "title": "Azure Functions Node.js developer guide",
+        "purpose": "Programming Model discovery"
+      }
+    ]
+  }
+}
