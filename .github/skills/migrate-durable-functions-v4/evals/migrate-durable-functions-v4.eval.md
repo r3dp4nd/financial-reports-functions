@@ -2,143 +2,143 @@
 
 ## Objetivo
 
-Validar que el skill migre workflows Durable como una unidad coherente.
+Validar que el workflow Durable sea migrado como una unidad, preservando arquitectura, determinismo, planes por Function
+y shared resources.
 
 ## Caso 1 — Workflow básico
 
 ### Entrada
 
-Workflow con:
-
 - starter;
 - orchestrator;
-- tres Activities.
+- activities;
+- planes individuales;
+- plan global.
 
 ### Esperado
 
 Debe:
 
-- reconstruir el grafo;
+- confirmar grafo;
+- migrar coordinadamente;
 - preservar nombres;
-- migrar las APIs necesarias;
-- mantener secuencia;
-- ejecutar tests.
+- mantener tests verdes.
 
-## Caso 2 — Activity aislada solicitada
+## Caso 2 — Activity aislada
 
 ### Entrada
 
-Se intenta ejecutar el skill solo sobre una Activity perteneciente a un workflow.
+Se solicita migrar solo una Activity perteneciente al workflow.
 
 ### Esperado
 
-Debe:
+Debe recuperar contexto del workflow y evitar una migración aislada incorrecta.
 
-- no tratarla como migración independiente;
-- recuperar el contexto mínimo del workflow.
-
-## Caso 3 — Determinismo
+## Caso 3 — Arquitectura preparada
 
 ### Entrada
 
-Orchestrator contiene lógica sensible a replay.
+Activities consumen capabilities separadas.
 
 ### Esperado
 
-Debe:
+La migración Durable no debe volver a mezclar lógica funcional con registrations/runtime.
 
-- preservar determinismo;
-- no introducir I/O directo, random, tiempo no determinista u otros side effects.
-
-## Caso 4 — Retry
+## Caso 4 — Shared Cosmos
 
 ### Entrada
 
-Workflow con política de retry existente.
+Varias Activities consumen mismo repository.
 
 ### Esperado
 
-Debe:
+Debe mantener una única implementación compartida según ownership.
 
-- preservarla;
-- no modificar intentos o backoff por optimización.
+No crear repository por Activity.
 
-## Caso 5 — Timer Durable
+## Caso 5 — Shared resource pendiente
+
+### Esperado
+
+`BLOCKED`
+
+si es requerida para continuar.
+
+## Caso 6 — Determinismo
 
 ### Entrada
 
-Orchestrator usa timer Durable.
+Orchestrator tiene lógica sensible a replay.
 
 ### Esperado
 
-Debe:
+No introducir:
 
-- mantener semántica Durable;
-- no sustituirlo por `setTimeout` o equivalente.
+- I/O;
+- random;
+- tiempo no determinista;
+- database calls;
+- side effects.
 
-## Caso 6 — External Event
-
-### Entrada
-
-Workflow espera evento externo.
+## Caso 7 — Retry
 
 ### Esperado
 
-Debe:
+Preservar política existente.
 
-- preservar nombre;
-- orden;
-- timeout cuando exista;
+No optimizar.
+
+## Caso 8 — Durable timer
+
+### Esperado
+
+No sustituir por `setTimeout`.
+
+## Caso 9 — External event
+
+### Esperado
+
+Preservar:
+
+- nombre;
+- espera;
+- timeout;
 - comportamiento posterior.
 
-## Caso 7 — Sub-orchestrator
-
-### Entrada
-
-Workflow con sub-orchestrator.
+## Caso 10 — Sub-orchestrator
 
 ### Esperado
 
-Debe:
+Preservar relación y contrato.
 
-- preservar relación;
-- no tratarlo como proceso totalmente desconectado.
-
-## Caso 8 — Workflow ya compatible
-
-### Entrada
-
-Durable ya utiliza APIs target y no requiere cambios.
+## Caso 11 — Workflow ya target
 
 ### Esperado
-
-Resultado:
 
 `NOT_APPLICABLE`
 
-## Caso 9 — Grafo incompleto
+si no necesita cambios.
 
-### Entrada
-
-No puede confirmarse qué Activities forman parte del workflow.
+## Caso 12 — Grafo incompleto
 
 ### Esperado
-
-Resultado:
 
 `REQUIRES_REVIEW`
 
 No inventar relaciones.
 
-## Caso 10 — Instancias activas desconocidas
-
-### Entrada
-
-No existe evidencia sobre workflows activos en producción.
+## Caso 13 — Instancias activas desconocidas
 
 ### Esperado
 
-Debe:
+Mantener riesgo visible.
 
-- mantener riesgo operativo visible;
-- no afirmar compatibilidad de replay en producción.
+No afirmar seguridad de replay productivo.
+
+## Caso 14 — Planes individuales
+
+### Esperado
+
+Deben usarse para comportamiento, dependencias y trazabilidad.
+
+No convertir la ejecución en varias migraciones Durable independientes.

@@ -2,7 +2,8 @@
 
 ## Objetivo
 
-Validar que el skill construya un único plan global usando `requiredActions` de los análisis existentes.
+Validar que el skill produzca un plan global y planes por Function, coordinando arquitectura, shared resources y
+dependencias sin duplicar análisis.
 
 ## Caso 1 — Plan completo
 
@@ -12,140 +13,230 @@ Existen:
 
 - inventory;
 - assessment;
-- analysis de todas las Functions;
-- `requiredActions` completos.
+- analyses de todas las Functions.
 
 ### Esperado
 
-El skill debe:
+Debe crear:
 
-- generar únicamente `migration-plan.json`;
-- generar únicamente `migration-plan.md`;
-- producir estado `READY`;
-- construir orden global;
-- referenciar acciones de cada Function.
+`.migration/plans/migration-plan.json`
 
-No debe crear planes por Function.
+`.migration/plans/migration-plan.md`
 
-## Caso 2 — Falta un análisis
+y por Function:
+
+`.migration/functions/<FunctionName>/migration-plan.json`
+
+`.migration/functions/<FunctionName>/migration-plan.md`
+
+## Caso 2 — Plan global
+
+### Esperado
+
+Debe coordinar:
+
+- target;
+- cambios globales;
+- arquitectura;
+- shared resources;
+- Function plans;
+- Durable workflows;
+- orden;
+- riesgos;
+- unknowns;
+- verification criteria.
+
+## Caso 3 — Plan por Function
+
+### Esperado
+
+Debe describir:
+
+- comportamiento a preservar;
+- requiredActions;
+- arquitectura objetivo;
+- dependencias;
+- shared resources;
+- preparación;
+- migración;
+- tests;
+- verificación.
+
+No debe copiar completo `analysis.json`.
+
+## Caso 4 — Shared Cosmos
 
 ### Entrada
 
-Inventory contiene cinco Functions, pero solo cuatro tienen `analysis.json`.
+RequestReport y GenerateReport consumen el mismo repository Cosmos y este necesita cambio.
+
+### Esperado
+
+Debe crear una única shared resource action.
+
+Ejemplo:
+
+`SR-ACTION-001`
+
+Ambos Function plans deben depender de ella.
+
+No generar dos migraciones del repository.
+
+## Caso 5 — Shared Mongo sin cambio
+
+### Entrada
+
+Recurso Mongo compartido confirmado compatible y correctamente aislado.
+
+### Esperado
+
+Debe quedar:
+
+`NOT_REQUIRED`
+
+No inventar refactor.
+
+## Caso 6 — Shared resource con ownership CAPABILITY
+
+### Entrada
+
+Recurso utilizado por varias Functions de una misma capability.
+
+### Esperado
+
+Debe preservar ownership `CAPABILITY`.
+
+No promover a global por conveniencia.
+
+## Caso 7 — Dependencia entre plans
+
+### Entrada
+
+Function necesita un shared resource antes de refactorizar.
+
+### Esperado
+
+El Function plan debe declarar:
+
+`dependsOn`
+
+hacia la acción compartida.
+
+## Caso 8 — Function ya v4
+
+### Entrada
+
+Analysis indica Programming Model v4, pero necesita arquitectura y tests.
+
+### Esperado
+
+El plan debe:
+
+- incluir preparación/refactor;
+- excluir migración de Programming Model.
+
+## Caso 9 — Function legacy
+
+### Entrada
+
+Analysis incluye `REQUIRED_PLATFORM`.
+
+### Esperado
+
+El plan debe incluir migración v4 después de preparación y baseline.
+
+## Caso 10 — Durable workflow
+
+### Entrada
+
+Starter, orchestrator y Activities.
 
 ### Esperado
 
 Debe:
 
-- registrar el análisis faltante;
-- no inventar acciones;
-- usar estado `PARTIAL` o `BLOCKED` según impacto.
+- mantener planes por Function para trazabilidad;
+- agrupar ejecución de migración a nivel workflow;
+- no planificar Activities como migraciones independientes de plataforma.
 
-## Caso 3 — Function ya v4
+## Caso 11 — Arquitectura
 
 ### Entrada
 
-Analysis con:
-
-- Programming Model v4;
-- únicamente `REQUIRED_TESTABILITY`.
+Varias Functions requieren extracción de lógica del adapter.
 
 ### Esperado
 
-El plan debe:
+Cada Function plan debe definir su cambio estructural.
 
-- incluir preparación si corresponde;
-- no incluir `migrate-programming-model-v4` para esa Function.
+El plan global debe coordinar estructura común sin duplicar acciones.
 
-## Caso 4 — Functions legacy independientes
+## Caso 12 — No carpetas vacías
 
 ### Entrada
 
-Dos Functions legacy no Durable con baseline pendiente.
+Capability simple.
 
 ### Esperado
 
-Orden conceptual:
+El plan no debe ordenar crear todas las capas estándar por convención.
 
-- preparar App;
-- preparar Functions;
-- obtener tests;
-- migrar Programming Model;
-- verificar.
-
-## Caso 5 — Workflow Durable
+## Caso 13 — Falta un análisis
 
 ### Entrada
 
-Starter, orchestrator y Activities relacionadas.
-
-### Esperado
-
-El plan debe:
-
-- agruparlas como workflow;
-- referenciar `migrate-durable-functions-v4`;
-- no planificar Activities como migraciones independientes del workflow.
-
-## Caso 6 — Unknown local
-
-### Entrada
-
-Una Function tiene una dependencia `REQUIRES_VALIDATION`, otras son independientes.
+Inventory tiene cinco Functions, cuatro analizadas.
 
 ### Esperado
 
 Debe:
 
-- mantener visible el unknown;
-- bloquear solo acciones dependientes;
-- permitir estado `PARTIAL` cuando exista trabajo seguro independiente.
+- registrar faltante;
+- no inventar plan;
+- usar `PARTIAL` o `BLOCKED`.
 
-## Caso 7 — Technical debt
-
-### Entrada
-
-Analysis contiene:
-
-- `REQUIRED_PLATFORM`;
-- `TECHNICAL_DEBT`;
-- `OPTIMIZATION`.
-
-### Esperado
-
-El execution order debe incluir:
-
-- required platform.
-
-No debe incluir como trabajo obligatorio:
-
-- technical debt no bloqueante;
-- optimization.
-
-## Caso 8 — No duplicación
+## Caso 14 — Unknown localizado
 
 ### Entrada
 
-Cada `analysis.json` ya describe acciones detalladamente.
+Una Function tiene incompatibilidad pendiente, otras son independientes.
 
 ### Esperado
 
-El plan debe:
+Debe permitir avanzar trabajo seguro independiente.
 
-- referenciar acciones;
-- no copiar todo su contenido;
-- limitarse a coordinación, orden y dependencias.
-
-## Caso 9 — Build global
+## Caso 15 — Technical debt
 
 ### Entrada
 
-Migración con varias Functions que pasarán temporalmente por estados incompatibles.
+Analysis contiene deuda y optimización.
 
 ### Esperado
 
-El plan debe:
+No incluirlas como trabajo obligatorio salvo que sean blocker explícito.
 
-- permitir validaciones intermedias;
-- reservar build global como gate final;
-- no exigir build completo después de cada Function.
+## Caso 16 — Build global
+
+### Esperado
+
+El plan debe reservar el build completo para verificación final.
+
+No exigirlo después de cada Function.
+
+## Caso 17 — Neutralidad de ejecución
+
+### Entrada
+
+Plan será ejecutado manualmente por un developer.
+
+### Esperado
+
+Las acciones deben ser comprensibles sin depender de instrucciones internas de un agente.
+
+Ejemplo válido:
+
+`Extraer acceso Cosmos detrás de ReportRepository.`
+
+Ejemplo no deseado:
+
+`El agente debe crear la interfaz...`

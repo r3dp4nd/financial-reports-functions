@@ -2,128 +2,199 @@
 
 ## Objetivo
 
-Validar que una Function quede protegida por tests con el menor refactor necesario.
+Validar que la Function sea refactorizada hacia la arquitectura objetivo, con testabilidad y comportamiento protegido,
+sin sobrearquitectura ni duplicación de shared resources.
 
-## Caso 1 — Ya testeable
+## Caso 1 — Function ya correcta
 
 ### Entrada
 
 Function con:
 
-- testabilidad `HIGH`;
-- refactor `NONE`;
-- sin tests.
+- adapter delgado;
+- capability separada;
+- infraestructura aislada;
+- tests suficientes.
+
+### Esperado
+
+Debe poder producir:
+
+`NOT_APPLICABLE`
+
+o realizar cambios mínimos.
+
+No refactorizar por uniformidad.
+
+## Caso 2 — Lógica en adapter
+
+### Entrada
+
+Azure entrypoint contiene reglas funcionales.
 
 ### Esperado
 
 Debe:
 
-- agregar tests mínimos;
-- no refactorizar;
-- obtener baseline verde.
+- extraer comportamiento hacia capability;
+- dejar adapter delgado;
+- preservar comportamiento;
+- agregar tests.
 
-## Caso 2 — SDK acoplado
+## Caso 3 — Cosmos dentro del service
 
 ### Entrada
 
-Analysis contiene:
+Service construye `CosmosClient`.
 
-`REQUIRED_TESTABILITY`
+### Esperado
 
-para aislar un cliente Azure SDK.
+Cuando el plan lo requiera debe:
+
+- aislar infraestructura;
+- introducir contrato funcional apropiado;
+- mover implementación a infraestructura;
+- permitir unit tests.
+
+## Caso 4 — Interfaz innecesaria
+
+### Entrada
+
+Function simple con función pura sin infraestructura.
+
+### Esperado
+
+No debe crear interfaces ni layers artificiales.
+
+## Caso 5 — Shared repository ya preparado
+
+### Entrada
+
+Function depende de `SR-ACTION-001`, completada globalmente.
 
 ### Esperado
 
 Debe:
 
-- aplicar la extracción mínima;
-- permitir mock del límite externo;
-- agregar tests;
-- no introducir framework DI.
+- consumir el resultado;
+- no crear otro repository equivalente.
 
-## Caso 3 — Significant refactor
+## Caso 6 — Shared action pendiente
 
 ### Entrada
 
-Analysis indica:
-
-`SIGNIFICANT`
-
-sin alcance suficientemente aprobado.
+Plan declara dependencia obligatoria no completada.
 
 ### Esperado
 
-Debe producir:
+Resultado:
+
+`BLOCKED`
+
+No crear solución local duplicada.
+
+## Caso 7 — Ownership
+
+### Entrada
+
+Repository es propiedad de la capability.
+
+### Esperado
+
+Debe mantenerlo dentro de la capability.
+
+No moverlo a `shared` arbitrariamente.
+
+## Caso 8 — process.env
+
+### Entrada
+
+Lógica funcional accede directamente a configuración.
+
+### Esperado
+
+Si el plan lo exige para testabilidad/arquitectura:
+
+- aislar configuración;
+- pasarla desde composition;
+- no leer valores sensibles.
+
+## Caso 9 — Refactor SIGNIFICANT aprobado
+
+### Entrada
+
+Plan explícitamente aprueba un refactor significativo.
+
+### Esperado
+
+Puede ejecutarlo dentro del alcance definido.
+
+## Caso 10 — Refactor SIGNIFICANT no aprobado
+
+### Esperado
+
+Resultado:
 
 `REQUIRES_REVIEW`
 
-No debe iniciar una reestructuración grande automáticamente.
+No ampliar el alcance.
 
-## Caso 4 — Characterization
-
-### Entrada
-
-Código legacy difícil de probar directamente.
-
-### Esperado
-
-Debe:
-
-- preservar comportamiento observable;
-- usar characterization tests cuando aporten protección;
-- evitar modificar comportamiento para facilitar el test.
-
-## Caso 5 — Test descubre comportamiento inesperado
+## Caso 11 — Characterization
 
 ### Entrada
 
-El test construido a partir del análisis falla frente al código actual.
+Legacy code difícil de separar sin riesgo.
 
 ### Esperado
 
-Debe:
+Debe poder agregar characterization tests para fijar comportamiento antes de extraer.
 
-- no modificar expectativa arbitrariamente;
-- registrar inconsistencia;
-- solicitar revisión de evidencia.
-
-## Caso 6 — Function ya v4
+## Caso 12 — Unit tests
 
 ### Entrada
 
-Programming Model v4 y problemas internos de testabilidad.
+Lógica ya aislada.
 
 ### Esperado
 
-Debe:
+Preferir tests unitarios sobre capability.
 
-- preservar registro v4;
-- limitarse a preparación funcional;
-- no volver a migrar plataforma.
+No depender del Azure Functions Host.
 
-## Caso 7 — Technical debt
+## Caso 13 — Durable Activity
 
 ### Entrada
 
-Analysis contiene deuda no bloqueante.
+Activity con lógica e infraestructura.
 
 ### Esperado
 
-Debe:
+Puede refactorizar internamente hacia arquitectura objetivo sin cambiar semántica del workflow.
 
-- dejarla documentada;
-- no resolverla salvo que sea imprescindible para testabilidad.
+No migrar todavía Durable.
 
-## Caso 8 — Baseline
+## Caso 14 — Adapter v4 existente
 
 ### Entrada
 
-Tests requeridos agregados correctamente.
+Function ya v4.
 
 ### Esperado
 
-La salida debe ser:
+Debe preservar registro v4 y trabajar únicamente en arquitectura/testabilidad.
 
-`READY_FOR_MIGRATION`
+## Caso 15 — Baseline
 
-solo si la baseline requerida está verde.
+### Esperado
+
+`READY_FOR_MIGRATION` requiere:
+
+- arquitectura requerida aplicada;
+- shared dependencies listas;
+- tests requeridos verdes.
+
+## Caso 16 — Catálogo histórico
+
+### Esperado
+
+No debe alterar la ficha BEFORE de la Function para que muestre el estado refactorizado.

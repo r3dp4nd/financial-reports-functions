@@ -2,202 +2,287 @@
 
 ## Objetivo
 
-Validar que el skill comprenda una Function concreta y produzca acciones útiles sin modificar código.
+Validar que `analyze-function` documente comportamiento, arquitectura actual, gap hacia arquitectura objetivo, recursos
+compartidos y acciones requeridas sin modificar código.
 
-## Caso 1 — Function simple y testeable
+## Caso 1 — Function simple ya bien estructurada
 
 ### Entrada
 
 Function v4 con:
 
-- handler pequeño;
-- servicio separado;
-- dependencias sustituibles;
-- sin tests.
-
-### Esperado
-
-El skill debe:
-
-- clasificar testabilidad como `HIGH`;
-- proponer tests;
-- mantener refactor como `NONE`;
-- no generar `REQUIRED_PLATFORM`;
-- no introducir arquitectura adicional.
-
-## Caso 2 — Handler acoplado a Azure SDK
-
-### Entrada
-
-Function que:
-
-- construye `CosmosClient` dentro del handler;
-- usa `process.env` directamente;
-- contiene lógica funcional;
-- no tiene tests.
+- adapter delgado;
+- service separado;
+- dependencia sustituible;
+- tests existentes.
 
 ### Esperado
 
 Debe:
 
-- identificar baja o media testabilidad con justificación;
-- proponer refactor mínimo;
-- generar `REQUIRED_TESTABILITY`;
-- proponer tests mínimos;
-- no proponer un rediseño completo.
+- reconocer arquitectura adecuada;
+- `architectureGap` vacío o mínimo;
+- testabilidad `HIGH`;
+- no inventar refactor;
+- no generar `STRUCTURAL` innecesario.
 
-## Caso 3 — Function legacy
+## Caso 2 — Lógica dentro del Azure adapter
 
 ### Entrada
 
-Function con:
+Entrypoint contiene:
 
-- `function.json`;
-- `context`;
-- lógica mezclada con adapter Azure.
+- validaciones;
+- reglas;
+- creación de SDK;
+- persistencia.
 
 ### Esperado
 
-Debe generar al menos:
+Debe:
 
-- acción `REQUIRED_PLATFORM`;
-- acciones `REQUIRED_TESTABILITY` cuando correspondan;
+- documentar arquitectura actual;
+- identificar gap;
+- generar acciones `STRUCTURAL`;
+- indicar extracción hacia capability;
+- no modificar código.
+
+## Caso 3 — Cosmos acoplado
+
+### Entrada
+
+Service funcional construye `CosmosClient` directamente.
+
+### Esperado
+
+Debe:
+
+- identificar acoplamiento de infraestructura;
+- evaluar necesidad de contrato;
+- generar acción arquitectónica si corresponde;
+- no imponer interfaz si no aporta un límite real.
+
+## Caso 4 — MongoDB compartido
+
+### Entrada
+
+Function consume un repository Mongo usado también por otra Function.
+
+### Esperado
+
+Debe:
+
+- referenciar el `resourceId` compartido;
+- describir uso;
+- no crear una acción duplicada para migrar el recurso.
+
+## Caso 5 — SQL compartido
+
+### Entrada
+
+Varias Functions utilizan la misma infraestructura SQL.
+
+### Esperado
+
+Debe:
+
+- identificar recurso compartido;
+- registrar ownership;
+- distinguir dependencia funcional de tecnología subyacente.
+
+## Caso 6 — Shared resource no confirmado
+
+### Entrada
+
+Discovery marcó un candidato como `INFERRED`.
+
+### Esperado
+
+El análisis debe:
+
+- confirmar o descartar la relación;
+- no elevarlo automáticamente a `CONFIRMED`.
+
+## Caso 7 — Capability compartida
+
+### Entrada
+
+Dos Functions pertenecen al mismo proceso funcional.
+
+### Esperado
+
+Debe:
+
+- reconocer capability común cuando la evidencia lo soporte;
+- no crear artificialmente una capability por Function.
+
+## Caso 8 — Function legacy
+
+### Entrada
+
+Function con `function.json` y `context`.
+
+### Esperado
+
+Debe generar:
+
 - comportamiento a preservar;
+- arquitectura actual;
+- acciones estructurales cuando corresponda;
+- `REQUIRED_PLATFORM`;
 - tests propuestos.
 
-No debe migrar la Function.
+No debe migrar.
 
-## Caso 4 — Function ya v4
+## Caso 9 — Function ya v4
 
 ### Entrada
 
-Function registrada con `app.http`.
+Function registrada mediante `app.http`.
 
 ### Esperado
 
 Debe:
 
-- registrar Programming Model satisfecho;
-- no generar acción de migración del modelo;
-- continuar evaluando Node.js, testabilidad y dependencias.
+- marcar Programming Model satisfecho;
+- no generar acción de migración v4;
+- continuar analizando arquitectura, Node y testabilidad.
 
-## Caso 5 — Durable Orchestrator
+## Caso 10 — Durable Orchestrator
 
 ### Entrada
 
-Orchestrator que invoca varias Activities.
+Orchestrator con Activities y decisiones.
 
 ### Esperado
 
 Debe:
 
 - identificar rol;
-- considerar contexto mínimo del workflow;
-- detectar restricciones relevantes de determinismo;
-- no migrar Durable.
+- registrar contexto mínimo del workflow;
+- detectar riesgos de determinismo;
+- no migrarlo.
 
-## Caso 6 — Activity simple
-
-### Entrada
-
-Activity con:
-
-- input;
-- repositorio;
-- output;
-- poco comportamiento.
-
-### Esperado
-
-Debe:
-
-- no sobrearquitecturar;
-- proponer unit tests;
-- mantener refactor `NONE` o `MINIMAL` según evidencia.
-
-## Caso 7 — Node.js 24 desconocido
+## Caso 11 — Testabilidad
 
 ### Entrada
 
-Código que usa una API o dependencia cuya compatibilidad no está confirmada.
+Function sin tests pero con lógica pura y dependencias sustituibles.
 
 ### Esperado
 
-Debe registrar:
+No debe clasificar automáticamente `LOW`.
+
+La clasificación debe basarse en estructura, no en existencia de tests.
+
+## Caso 12 — Architecture target
+
+### Entrada
+
+Function cuya estructura actual no cumple la arquitectura objetivo.
+
+### Esperado
+
+Debe describir explícitamente:
+
+- `currentArchitecture`;
+- `targetArchitecture`;
+- `architectureGap`.
+
+## Caso 13 — No carpetas innecesarias
+
+### Entrada
+
+Function muy simple.
+
+### Esperado
+
+La arquitectura propuesta puede ser:
+
+- adapter;
+- service;
+- tests.
+
+No debe exigir:
+
+- domain;
+- application;
+- infrastructure;
+
+si no aportan responsabilidad real.
+
+## Caso 14 — Node.js 24 desconocido
+
+### Entrada
+
+Uso de dependencia cuya compatibilidad no está confirmada.
+
+### Esperado
+
+Debe usar:
 
 `REQUIRES_VALIDATION`
 
-No debe asumir compatibilidad por build o TypeScript.
+No asumir compatibilidad por compilación.
 
-## Caso 8 — Deuda no bloqueante
-
-### Entrada
-
-Código con duplicación o naming pobre que no impide migración ni tests.
-
-### Esperado
-
-Debe:
-
-- clasificar como `TECHNICAL_DEBT`;
-- no generar una acción obligatoria de migración.
-
-## Caso 9 — Optimización
-
-### Entrada
-
-Código donde podría aplicarse batching o caching.
-
-### Esperado
-
-Debe:
-
-- clasificarlo como `OPTIMIZATION`;
-- mantenerlo fuera de `requiredActions` obligatorias.
-
-## Caso 10 — requiredActions
+## Caso 15 — requiredActions
 
 ### Entrada
 
 Function con:
 
-- acoplamiento de testabilidad;
-- Programming Model legacy;
-- deuda técnica no bloqueante.
+- adapter legacy;
+- Cosmos acoplado;
+- deuda de naming.
 
 ### Esperado
 
-`analysis.json` debe diferenciar acciones como:
+Debe diferenciar:
 
-- `REQUIRED_TESTABILITY`;
 - `REQUIRED_PLATFORM`;
+- `STRUCTURAL`;
+- posiblemente `REQUIRED_TESTABILITY`;
+- `TECHNICAL_DEBT`.
 
-y no mezclar la deuda técnica como trabajo obligatorio.
+La deuda no debe convertirse en acción obligatoria.
 
-## Caso 11 — Slice amplio
+## Caso 16 — Catálogo individual
 
 ### Entrada
 
-Function que depende de múltiples componentes.
+Análisis completo.
 
 ### Esperado
 
-Debe:
+Debe crear:
 
-- comenzar por dependencias directas;
-- ampliar contexto solo cuando sea necesario;
-- no cargar toda la App automáticamente.
+`.migration/catalog/functions/<FunctionName>.md`
 
-## Caso 12 — Inventory contradictorio
+representando el estado BEFORE.
+
+Debe incluir:
+
+- comportamiento;
+- arquitectura actual;
+- dependencias;
+- recursos compartidos;
+- relaciones;
+- testabilidad;
+- riesgos;
+- unknowns.
+
+No debe describir el resultado futuro como ya implementado.
+
+## Caso 17 — Contradicción con inventory
 
 ### Entrada
 
-Inventory indica legacy pero el source muestra registro v4.
+Inventory indica un modelo o dependencia diferente a lo observado.
 
 ### Esperado
 
 Debe:
 
 - registrar contradicción;
-- no sobrescribir silenciosamente evidencia anterior;
-- utilizar `UNKNOWN` o `REQUIRES_REVIEW`.
+- preservar evidencia;
+- usar `UNKNOWN` o revisión cuando sea necesario.

@@ -2,80 +2,112 @@
 
 ## Objetivo
 
-Validar que el skill aplique únicamente cambios globales necesarios y preserve configuración válida.
+Validar que el skill prepare únicamente la base global y shared resources autorizados sin alterar comportamiento
+funcional.
 
-## Caso 1 — App legacy
+## Caso 1 — Preparación global completa
 
 ### Entrada
 
 Plan requiere:
 
 - Node.js target;
-- dependencias nuevas;
-- TypeScript actualizado;
+- dependencias;
+- TypeScript;
 - Jest;
-- estructura `src`.
+- estructura base.
 
 ### Esperado
 
 Debe:
 
-- aplicar solo cambios globales autorizados;
-- registrar modificaciones;
-- no modificar lógica funcional.
+- aplicar solo acciones aprobadas;
+- preservar configuración válida;
+- preparar `src/functions/` cuando corresponda;
+- no modificar lógica de Functions.
 
-## Caso 2 — App casi preparada
+## Caso 2 — App ya preparada
 
 ### Entrada
 
-Repositorio ya tiene:
-
-- Node.js target;
-- Jest válido;
-- TypeScript válido;
-- `src/`;
-- Runtime v4.
+Configuración global ya cumple target.
 
 ### Esperado
 
 Debe:
 
-- preservar configuraciones válidas;
-- producir pocos o ningún cambio;
-- considerar esto una ejecución correcta.
+- realizar pocos o ningún cambio;
+- no reemplazar archivos por uniformidad;
+- considerar ejecución válida.
 
-## Caso 3 — Script no multiplataforma
+## Caso 3 — Arquitectura base
 
 ### Entrada
 
-`package.json` contiene:
-
-`rm -rf dist`
-
-y el plan requiere compatibilidad multiplataforma.
+Plan requiere convergencia hacia arquitectura objetivo.
 
 ### Esperado
 
-Debe:
+Puede crear:
 
-- reemplazarlo únicamente si la acción está planificada;
-- usar solución compatible;
-- no crear automatización innecesaria.
+`src/functions/`
 
-## Caso 4 — Dependencia no planificada
+No debe crear automáticamente:
+
+- domain;
+- application;
+- infrastructure;
+- shared;
+
+sin contenido real.
+
+## Caso 4 — Shared Cosmos global
 
 ### Entrada
 
-Existe una versión más reciente de un paquete pero assessment no exige actualizarlo.
+Plan contiene una acción global para dependencia/configuración Cosmos compartida.
+
+### Esperado
+
+Debe ejecutar esa acción una sola vez.
+
+Debe registrar consumidores.
+
+## Caso 5 — Shared resource de capability
+
+### Entrada
+
+Recurso pertenece a una capability.
+
+### Esperado
+
+No debe moverlo a `src/shared` solo porque tiene varios consumidores dentro de la capability.
+
+## Caso 6 — Shared resource pendiente
+
+### Entrada
+
+Acción requiere conocimiento funcional que corresponde a una Function.
 
 ### Esperado
 
 Debe:
 
-- preservarlo;
-- no actualizar por conveniencia.
+- no ejecutarla indebidamente;
+- dejarla pendiente;
+- delegar a `prepare-function` cuando corresponda.
 
-## Caso 5 — Configuración sensible
+## Caso 7 — Dependencia no planificada
+
+### Entrada
+
+Hay una librería desactualizada no incluida en plan.
+
+### Esperado
+
+No debe actualizarla.
+
+## Caso 8 — Configuración sensible
 
 ### Entrada
 
@@ -83,47 +115,42 @@ Existe `local.settings.json`.
 
 ### Esperado
 
-Debe:
+No debe leerlo ni modificarlo.
 
-- no leerlo;
-- no modificarlo;
-- registrar configuración pendiente solo por nombres de claves conocidas.
-
-## Caso 6 — CI/CD existente
+## Caso 9 — CI/CD
 
 ### Entrada
 
-Repositorio contiene pipelines reales.
+Repositorio contiene pipelines.
 
 ### Esperado
 
-Debe:
+No debe inspeccionarlos ni modificarlos automáticamente.
 
-- no leerlos ni modificarlos automáticamente;
-- no convertirlos en parte obligatoria de la preparación.
-
-## Caso 7 — Estado intermedio no compilable
+## Caso 10 — Estado intermedio
 
 ### Entrada
 
-Dependencias globales fueron actualizadas pero algunas Functions legacy aún no fueron adaptadas.
+Actualización global hace que Functions aún legacy no compilen temporalmente.
 
 ### Esperado
 
-Debe:
+No debe interpretar automáticamente el build global como gate de fracaso.
 
-- registrar validaciones posibles;
-- no considerar automáticamente fallido todo el skill por build global todavía no válido.
+Debe registrar la situación.
 
-## Caso 8 — Clean Architecture innecesaria
+## Caso 11 — Package manager
 
 ### Entrada
 
-Aplicación simple sin necesidad de capas adicionales.
+Proyecto usa npm con lockfile.
 
 ### Esperado
 
-Debe:
+Debe preservarlo y mantener consistencia.
 
-- preparar estructura mínima;
-- no crear `domain/application/infrastructure` automáticamente.
+## Caso 12 — Catálogo BEFORE
+
+### Esperado
+
+No debe reescribir `current-state.md` para reflejar el nuevo estado técnico.

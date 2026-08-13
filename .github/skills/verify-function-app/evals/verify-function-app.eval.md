@@ -2,19 +2,20 @@
 
 ## Objetivo
 
-Validar que el skill emita un gate final basado en evidencia reproducible sin corregir código.
+Validar que el cierre final compruebe target técnico, comportamiento, arquitectura y recursos compartidos usando BEFORE,
+PLAN y AFTER.
 
-## Caso 1 — Migración completamente correcta
+## Caso 1 — Migración correcta
 
 ### Entrada
 
-- `npm ci` pasa;
+- instalación pasa;
 - typecheck pasa;
 - build pasa;
 - tests pasan;
-- coverage cumple;
-- Host registra todas las Functions;
-- legacy scan limpio;
+- Functions registradas;
+- arquitectura aplicada;
+- shared resources consistentes;
 - packaging correcto.
 
 ### Esperado
@@ -27,82 +28,131 @@ Resultado:
 
 ### Entrada
 
-Todas las verificaciones obligatorias pasan, pero quedan:
-
-- duplicación;
-- naming mejorable;
-- dependencia antigua compatible.
+Todos los gates pasan, queda deuda no bloqueante.
 
 ### Esperado
-
-Resultado:
 
 `VERIFIED_WITH_DEBT`
 
-La deuda no debe bloquear cierre.
-
 ## Caso 3 — Build falla
-
-### Entrada
-
-Typecheck o build final falla.
 
 ### Esperado
 
-Resultado:
-
 `BLOCKED`
 
-Debe identificar el fallo y el skill responsable probable.
-
-No debe corregir código.
+No corregir.
 
 ## Caso 4 — Tests fallan
 
-### Entrada
-
-Build verde pero baseline funcional falla.
-
 ### Esperado
-
-Resultado:
 
 `BLOCKED`
 
-No debe considerar build como evidencia suficiente.
+aunque build sea exitoso.
 
 ## Caso 5 — Function desaparecida
 
 ### Entrada
 
-Inventory original contiene `CompleteReport`, pero no aparece registrada al final.
+Function presente en BEFORE y planificada para preservarse, pero ausente en AFTER.
 
 ### Esperado
 
-Debe:
+`BLOCKED`
 
-- detectar diferencia;
-- marcar bloqueo;
-- no declarar migración válida.
-
-## Caso 6 — Function nueva no planificada
-
-### Entrada
-
-Host registra una Function adicional inesperada.
+## Caso 6 — Function nueva inesperada
 
 ### Esperado
 
-Debe:
+Registrar desviación y clasificar según impacto.
 
-- registrar inconsistencia;
-- usar `REQUIRES_REVIEW` o `BLOCKED` según impacto.
-
-## Caso 7 — Host no ejecutable por configuración
+## Caso 7 — Programming Model
 
 ### Entrada
 
-No existe configuración local sanitizada suficiente.
+Function debía migrar a v4.
+
+### Esperado
+
+Verificar estado real.
+
+No confiar solo en `package.json`.
+
+## Caso 8 — Arquitectura aplicada
+
+### Entrada
+
+Plan exigía extraer lógica del adapter.
+
+### Esperado
+
+Debe verificar que la acción ocurrió.
+
+Si sigue lógica significativa en adapter y era requisito obligatorio:
+
+`FAIL`
+
+## Caso 9 — Carpetas opcionales
+
+### Entrada
+
+Capability no tiene `domain/` porque no era necesario.
+
+### Esperado
+
+No debe fallar.
+
+La arquitectura no se verifica por existencia de carpetas estándar.
+
+## Caso 10 — Shared resource único
+
+### Entrada
+
+Plan definía un único `ReportRepository`.
+
+### Esperado
+
+Debe verificar que no se hayan creado implementaciones duplicadas contradictorias.
+
+## Caso 11 — Shared resource duplicado
+
+### Entrada
+
+Dos Functions terminaron con repositories Cosmos equivalentes para la misma responsabilidad.
+
+### Esperado
+
+Clasificar según impacto.
+
+Si contradice ownership obligatorio y puede producir comportamiento inconsistente:
+
+`BLOCKING`
+
+## Caso 12 — Ownership
+
+### Entrada
+
+Recurso planificado como `CAPABILITY` terminó en `shared`.
+
+### Esperado
+
+Registrar desviación.
+
+No bloquear automáticamente salvo que rompa el contrato arquitectónico o genere ambigüedad funcional.
+
+## Caso 13 — process.env
+
+### Entrada
+
+Plan exigía aislar configuración de lógica funcional.
+
+### Esperado
+
+Verificar que la acción se haya aplicado.
+
+No intentar leer valores.
+
+## Caso 14 — Host sin settings aprobados
 
 ### Esperado
 
@@ -112,103 +162,90 @@ Host:
 
 con motivo.
 
-No debe leer `local.settings.json` automáticamente.
+No leer `local.settings.json`.
 
-El estado final dependerá de si esta verificación era obligatoria.
-
-## Caso 8 — Legacy residual activo
+## Caso 15 — Durable incompleto
 
 ### Entrada
 
-Existe un `function.json` legacy que sigue afectando una Function migrada.
+Falta una Activity esperada.
 
 ### Esperado
 
-Debe:
+`BLOCKED`
 
-- clasificarlo como `BLOCKING`;
-- no eliminarlo.
-
-## Caso 9 — Legacy residual inocuo
+## Caso 16 — Legacy residual bloqueante
 
 ### Entrada
 
-Archivo histórico no utilizado por runtime/build.
+`function.json` sigue activo para Function migrada cuando debía retirarse.
 
 ### Esperado
 
-Debe:
+Clasificar `BLOCKING`.
 
-- no marcar automáticamente bloqueo;
-- clasificar según evidencia como `TECHNICAL_DEBT`, `EXPECTED` o `UNKNOWN`.
-
-## Caso 10 — Packaging
+## Caso 17 — Legacy inocuo
 
 ### Entrada
 
-El paquete incluye:
-
-- `.migration`;
-- tests;
-- coverage.
+Archivo histórico no utilizado.
 
 ### Esperado
 
-Debe:
+No bloquear automáticamente.
 
-- registrar packaging incorrecto;
-- indicar si bloquea deployment;
-- no modificar `.funcignore`.
-
-## Caso 11 — Node incorrecto durante validación
+## Caso 18 — Packaging
 
 ### Entrada
 
-`package.json` declara Node 24 pero verificaciones se ejecutan con Node 20.
+Deployment incluye `.migration` y coverage.
 
 ### Esperado
 
-Debe:
+Registrar fallo de packaging cuando esas exclusiones sean requeridas.
 
-- registrar ambas versiones;
-- no afirmar validación completa bajo Node 24.
-
-## Caso 12 — Durable incompleto
+## Caso 19 — Node real
 
 ### Entrada
 
-Orchestrator registrado, pero falta una Activity esperada.
+Target declara Node 24 pero build/tests se ejecutan con otra versión.
 
 ### Esperado
 
-Debe:
+No afirmar validación completa bajo Node 24.
 
-- detectar workflow incompleto;
-- bloquear cierre.
+## Caso 20 — BEFORE preservado
 
-## Caso 13 — Unknown sin resolver
+### Esperado
+
+No debe reescribir `.migration/catalog/**`.
+
+## Caso 21 — Optimización pendiente
 
 ### Entrada
 
-Permanece una incompatibilidad crítica sin evidencia.
+Existe oportunidad de performance fuera de scope.
 
 ### Esperado
 
-Resultado:
+No bloquear cierre.
+
+## Caso 22 — Unknown crítico
+
+### Esperado
 
 `REQUIRES_REVIEW`
 
-No convertir uncertainty en `VERIFIED`.
+No convertir incertidumbre en éxito.
 
-## Caso 14 — Optimización pendiente
+## Caso 23 — Arquitectura future-proof
 
 ### Entrada
 
-Existe oportunidad de performance pero todo el target de migración está cumplido.
+Adapter y capability están desacoplados según plan.
 
 ### Esperado
 
-La optimización:
+Puede confirmar reducción observable de acoplamiento.
 
-- queda documentada;
-- no bloquea `VERIFIED` o `VERIFIED_WITH_DEBT`.
+No debe afirmar que futuras migraciones serán automáticamente compatibles.

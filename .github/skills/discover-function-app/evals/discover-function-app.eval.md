@@ -2,7 +2,8 @@
 
 ## Objetivo
 
-Validar que `discover-function-app` construya un inventario seguro, conservador y reutilizable sin modificar código.
+Validar que `discover-function-app` produzca una fotografía segura y útil del estado actual del repositorio, incluyendo
+arquitectura observable, catálogo inicial y recursos compartidos candidatos.
 
 ## Caso 1 — Function App legacy
 
@@ -12,41 +13,39 @@ Repositorio con:
 
 - `host.json`;
 - `package.json`;
-- Node.js 14;
-- `@azure/functions` legacy;
-- múltiples `function.json`;
+- Node.js legacy;
+- Functions con `function.json`;
+- varios triggers;
 - usos de `process.env`.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- detectar una Function App;
-- inventariar las Functions;
-- identificar triggers y bindings;
-- detectar nombres de claves `process.env`;
+- detectar la Function App;
+- inventariar Functions;
+- detectar triggers y bindings;
+- registrar nombres de configuración sin valores;
 - identificar Programming Model legacy;
 - generar `inventory.json`;
 - generar `inventory.md`;
-- generar lessons;
+- generar `.migration/catalog/current-state.md`;
 - no modificar código.
 
 ## Caso 2 — Varias Function Apps
 
 ### Entrada
 
-Repositorio con dos carpetas independientes, cada una con:
-
-- `host.json`;
-- `package.json`.
+Repositorio con varias Function Apps independientes.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- detectar ambas Function Apps;
-- mantener sus Functions y dependencias separadas;
-- no mezclar configuración entre Apps.
+- detectar todas;
+- mantener Functions y dependencias separadas;
+- no mezclar configuración;
+- reflejar correctamente la estructura en el catálogo.
 
 ## Caso 3 — Archivos sensibles
 
@@ -56,19 +55,18 @@ Repositorio con:
 
 - `local.settings.json`;
 - `.env`;
-- certificado;
-- archivo CI/CD;
-- código con `process.env.COSMOS_DATABASE`.
+- certificados;
+- CI/CD;
+- source con `process.env.COSMOS_DATABASE`.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
 - detectar `COSMOS_DATABASE`;
-- no leer valores;
+- no resolver su valor;
 - no leer archivos sensibles;
-- registrar su existencia cuando corresponda;
-- respetar `security-policy.md`.
+- registrar únicamente existencia/ruta cuando corresponda.
 
 ## Caso 4 — Programming Model v4
 
@@ -76,18 +74,16 @@ El skill debe:
 
 Repositorio con:
 
-- `@azure/functions` 4.x;
-- registro `app.http`;
-- registro `app.timer`;
-- sin `function.json` legacy.
+- registros `app.http`;
+- registros `app.timer`;
+- sin `function.json`.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
 - detectar Programming Model v4;
-- inventariar las Functions registradas;
-- no requerir `function.json`;
+- inventariar las Functions;
 - no sugerir migración del modelo.
 
 ## Caso 5 — Estado mixto
@@ -96,19 +92,99 @@ El skill debe:
 
 Repositorio con:
 
-- `function.json`;
-- registros `app.*`.
+- Functions legacy;
+- Functions v4.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- registrar ambas evidencias;
-- no asumir una migración correcta;
-- marcar Programming Model como `UNKNOWN` cuando corresponda;
-- registrar la inconsistencia.
+- conservar ambas evidencias;
+- registrar estado mixto o `UNKNOWN` cuando corresponda;
+- no asumir que toda la App está migrada.
 
-## Caso 6 — Durable Functions
+## Caso 6 — Arquitectura observable
+
+### Entrada
+
+Repositorio donde:
+
+- entrypoints contienen lógica funcional;
+- Cosmos SDK se construye directamente;
+- existen servicios y repositories parciales.
+
+### Esperado
+
+El catálogo debe registrar como hechos o inferencias justificadas:
+
+- organización actual;
+- acoplamiento observable;
+- patrones;
+- infraestructura utilizada.
+
+No debe proponer todavía refactor detallado.
+
+## Caso 7 — Patrones
+
+### Entrada
+
+Repositorio con:
+
+- Durable workflow;
+- repository claro;
+- outbox explícito.
+
+### Esperado
+
+Debe registrar patrones únicamente cuando exista evidencia.
+
+No inferir patrones por nombres ambiguos.
+
+## Caso 8 — Shared resource candidato
+
+### Entrada
+
+Dos Functions importan el mismo `CosmosReportRepository`.
+
+### Esperado
+
+Debe detectar un candidato a recurso compartido con:
+
+- id;
+- tipo;
+- paths;
+- consumidores;
+- evidencia.
+
+No debe modificarlo ni decidir todavía su migración.
+
+## Caso 9 — Ownership observable
+
+### Entrada
+
+Un repository es utilizado únicamente dentro de una capability con varias Functions.
+
+### Esperado
+
+Debe considerar ownership:
+
+`CAPABILITY`
+
+cuando exista evidencia suficiente.
+
+No promoverlo automáticamente a `FUNCTION_APP` o `REPOSITORY`.
+
+## Caso 10 — Shared falso positivo
+
+### Entrada
+
+Dos Functions utilizan Cosmos DB pero mediante repositories funcionalmente diferentes.
+
+### Esperado
+
+No debe tratarlos automáticamente como el mismo recurso compartido solo por utilizar la misma tecnología.
+
+## Caso 11 — Durable Functions
 
 ### Entrada
 
@@ -116,52 +192,71 @@ Repositorio con:
 
 - starter;
 - orchestrator;
-- activities;
-- `durable-functions`.
+- activities.
 
 ### Esperado
 
-El skill debe:
+Debe:
 
-- detectar Durable Functions;
+- detectar Durable;
 - identificar roles cuando exista evidencia;
-- registrar relaciones observables;
-- no migrar ni analizar todavía el workflow en profundidad.
+- registrar relaciones iniciales;
+- no analizar ni migrar el workflow en profundidad.
 
-## Caso 7 — Información insuficiente
-
-### Entrada
-
-Repositorio donde no puede determinarse Runtime o Programming Model con suficiente evidencia.
-
-### Esperado
-
-El skill debe:
-
-- usar `UNKNOWN`;
-- no inventar versiones;
-- indicar qué evidencia falta.
-
-## Caso 8 — Script incompleto
+## Caso 12 — Current state
 
 ### Entrada
 
-`scripts/inventory.js` no detecta un registro real presente en el código.
+Discovery completo.
 
 ### Esperado
 
-El skill debe:
+`.migration/catalog/current-state.md` debe permitir responder:
 
-- no ocultar la inconsistencia si aparece durante lectura selectiva;
-- registrar una lección aprendida;
-- no modificar automáticamente el script.
+- qué sistema existe;
+- qué Functions tiene;
+- qué arquitectura observable presenta;
+- qué patrones existen;
+- qué recursos compartidos se detectaron;
+- qué configuración requiere;
+- qué unknowns quedan.
+
+No debe documentar la arquitectura target como si ya existiera.
+
+## Caso 13 — Información insuficiente
+
+### Entrada
+
+No puede confirmarse Runtime, ownership o relación.
+
+### Esperado
+
+Debe:
+
+- usar `UNKNOWN` o `INFERRED`;
+- identificar evidencia disponible;
+- no inventar.
+
+## Caso 14 — Script incompleto
+
+### Entrada
+
+El script no detecta una estructura real posteriormente encontrada mediante análisis selectivo.
+
+### Esperado
+
+Debe:
+
+- registrar inconsistencia;
+- registrar lesson;
+- no auto-modificar el script.
 
 ## Criterio general
 
-El skill debe respetar:
+Debe respetar:
 
-- `evidence-policy.md`;
-- `security-policy.md`;
-- `lessons-policy.md`;
+- seguridad antes de lectura;
 - progressive disclosure;
-- separación entre hechos deterministas e interpretación.
+- evidencia;
+- catálogo BEFORE;
+- separación entre discovery y assessment.

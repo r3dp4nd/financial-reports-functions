@@ -2,62 +2,54 @@
 
 ## Objetivo
 
-Validar que el skill transforme únicamente la integración Azure de una Function legacy y preserve comportamiento.
+Validar que el skill migre únicamente la integración Azure, consumiendo el plan específico y preservando arquitectura y
+shared resources.
 
-## Caso 1 — HTTP legacy
+## Caso 1 — HTTP legacy preparado
 
 ### Entrada
 
 Function con:
 
-- `function.json`;
-- `httpTrigger`;
-- `context.res`;
-- baseline verde.
+- architecture preparation completada;
+- tests verdes;
+- adapter legacy;
+- plan específico.
 
 ### Esperado
 
 Debe:
 
-- registrar con `app.http`;
-- preservar methods, route, auth level y response;
-- retirar el `function.json` de esa Function cuando corresponda;
-- ejecutar los mismos tests.
+- migrar a `app.http`;
+- preservar route, methods y auth level;
+- conservar capability intacta;
+- ejecutar mismos tests.
 
-## Caso 2 — Timer
+## Caso 2 — Adapter aislado
 
 ### Entrada
 
-Function legacy con `timerTrigger`.
+La lógica funcional ya vive fuera de `src/functions`.
 
 ### Esperado
 
-Debe:
+La migración debe concentrarse principalmente en el adapter.
 
-- preservar schedule;
-- migrar registro;
-- no modificar comportamiento interno.
+No volver a reorganizar capability.
 
-## Caso 3 — Service Bus
+## Caso 3 — Shared repository
 
 ### Entrada
 
-Function con queue trigger.
+Function consume `ReportRepository` preparado.
 
 ### Esperado
 
-Debe:
+No debe crear un `CosmosClient` directo en el nuevo adapter.
 
-- preservar queue;
-- connection setting name;
-- metadata relevante;
-- no leer connection string.
+Debe mantener el límite arquitectónico.
 
 ## Caso 4 — Ya v4
-
-### Entrada
-
-Function con registro `app.http` confirmado.
 
 ### Esperado
 
@@ -65,71 +57,76 @@ Resultado:
 
 `NOT_APPLICABLE`
 
-Sin modificaciones.
+Sin cambios.
 
-## Caso 5 — Modelo desconocido
+## Caso 5 — Durable
 
 ### Entrada
 
-Evidencia contradictoria.
+Function forma parte de workflow Durable.
+
+### Esperado
+
+Debe delegar al skill Durable cuando corresponda.
+
+## Caso 6 — Shared action pendiente
+
+### Entrada
+
+Plan exige recurso compartido aún no preparado.
 
 ### Esperado
 
 Resultado:
 
+`BLOCKED`
+
+No duplicar infraestructura.
+
+## Caso 7 — function.json
+
+### Entrada
+
+Function legacy migrada correctamente.
+
+### Esperado
+
+Debe retirar únicamente el artefacto correspondiente cuando deje de ser requerido.
+
+No afectar otras Functions legacy.
+
+## Caso 8 — Tests fallan
+
+### Esperado
+
+Debe tratarlo como posible regresión.
+
+No cambiar tests para aceptar nuevo comportamiento.
+
+## Caso 9 — Plan específico
+
+### Esperado
+
+Debe ejecutar acciones de plataforma definidas.
+
+No volver a ejecutar acciones estructurales ya completadas.
+
+## Caso 10 — Arquitectura degradada
+
+### Entrada
+
+Una migración propuesta volvería a meter lógica funcional en el adapter.
+
+### Esperado
+
+No debe hacerlo.
+
+Debe preservar arquitectura o marcar revisión.
+
+## Caso 11 — Binding no confirmado
+
+### Esperado
+
 `REQUIRES_REVIEW`
 
-Sin transformación.
-
-## Caso 6 — Durable Function
-
-### Entrada
-
-Orchestrator o Activity Durable.
-
-### Esperado
-
-Debe:
-
-- no migrarla aisladamente;
-- delegar al skill Durable cuando corresponda.
-
-## Caso 7 — Tests fallan después de migrar
-
-### Entrada
-
-Baseline previa verde, tests fallan después.
-
-### Esperado
-
-Debe:
-
-- tratarlo como posible regresión;
-- corregir adapter si existe diferencia;
-- no cambiar expectativas para aceptar nuevo comportamiento.
-
-## Caso 8 — function.json residual
-
-### Entrada
-
-Migración correcta del adapter pero `function.json` sigue activo.
-
-### Esperado
-
-Debe:
-
-- tratar correctamente el artefacto de esa Function;
-- no eliminar `function.json` de otras Functions todavía legacy.
-
-## Caso 9 — Refactor oportunista
-
-### Entrada
-
-Durante migración se detecta código mejorable.
-
-### Esperado
-
-Debe:
-
-- no refactorizarlo;
-- registrarlo como deuda cuando sea relevante.
+en lugar de inventar equivalencia.
