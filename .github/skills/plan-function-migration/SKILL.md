@@ -1,24 +1,24 @@
 ---
 name: plan-function-migration
-description: Construye el plan global y los planes por Function para migrar una Azure Function App, coordinando cambios globales, arquitectura objetivo, recursos compartidos, dependencias, workflows y acciones previamente identificadas sin modificar código.
+description: Construye el plan global y los planes por Function para migrar una Azure Function App, coordinando arquitectura, recursos compartidos, dependencias, workflows y acciones previamente identificadas sin modificar código.
 ---
 
 # Plan Function Migration
 
 ## Objetivo
 
-Transformar la evidencia acumulada en un plan ejecutable y neutral respecto del ejecutor.
+Transformar la evidencia acumulada en planes ejecutables y neutrales respecto del ejecutor.
 
-Debe generar:
+Debe producir:
 
-- un plan global del repositorio o Function App;
-- un plan específico por Function;
-- acciones coordinadas para recursos compartidos;
+- plan global;
+- plan por Function;
+- coordinación de shared resources;
 - orden de ejecución;
 - dependencias;
 - criterios de verificación.
 
-Este skill no modifica código.
+No modifica código.
 
 ## Políticas
 
@@ -41,10 +41,10 @@ y los análisis requeridos:
 
 `.migration/functions/<FunctionName>/analysis.json`
 
-Si faltan análisis críticos:
+Si faltan análisis:
 
-- registrar el gap;
 - no inventar acciones;
+- identificar impacto;
 - usar `PARTIAL` o `BLOCKED`.
 
 ## Entradas
@@ -54,23 +54,65 @@ Consumir:
 - inventory;
 - assessment;
 - analyses;
-- catálogo actual cuando sea útil.
+- shared resource information;
+- catálogo cuando ayude a navegación.
 
 No volver a analizar código por defecto.
 
 ## Principio
 
-El análisis dice qué necesita cada Function.
+El análisis determina qué necesita una Function.
 
-La planificación decide:
+El plan determina:
 
-- qué se hará;
+- qué se ejecuta;
 - en qué orden;
 - qué depende de qué;
-- qué se hace una sola vez;
-- cómo se verificará.
+- qué se realiza una sola vez;
+- cómo se verifica.
 
-Los planes deben poder ser ejecutados tanto por IA como manualmente.
+Las acciones deben poder ser ejecutadas por IA o manualmente.
+
+## Recursos compartidos consolidados
+
+Consolidar:
+
+`.migration/resources/shared-resources.json`
+
+cuando existan shared resources confirmados.
+
+Usar:
+
+`.migration/resources/shared-resources.md`
+
+como vista humana.
+
+Crear esta carpeta únicamente cuando existan recursos compartidos reales.
+
+Cada recurso debe tener:
+
+- id;
+- type;
+- ownership;
+- consumers;
+- paths;
+- configuration keys;
+- status;
+- evidence.
+
+## Shared resource action
+
+Cada recurso que necesite cambio debe tener una única acción propietaria.
+
+Ejemplo:
+
+`SR-ACTION-001`
+
+Las Functions consumidoras deben referenciarla mediante:
+
+`dependsOn`
+
+No duplicar la misma transformación en varios planes.
 
 ## Plan global
 
@@ -80,230 +122,38 @@ Crear:
 
 `.migration/plans/migration-plan.md`
 
-El plan global debe coordinar:
+Usar para el Markdown:
+
+`../_shared/templates/migration-plan.template.md`
+
+El plan global coordina:
 
 - target;
 - cambios globales;
-- arquitectura objetivo;
-- recursos compartidos;
+- arquitectura;
+- shared resources;
 - Function plans;
-- workflows Durable;
-- dependencias;
-- orden;
-- riesgos;
+- Durable workflows;
+- dependencies;
+- order;
+- risks;
 - unknowns;
-- criterios finales de verificación.
+- verification criteria.
 
 ## Plan por Function
 
-Crear para cada Function analizada:
+Crear:
 
 `.migration/functions/<FunctionName>/migration-plan.json`
 
 `.migration/functions/<FunctionName>/migration-plan.md`
 
-El plan por Function debe incluir:
+Usar para el Markdown:
 
-- comportamiento a preservar;
-- arquitectura objetivo aplicable;
-- requiredActions seleccionadas;
-- recursos compartidos utilizados;
-- dependencias globales;
-- dependencias hacia shared resource actions;
-- preparación;
-- migración;
-- tests;
-- criterios de verificación;
-- deuda fuera de alcance;
-- risks;
-- unknowns.
+`../_shared/templates/function-migration-plan.template.md`
 
-No duplicar todo `analysis.json`.
+Cada plan debe contener:
 
-## Recursos compartidos
-
-Consolidar candidatos provenientes del inventory y analyses.
-
-Confirmar para cada recurso:
-
-- id;
-- type;
-- ownership;
-- consumers;
-- paths;
-- configuration keys;
-- required changes;
-- evidence.
-
-## Acción propietaria
-
-Cada recurso compartido que necesite modificación debe tener una única acción propietaria.
-
-Ejemplo:
-
-`SR-ACTION-001`
-
-Las Functions consumidoras deben depender de esa acción.
-
-No crear una acción equivalente dentro de cada Function plan.
-
-## Ejemplo conceptual
-
-Recurso:
-
-`SR-COSMOS-REPORTS`
-
-Consumidores:
-
-- RequestReport
-- GenerateReport
-
-Acción global:
-
-`SR-ACTION-001 — adaptar ReportRepository/Cosmos implementation`
-
-Los planes individuales declaran:
-
-`dependsOn: SR-ACTION-001`
-
-## Recursos sin cambio
-
-Si un recurso compartido ya es compatible y arquitectónicamente correcto:
-
-`NOT_REQUIRED`
-
-No planificar trabajo por uniformidad.
-
-## Arquitectura
-
-El plan debe incluir la convergencia hacia la arquitectura definida en `architecture-policy.md`.
-
-Debe indicar:
-
-- qué adapters quedan bajo `src/functions`;
-- qué capability recibe la lógica;
-- qué infraestructura debe aislarse;
-- qué contratos son necesarios;
-- qué recursos compartidos requieren ownership.
-
-No crear capas vacías como parte del plan.
-
-## Cambios globales
-
-Consolidar únicamente cambios transversales respaldados por evidencia.
-
-Ejemplos:
-
-- Node.js;
-- Runtime;
-- dependencies;
-- TypeScript;
-- Jest;
-- build;
-- `src/functions`;
-- `.funcignore`;
-- configuración global.
-
-## Function ya v4
-
-Si una Function ya usa Programming Model v4:
-
-no incluir migración de modelo.
-
-Puede incluir:
-
-- arquitectura;
-- tests;
-- Node compatibility;
-- dependency changes.
-
-## Function legacy
-
-Si requiere Programming Model v4:
-
-incluir acción `REQUIRED_PLATFORM`.
-
-## Durable
-
-Agrupar starter, orchestrator y Activities como workflow cuando corresponda.
-
-Generar planes por Function si ayudan a ejecución y trazabilidad, pero coordinar la migración Durable como una unidad.
-
-## Orden
-
-Secuencia preferida cuando aplique:
-
-1. preparar base global;
-2. preparar recursos compartidos necesarios;
-3. preparar/refactorizar Functions;
-4. obtener baseline de tests;
-5. migrar adapters legacy no Durable;
-6. migrar workflows Durable;
-7. completar adaptaciones;
-8. build global;
-9. verify.
-
-No ejecutar etapas `NOT_APPLICABLE`.
-
-## Tests
-
-Los planes por Function deben especificar qué comportamiento debe quedar protegido antes de migrar.
-
-No duplicar implementación detallada del test.
-
-## Build
-
-No exigir build global por Function.
-
-El build completo se reserva para el gate final.
-
-## Unknowns
-
-Un unknown bloquea únicamente las acciones dependientes.
-
-No bloquear trabajo independiente seguro.
-
-## Estados
-
-Plan global:
-
-- `READY`
-- `PARTIAL`
-- `BLOCKED`
-
-Planes individuales pueden usar:
-
-- `READY`
-- `PARTIAL`
-- `BLOCKED`
-
-## migration-plan.json global
-
-Debe contener como mínimo:
-
-- metadata;
-- target;
-- status;
-- architectureTarget;
-- globalChanges;
-- sharedResources;
-- sharedResourceActions;
-- functionPlans;
-- durableWorkflows;
-- dependencies;
-- executionOrder;
-- risks;
-- unknowns;
-- verificationCriteria;
-- evidence.
-
-## migration-plan.json por Function
-
-Debe contener como mínimo:
-
-- metadata;
-- function;
-- status;
 - behaviorToPreserve;
 - architectureTarget;
 - requiredActions;
@@ -317,37 +167,111 @@ Debe contener como mínimo:
 - risks;
 - unknowns.
 
-## Markdown global
+No copiar el análisis completo.
 
-`migration-plan.md` debe explicar:
+## Arquitectura
 
-- punto de partida;
-- target;
-- estrategia;
-- arquitectura;
-- cambios globales;
-- shared resources;
-- Function plans;
-- workflows;
-- orden;
-- riesgos;
-- unknowns;
-- criterios de cierre.
+Planificar convergencia hacia:
 
-## Markdown por Function
+`../_shared/architecture-policy.md`
 
-Debe explicar:
+Debe quedar claro:
 
-- qué se preserva;
-- qué cambia;
-- arquitectura objetivo;
-- dependencias;
-- recursos compartidos;
-- orden;
-- tests;
-- criterios de verificación.
+- dónde termina el adapter Azure;
+- dónde vive la capability;
+- qué infraestructura se aísla;
+- qué contracts son realmente necesarios;
+- qué ownership tienen shared resources.
 
-Debe ser ejecutable tanto manualmente como mediante IA.
+No planificar carpetas vacías.
+
+## Cambios globales
+
+Consolidar únicamente cambios transversales respaldados por assessment y analyses.
+
+Ejemplos:
+
+- Node.js;
+- Runtime;
+- dependencies;
+- TypeScript;
+- Jest;
+- build;
+- estructura base;
+- `.funcignore`.
+
+## Function ya v4
+
+No incluir migración del Programming Model.
+
+Puede incluir:
+
+- architecture;
+- testability;
+- Node compatibility;
+- dependency work.
+
+## Function legacy
+
+Cuando corresponda:
+
+incluir `REQUIRED_PLATFORM`.
+
+## Durable
+
+Mantener planes por Function para trazabilidad.
+
+Coordinar la migración del workflow como unidad.
+
+## Orden
+
+Secuencia preferida cuando aplique:
+
+1. cambios globales;
+2. recursos compartidos;
+3. preparación/refactor por Function;
+4. baseline;
+5. migración de adapters;
+6. migración Durable;
+7. adaptaciones restantes;
+8. build global;
+9. verification.
+
+No ejecutar pasos `NOT_APPLICABLE`.
+
+## Build
+
+No exigir build global por Function.
+
+El build completo es gate final.
+
+## Unknowns
+
+Bloquear únicamente acciones realmente dependientes del unknown.
+
+Permitir trabajo independiente seguro.
+
+## Estados
+
+Usar:
+
+- `READY`
+- `PARTIAL`
+- `BLOCKED`
+
+tanto para plan global como para planes individuales cuando corresponda.
+
+## Neutralidad del ejecutor
+
+Evitar instrucciones como:
+
+`El agente debe...`
+
+Preferir:
+
+`Extraer la lógica funcional del Azure adapter hacia la capability Reports.`
+
+El plan describe intención técnica y resultado.
 
 ## Lecciones
 
@@ -362,11 +286,11 @@ Crear:
 El skill termina cuando:
 
 - inventory, assessment y analyses fueron consumidos;
-- se identificaron recursos compartidos;
-- cada recurso que requiere cambio tiene ownership;
-- existe un plan global;
+- shared resources fueron consolidados;
+- cada shared change tiene ownership único;
+- existe plan global;
 - cada Function incluida tiene plan;
-- acciones duplicadas fueron evitadas;
+- no existen acciones duplicadas;
 - arquitectura objetivo está reflejada;
 - Durable está coordinado;
 - riesgos y unknowns permanecen visibles;
@@ -375,16 +299,16 @@ El skill termina cuando:
 
 ## Fuera de alcance
 
-Este skill no debe:
+No debe:
 
 - modificar código;
 - agregar tests;
-- ejecutar refactors;
+- refactorizar;
 - actualizar dependencias;
 - migrar;
 - resolver unknowns mediante suposiciones;
-- ejecutar optimizaciones.
+- optimizar.
 
-El siguiente skill sugerido es:
+Siguiente skill sugerido:
 
 `prepare-function-app`

@@ -24,7 +24,7 @@ Aplicar:
 - `../_shared/lessons-policy.md`
 - `../_shared/architecture-policy.md`
 
-La política arquitectónica se usa aquí como referencia de análisis.
+La arquitectura se usa únicamente como referencia de análisis.
 
 Este skill no refactoriza.
 
@@ -37,15 +37,13 @@ Este skill no refactoriza.
 
 Preferir descubrimiento determinista antes que razonamiento.
 
-No usar IA para repetir hechos que pueda obtener el script interno.
+No usar IA para repetir hechos obtenibles mediante el script interno.
 
 ## Script de inventario
 
 Ejecutar primero:
 
 `scripts/inventory.js`
-
-sobre el repositorio objetivo.
 
 Usar su salida como fuente primaria para:
 
@@ -66,7 +64,7 @@ Los scripts deben ser compatibles con Node.js 14 o superior.
 
 ## Análisis selectivo
 
-Usando la salida del script y únicamente el código necesario, identificar:
+A partir de la salida determinista, leer únicamente el código necesario para identificar:
 
 - relaciones entre Functions;
 - capabilities observables;
@@ -76,28 +74,25 @@ Usando la salida del script y únicamente el código necesario, identificar:
 - infraestructura compartida;
 - recursos compartidos candidatos.
 
-No realizar todavía assessment de compatibilidad.
+No evaluar todavía el cambio requerido hacia el target.
 
 ## Arquitectura actual
 
-Documentar únicamente lo observable.
+Registrar únicamente lo observable:
 
-Considerar:
-
-- organización de source;
+- organización del source;
 - ubicación de entrypoints;
-- separación o mezcla entre runtime, lógica e infraestructura;
-- contratos existentes;
-- servicios;
-- repositorios;
-- dependencias compartidas;
-- estructura por capas o por capability.
+- mezcla o separación entre runtime, lógica e infraestructura;
+- contracts existentes;
+- repositories;
+- services;
+- dependencias compartidas.
 
-No evaluar todavía la refactorización necesaria en detalle.
+No diseñar todavía la arquitectura futura.
 
 ## Patrones
 
-Registrar patrones solo cuando exista evidencia.
+Registrar patrones únicamente con evidencia.
 
 Ejemplos:
 
@@ -109,11 +104,11 @@ Ejemplos:
 - Factory;
 - direct SDK usage.
 
-No inferir un patrón únicamente por nombres.
+No inferir un patrón únicamente por naming.
 
 ## Recursos compartidos candidatos
 
-Detectar recursos utilizados por múltiples Functions o capabilities cuando exista evidencia.
+Detectar recursos usados por múltiples Functions o capabilities cuando exista evidencia.
 
 Ejemplos:
 
@@ -123,20 +118,20 @@ Ejemplos:
 - Service Bus;
 - Blob Storage;
 - HTTP clients;
-- repositorios;
+- repositories;
 - configuración;
 - servicios comunes.
 
-Cada candidato debe contener cuando sea posible:
+Registrar cuando sea posible:
 
-- `id`;
-- `type`;
-- `paths`;
-- `usedBy`;
-- `configurationKeys`;
-- `ownership`;
-- `status`;
-- `evidence`.
+- id;
+- type;
+- paths;
+- consumers;
+- configuration keys;
+- ownership;
+- status;
+- evidence.
 
 Scopes iniciales:
 
@@ -145,7 +140,7 @@ Scopes iniciales:
 - `CAPABILITY`
 - `WORKFLOW`
 
-No mover ni refactorizar recursos.
+No fusionar recursos únicamente porque usen la misma tecnología.
 
 ## Configuración
 
@@ -166,11 +161,11 @@ Identificar:
 - mixed;
 - unknown.
 
-No asumir que toda App necesita migración de Programming Model.
+No asumir que toda Function App requiere migración del Programming Model.
 
 ## Durable
 
-Identificar cuando sea posible:
+Identificar cuando exista evidencia:
 
 - client;
 - starter;
@@ -189,49 +184,28 @@ Crear:
 
 `.migration/repository/inventory.md`
 
-El JSON debe incluir como mínimo:
+`inventory.json` es el owner de los hechos estructurados de discovery.
 
-- metadata;
-- repository;
-- Function Apps;
-- platform observable;
-- dependencies;
-- Functions;
-- triggers/bindings;
-- configuration keys;
-- relationships;
-- architecture observations;
-- patterns;
-- shared resource candidates;
-- unknowns;
-- evidence.
+No incluir:
 
-## Catálogo del estado actual
+- recomendaciones;
+- plan;
+- refactors;
+- decisiones de migración.
+
+## Catálogo BEFORE
 
 Crear:
 
 `.migration/catalog/current-state.md`
 
-Este documento es la fotografía humana principal antes de la migración.
+Usar:
 
-Debe incluir:
+`../_shared/templates/current-state.template.md`
 
-- resumen del sistema;
-- plataforma;
-- Function Apps;
-- catálogo de Functions;
-- arquitectura actual observable;
-- capabilities;
-- patrones;
-- recursos compartidos candidatos;
-- configuración por nombre de clave;
-- relaciones principales;
-- testing actual observable;
-- riesgos iniciales;
-- unknowns;
-- navegación hacia fichas por Function cuando existan.
+El catálogo representa el estado anterior a la migración.
 
-No debe describir todavía la arquitectura futura como si ya estuviera implementada.
+No convertirlo en documentación del target.
 
 ## Lecciones
 
@@ -252,29 +226,29 @@ El skill termina cuando:
 - el script fue ejecutado;
 - las Function Apps fueron identificadas;
 - las Functions fueron inventariadas;
-- la configuración fue registrada sin valores;
-- Programming Model fue identificado o quedó UNKNOWN;
-- arquitectura y patrones observables fueron documentados;
-- candidatos a recursos compartidos fueron registrados;
+- configuración fue registrada sin valores;
+- Programming Model quedó identificado o `UNKNOWN`;
+- arquitectura y patrones observables quedaron registrados;
+- recursos compartidos candidatos quedaron registrados;
 - se creó `current-state.md`;
 - no se leyeron archivos sensibles;
 - se generaron inventory y lessons.
 
 ## Fuera de alcance
 
-Este skill no debe:
+No debe:
 
 - modificar código;
 - refactorizar;
 - actualizar dependencias;
 - agregar tests;
-- evaluar detalladamente compatibilidad Node.js 24;
+- evaluar detalladamente Node.js 24;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;
 - optimizar;
-- generar el plan de migración.
+- generar planes.
 
-El siguiente skill sugerido es:
+Siguiente skill sugerido:
 
 `assess-function-app`
