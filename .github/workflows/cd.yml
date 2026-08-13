@@ -1,0 +1,47 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-build.yml
+
+
+  deploy-dev:
+    needs: build
+
+    uses: ./.github/workflows/reusable-deploy.yml
+
+    with:
+      environmentName: DEV
+
+
+  deploy-uat:
+    needs: deploy-dev
+
+    uses: ./.github/workflows/reusable-deploy.yml
+
+    with:
+      environmentName: UAT
+
+
+  deploy-stg:
+    needs: deploy-uat
+
+    uses: ./.github/workflows/reusable-deploy.yml
+
+    with:
+      environmentName: STG
+
+
+  deploy-prd:
+    needs: deploy-stg
+
+    uses: ./.github/workflows/reusable-deploy.yml
+
+    with:
+      environmentName: PRD

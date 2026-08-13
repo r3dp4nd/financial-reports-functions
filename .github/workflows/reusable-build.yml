@@ -1,0 +1,70 @@
+name: Reusable - Build
+
+on:
+  workflow_call:
+
+
+jobs:
+  build:
+    name: Build release artifact
+
+    runs-on: self-hosted
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+        with:
+          fetch-depth: 1
+
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v6
+
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      - name: Build production application
+        run: npm run build:prod
+
+
+      - name: Prepare deployment package
+        shell: bash
+        run: |
+          rm -rf "${RUNNER_TEMP}/function-app"
+          mkdir -p "${RUNNER_TEMP}/function-app"
+
+          cp -R dist "${RUNNER_TEMP}/function-app/dist"
+          cp host.json "${RUNNER_TEMP}/function-app/host.json"
+          cp package.json "${RUNNER_TEMP}/function-app/package.json"
+          cp package-lock.json "${RUNNER_TEMP}/function-app/package-lock.json"
+
+
+      - name: Install production dependencies
+        working-directory: ${{ runner.temp }}/function-app
+        run: npm ci --omit=dev
+
+
+      - name: Create deployment ZIP
+        working-directory: ${{ runner.temp }}/function-app
+        shell: bash
+        run: |
+          zip -r "${RUNNER_TEMP}/function-app.zip" .
+
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v3.2.2
+
+        with:
+          name: function-app
+          path: ${{ runner.temp }}/function-app.zip
+          if-no-files-found: error
