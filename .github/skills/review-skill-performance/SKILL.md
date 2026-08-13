@@ -1,34 +1,23 @@
 ---
 name: review-skill-performance
-description: Evalúa ejecuciones reales de los skills y sus lecciones aprendidas para detectar fallos recurrentes, gaps, reglas demasiado amplias, contexto innecesario y oportunidades de simplificación, generando un plan de mejora sin modificar automáticamente los skills.
+description: Revisa el desempeño real de uno o más skills a partir de lessons, artefactos, fallos y evals para proponer mejoras justificadas sin modificar automáticamente el toolkit.
 ---
 
 # Review Skill Performance
 
 ## Objetivo
 
-Evaluar la efectividad de uno o varios skills utilizando evidencia proveniente de ejecuciones reales.
+Analizar evidencia real de ejecución para identificar problemas, simplificaciones y mejoras posibles en los skills.
 
-El análisis debe permitir identificar:
+Este capability está fuera del flujo operativo de migración.
 
-- qué funcionó;
-- qué falló;
-- casos no contemplados;
-- falsos positivos;
-- falsos negativos;
-- decisiones ambiguas;
-- reglas demasiado amplias;
-- reglas demasiado específicas;
-- contexto innecesario;
-- pasos redundantes;
-- oportunidades de simplificación;
-- oportunidades razonables de automatización;
-- gaps en evals;
-- posibles mejoras del skill.
+No modifica automáticamente:
 
-Este capability propone mejoras.
-
-No modifica automáticamente los skills.
+- skills;
+- scripts;
+- evals;
+- policies;
+- templates.
 
 ## Políticas
 
@@ -37,70 +26,90 @@ Aplicar:
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
 - `../_shared/lessons-policy.md`
+- `../_shared/status-policy.md`
 
-## Ámbito
+Consultar cuando el hallazgo corresponda:
 
-Este capability forma parte del ciclo de mejora del toolkit.
-
-No pertenece al flujo operativo normal:
-
-`discover → assess → analyze → plan → prepare → migrate → verify`
-
-No debe bloquear una migración ya verificada únicamente porque exista una oportunidad de mejorar un skill.
+- `../_shared/architecture-policy.md`
 
 ## Entradas
 
-Puede recibir evidencia de una o varias ejecuciones.
+Consumir primero:
 
-Priorizar:
-
-- `.migration/lessons/**`;
-- artefactos JSON producidos por los skills;
-- estados finales;
+- lessons;
+- estados de ejecución;
 - blockers;
-- `REQUIRES_REVIEW`;
-- warnings;
-- inconsistencias;
-- evals actuales del skill evaluado;
-- `SKILL.md` actual;
-- scripts propios del skill cuando sean relevantes.
+- reviews;
+- artefactos producidos;
+- evals relacionados.
 
-No cargar todos los artefactos completos por defecto.
+Leer el `SKILL.md`, scripts o policies únicamente cuando sea necesario para explicar un hallazgo.
 
-Usar progressive disclosure.
+No cargar todo el toolkit por defecto.
 
-## Selección de evidencia
-
-Comenzar por:
-
-1. lessons;
-2. estados de ejecución;
-3. failures o reviews;
-4. evidencia directamente relacionada con el hallazgo.
-
-Leer artefactos adicionales únicamente cuando sean necesarios para confirmar una conclusión.
-
-No reconstruir migraciones completas.
-
-## Unidad de análisis
+## Unidad de revisión
 
 La unidad principal es un skill.
 
-Ejemplo:
+Puede analizarse:
 
-`discover-function-app`
+- una ejecución;
+- varias ejecuciones;
+- varios casos relacionados;
 
-Puede analizarse una ejecución individual o varias ejecuciones del mismo skill.
+cuando exista evidencia suficiente.
 
-Cuando existan varias ejecuciones, distinguir:
+## Principio
 
-- caso aislado;
-- patrón recurrente;
-- problema sistémico.
+No convertir una observación aislada en una regla global.
 
-## Tipos de hallazgo
+Flujo:
 
-Clasificar cuando corresponda:
+`observación → evidencia → recurrencia → propuesta → revisión humana`
+
+## Semántica de estados
+
+Aplicar:
+
+`../_shared/status-policy.md`
+
+Al revisar artefactos, distinguir correctamente:
+
+- `evidenceStatus`;
+- `actionStatus`;
+- `status`;
+- check `status`;
+- `classification`.
+
+Un uso incorrecto de estos campos puede generar un finding.
+
+Ejemplos:
+
+- usar `status: CONFIRMED` para evidencia;
+- usar `PASS` como evidencia;
+- usar `NOT_APPLICABLE` donde corresponde `NOT_REQUIRED`;
+- usar `REQUIRES_REVIEW` como sinónimo de `UNKNOWN`.
+
+## Convención de IDs
+
+Validar cuando corresponda:
+
+- `GLOBAL-*` para acciones globales;
+- `FN-<FUNCTION>-NNN` para acciones por Function;
+- `SR-*` para recursos compartidos;
+- `SR-ACTION-*` para acciones sobre recursos compartidos.
+
+Detectar referencias antiguas como:
+
+`REQ-*`
+
+cuando el contrato actual exige `FN-*`.
+
+No cambiar IDs históricos de artefactos ya cerrados solo por estética.
+
+## Tipos de findings
+
+Usar:
 
 - `FALSE_POSITIVE`
 - `FALSE_NEGATIVE`
@@ -116,13 +125,63 @@ Clasificar cuando corresponda:
 - `SIMPLIFICATION`
 - `AUTOMATION_CANDIDATE`
 
-No inventar categorías nuevas sin necesidad.
+## FALSE_POSITIVE
+
+El skill identificó un problema o acción que no correspondía.
+
+## FALSE_NEGATIVE
+
+El skill no identificó un problema real que debía detectar.
+
+## UNHANDLED_CASE
+
+Existe un escenario real no cubierto por el contrato actual.
+
+## AMBIGUOUS_RULE
+
+Una instrucción admite interpretaciones inconsistentes.
+
+## OVERGENERALIZATION
+
+Una observación local se convirtió en una regla demasiado amplia.
+
+## OVERCONSTRAINT
+
+Una regla restringe casos válidos sin necesidad.
+
+## REDUNDANT_WORK
+
+El skill repite trabajo ya resuelto por otro artefacto o capability.
+
+## EXCESS_CONTEXT
+
+El skill carga más contexto del necesario.
+
+## MISSING_EVAL
+
+Un comportamiento relevante no está protegido por eval.
+
+## SCRIPT_GAP
+
+Una tarea determinista repetida debería mejorar o incorporarse a un script.
+
+## SKILL_GAP
+
+La responsabilidad actual del skill no cubre correctamente una necesidad real.
+
+## SIMPLIFICATION
+
+Existe una forma más pequeña y clara de mantener el mismo contrato.
+
+## AUTOMATION_CANDIDATE
+
+Existe trabajo repetitivo y determinista que podría automatizarse.
+
+No implica que deba automatizarse inmediatamente.
 
 ## Recurrencia
 
-No convertir automáticamente una observación individual en una regla global.
-
-Clasificar recurrencia:
+Clasificar:
 
 - `ISOLATED`
 - `REPEATED`
@@ -131,148 +190,164 @@ Clasificar recurrencia:
 
 ### ISOLATED
 
-Aparece en una ejecución y puede depender del repositorio.
+Una única ejecución conocida.
 
 ### REPEATED
 
-Aparece en varias ejecuciones independientes.
+Aparece en varias ejecuciones o casos.
 
 ### SYSTEMIC
 
-La evidencia indica que el comportamiento deriva directamente del diseño actual del skill.
+La causa pertenece al contrato, arquitectura o herramienta y puede afectar ampliamente.
 
 ### UNKNOWN
 
-No existe suficiente evidencia para determinar recurrencia.
+No existe evidencia suficiente para clasificar recurrencia.
 
 ## Impacto
 
-Clasificar:
+Usar:
 
 - `LOW`
 - `MEDIUM`
 - `HIGH`
 - `CRITICAL`
 
-Considerar impacto sobre:
+`CRITICAL` debe reservarse para problemas como:
 
 - seguridad;
-- comportamiento;
-- exactitud;
-- bloqueo innecesario;
-- cambios incorrectos;
-- pérdida de Functions;
-- compatibilidad;
-- uso excesivo de contexto;
-- mantenibilidad del toolkit.
+- pérdida de comportamiento;
+- corrupción de artefactos;
+- migración incorrecta;
+- incumplimiento sistemático de gates esenciales.
 
-No asignar impacto alto únicamente porque una mejora sea conveniente.
+## Costo del cambio
 
-## Costo de mejora
-
-Estimar cualitativamente:
+Usar:
 
 - `LOW`
 - `MEDIUM`
 - `HIGH`
 
-Considerar:
+Evaluar cualitativamente:
 
-- modificación de instrucciones;
-- modificación de script;
-- nuevos evals;
-- riesgo de romper casos existentes;
-- complejidad añadida.
+- archivos afectados;
+- riesgo;
+- complejidad;
+- evals necesarias;
+- scripts involucrados.
 
-## Principio de mejora
+## Revisión de arquitectura
 
-Preferir:
+Cuando el finding esté relacionado con refactor o estructura, contrastar con:
 
-`regla más simple que resuelve el problema`
+`../_shared/architecture-policy.md`
 
-sobre:
+Detectar por ejemplo:
 
-`más instrucciones`
+- lógica funcional introducida nuevamente en Azure adapters;
+- capas vacías creadas por convención;
+- shared convertido en carpeta genérica;
+- ownership duplicado;
+- infraestructura acoplada innecesariamente.
 
-Una mejora no debe aprobarse solamente porque añade cobertura.
+## Revisión de shared resources
 
-Evaluar también si:
+Detectar:
 
-- aumenta complejidad;
-- duplica otra regla;
-- contradice una política compartida;
-- agrega contexto permanente;
-- puede resolverse mejor mediante un script determinista;
-- corresponde realmente a otro skill.
+- mismo recurso modificado por varios owners;
+- acciones `SR-ACTION-*` duplicadas;
+- recursos fusionados únicamente por tecnología;
+- consumidores no registrados;
+- ownership contradictorio.
 
-## Detección de responsabilidad incorrecta
+## Revisión de artefactos
 
-Identificar cuando un skill esté haciendo trabajo que pertenece a otro.
+Buscar inconsistencias entre owners.
 
 Ejemplos:
 
-- discovery evaluando compatibilidad;
-- assessment refactorizando;
+`inventory.json`
+
+dice que una Function existe pero el plan no la considera.
+
+`analysis.json`
+
+contiene una acción `FN-*` que el plan ignora sin justificación.
+
+`shared-resources.json`
+
+declara un owner distinto al utilizado durante preparation.
+
+`verification.json`
+
+declara `VERIFIED` con un gate obligatorio en `FAIL`.
+
+## Responsabilidad
+
+Detectar responsibility leakage.
+
+Ejemplos:
+
+- discovery proponiendo refactors;
+- assessment generando pasos concretos;
 - analyze modificando código;
-- plan reanalizando Functions;
-- verify corrigiendo fallos.
-
-Clasificarlo como:
-
-`SKILL_GAP`
-
-o:
-
-`SIMPLIFICATION`
-
-según el caso.
+- planning reanalizando toda la App;
+- preparation migrando Programming Model;
+- migration rediseñando arquitectura;
+- verification corrigiendo fallos.
 
 ## Scripts
 
-Cuando un problema corresponda a descubrimiento determinista, evaluar primero si debe resolverse en un script propio.
+Cuando un problema:
 
-Ejemplo:
+- sea repetido;
+- sea determinista;
+- pueda detectarse sin razonamiento complejo;
 
-varios falsos negativos al detectar registros v4.
+evaluar si corresponde un `SCRIPT_GAP`.
 
-Puede generar:
-
-`SCRIPT_GAP`
-
-No mover automáticamente toda lógica de IA a scripts.
-
-Automatizar únicamente cuando el comportamiento sea suficientemente determinista y repetible.
+No mover automáticamente lógica hacia scripts.
 
 ## Evals
 
-Comparar los hallazgos con los evals existentes.
+Cuando un fallo real no esté protegido:
 
-Si un fallo real no está protegido:
-
-registrar:
+crear finding:
 
 `MISSING_EVAL`
 
-Una mejora de implementación debe incluir, cuando corresponda, un eval que reproduzca el caso antes de modificar el
-skill.
+La propuesta debe indicar el escenario mínimo que debería agregarse.
+
+## Simplificación
+
+Preferir:
+
+- regla más clara;
+- menos instrucciones;
+- owner único;
+- menos artefactos;
+- menos contexto;
+
+sobre agregar excepciones acumulativas.
 
 ## Propuestas
 
-Cada propuesta debe indicar:
+Cada propuesta debe registrar:
 
-- skill afectado;
-- problema;
-- evidencia;
-- recurrencia;
-- impacto;
-- cambio propuesto;
-- archivos potencialmente afectados;
-- eval requerido;
-- costo estimado;
-- riesgo de la mejora;
-- prioridad.
-
-No escribir directamente el cambio.
+- skill;
+- problem;
+- evidence;
+- findingType;
+- recurrence;
+- impact;
+- proposedChange;
+- affectedFiles;
+- requiredEval;
+- changeCost;
+- risk;
+- priority;
+- recommendation.
 
 ## Prioridad
 
@@ -285,25 +360,23 @@ Usar:
 
 ### P0
 
-Problema crítico de seguridad o riesgo grave de comportamiento incorrecto.
+Seguridad o fallo crítico.
 
 ### P1
 
-Fallo importante y reproducible que afecta migraciones.
+Problema importante y reproducible que afecta corrección.
 
 ### P2
 
-Mejora relevante de precisión, robustez o eficiencia.
+Robustez, mantenibilidad o eficiencia.
 
 ### P3
 
-Simplificación o mejora menor no urgente.
+Mejora menor.
 
-No utilizar prioridad alta para preferencias estilísticas.
+## Recommendation
 
-## Recomendación
-
-Cada propuesta debe terminar en uno de estos estados:
+Usar:
 
 - `RECOMMEND`
 - `MONITOR`
@@ -312,69 +385,19 @@ Cada propuesta debe terminar en uno de estos estados:
 
 ### RECOMMEND
 
-Existe evidencia suficiente para proponer modificación.
+Existe evidencia suficiente y la mejora está justificada.
 
 ### MONITOR
 
-El caso es válido pero todavía parece aislado.
+El problema existe pero todavía no justifica cambio.
 
 ### REJECT
 
-La propuesta añadiría más complejidad que valor o contradice principios existentes.
+La propuesta añadiría complejidad o no resuelve un problema real.
 
 ### NEEDS_MORE_EVIDENCE
 
-La evidencia no permite decidir.
-
-## Plan de mejora
-
-Agrupar únicamente propuestas `RECOMMEND`.
-
-Ordenarlas considerando:
-
-1. seguridad;
-2. exactitud;
-3. riesgo funcional;
-4. recurrencia;
-5. reducción de bloqueos;
-6. simplificación;
-7. eficiencia de contexto.
-
-No agrupar automáticamente todas las observaciones en el plan.
-
-## Ciclo de aplicación
-
-Este capability solo genera propuestas.
-
-El flujo posterior es:
-
-`hallazgo`
-
-→ `propuesta`
-
-→ `revisión humana`
-
-→ `modificación del skill`
-
-→ `ejecución de evals`
-
-→ `aceptación o rechazo`
-
-No saltar la revisión humana.
-
-## Cambios a políticas compartidas
-
-Una lección local no debe modificar automáticamente:
-
-- `evidence-policy.md`;
-- `security-policy.md`;
-- `lessons-policy.md`.
-
-Proponer cambios a políticas compartidas únicamente cuando:
-
-- el problema afecte varios skills;
-- exista evidencia suficiente;
-- la regla sea realmente transversal.
+La evidencia actual no permite decidir.
 
 ## Salidas
 
@@ -388,151 +411,52 @@ Crear:
 
 `.skill-improvement/improvement-plan.md`
 
-No modificar:
-
-`.github/skills/**`
-
-durante esta ejecución.
-
-## assessment.json
-
-Debe contener como mínimo:
-
-- metadata;
-- ejecuciones analizadas;
-- skills analizados;
-- hallazgos;
-- recurrencia;
-- impacto;
-- evidencia;
-- recomendaciones;
-- unknowns.
-
-## assessment.md
-
-Debe explicar brevemente:
-
-- qué skills fueron evaluados;
-- principales problemas encontrados;
-- qué parece aislado;
-- qué parece recurrente;
-- qué funciona correctamente;
-- qué requiere más evidencia.
-
-No debe ser un volcado del JSON.
-
-## improvement-plan.json
-
-Debe incluir únicamente propuestas recomendadas.
-
-Cada mejora debe contener:
-
-- id;
-- skill;
-- priority;
-- problem;
-- proposedChange;
-- targetFiles;
-- requiredEval;
-- expectedBenefit;
-- risk;
-- status.
-
-El estado inicial debe ser:
-
-`PROPOSED`
-
-Ejemplo conceptual:
-
-    {
-      "id": "IMP-001",
-      "skill": "discover-function-app",
-      "priority": "P1",
-      "problem": "El script no detecta múltiples registros v4 del mismo tipo dentro de un archivo.",
-      "proposedChange": "Ajustar la detección para recorrer todas las coincidencias.",
-      "targetFiles": [
-        ".github/skills/discover-function-app/scripts/inventory.js",
-        ".github/skills/discover-function-app/scripts/inventory.test.js"
-      ],
-      "requiredEval": "Agregar caso con dos app.http en el mismo archivo.",
-      "status": "PROPOSED"
-    }
-
-## improvement-plan.md
-
-Debe presentar al developer:
-
-- mejoras propuestas;
-- prioridad;
-- evidencia;
-- beneficio esperado;
-- riesgo;
-- eval requerido;
-- decisión pendiente.
-
-Debe permitir aprobar o rechazar cada mejora de forma independiente.
-
-## Sin hallazgos relevantes
-
-Una ejecución válida puede concluir que no se requieren cambios.
-
-En ese caso:
-
-`improvement-plan.json`
-
-debe contener:
-
-`improvements = []`
-
-No inventar mejoras.
-
-## Lecciones del reviewer
-
-Este capability también puede producir lecciones sobre su propia capacidad de análisis.
-
-Crear:
-
-`.skill-improvement/lessons/review-skill-performance.json`
-
-`.skill-improvement/lessons/review-skill-performance.md`
-
-Aplicar:
+Y sus lessons según:
 
 `../_shared/lessons-policy.md`
 
-El reviewer tampoco se auto-modifica.
+## assessment.json
+
+Debe contener:
+
+- scope;
+- executionsReviewed;
+- findings;
+- patterns;
+- status inconsistencies;
+- ID inconsistencies;
+- architecture findings;
+- shared resource findings;
+- unknowns.
+
+## improvement-plan.json
+
+Debe contener propuestas priorizadas.
+
+No debe modificar los archivos objetivo.
 
 ## Criterio de cierre
 
 El capability termina cuando:
 
-- las ejecuciones seleccionadas fueron identificadas;
-- las lessons fueron consumidas primero;
-- se leyó únicamente evidencia adicional necesaria;
-- los hallazgos fueron clasificados;
-- se distinguieron casos aislados de recurrentes;
-- impacto y costo fueron evaluados;
-- los evals existentes fueron considerados;
-- las propuestas recomendadas fueron separadas de observaciones débiles;
-- no se modificaron skills;
-- se generaron assessment;
-- se generó improvement plan;
-- se generaron lessons del reviewer.
+- se revisó evidencia real;
+- cada finding tiene soporte;
+- recurrencia e impacto fueron evaluados;
+- inconsistencias semánticas fueron identificadas;
+- propuestas son proporcionales al problema;
+- evals faltantes fueron señaladas;
+- no se modificó automáticamente el toolkit.
 
 ## Fuera de alcance
 
-Este capability no debe:
+No debe:
 
-- modificar `SKILL.md`;
-- modificar scripts;
-- modificar evals;
-- modificar políticas;
-- ejecutar migraciones;
-- corregir repositorios objetivo;
-- convertir cada lección en una regla;
-- aprobar automáticamente sus propias propuestas;
-- introducir optimizaciones sin evidencia.
+- aplicar las propuestas;
+- editar skills;
+- editar scripts;
+- editar evals;
+- cambiar policies;
+- cambiar templates;
+- inventar problemas para justificar mejoras.
 
-El siguiente paso requiere revisión humana de:
-
-`.skill-improvement/improvement-plan.md`
+El siguiente paso después de una propuesta es revisión humana.

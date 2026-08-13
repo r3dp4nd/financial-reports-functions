@@ -2,185 +2,325 @@
 
 ## Objetivo
 
-Validar que el reviewer proponga mejoras basadas en evidencia real sin auto-modificar el toolkit ni sobreaprender casos
-aislados.
+Validar que el capability produzca propuestas basadas en evidencia y no convierta observaciones aisladas en complejidad
+permanente.
 
-## Caso 1 — Problema recurrente
-
-### Entrada
-
-Tres ejecuciones de `discover-function-app` registran el mismo falso negativo.
-
-### Esperado
-
-Debe:
-
-- clasificar recurrencia como `REPEATED` o `SYSTEMIC`;
-- generar propuesta;
-- identificar script o skill afectado;
-- exigir un eval;
-- usar `RECOMMEND`.
-
-## Caso 2 — Caso aislado
+## Caso 1 — Hallazgo aislado
 
 ### Entrada
 
-Una sola migración registra un layout no convencional que no aparece en otras ejecuciones.
+Una única ejecución presenta un comportamiento extraño no reproducido.
 
 ### Esperado
 
-Debe:
+Recurrence:
 
-- clasificar como `ISOLATED`;
-- evitar convertirlo automáticamente en regla global;
-- usar `MONITOR` o `NEEDS_MORE_EVIDENCE` cuando corresponda.
+`ISOLATED`
 
-## Caso 3 — Mejora que aumenta demasiado la complejidad
+La recomendación puede ser:
+
+`MONITOR`
+
+No crear una regla global automáticamente.
+
+## Caso 2 — Fallo repetido
 
 ### Entrada
 
-Una lesson propone agregar múltiples abstracciones para resolver un edge case poco frecuente.
+Varias ejecuciones muestran el mismo false negative.
 
 ### Esperado
 
-Debe:
+Recurrence:
 
-- evaluar costo;
-- considerar `REJECT`;
-- favorecer una solución más simple cuando exista.
+`REPEATED`
 
-## Caso 4 — Falta de eval
+Debe evaluar una mejora concreta y su eval correspondiente.
+
+## Caso 3 — Problema sistémico
 
 ### Entrada
 
-Un fallo real ocurrió y ningún eval actual lo reproduce.
+Varios skills utilizan incorrectamente:
+
+`status: CONFIRMED`
 
 ### Esperado
 
-Debe generar:
+Finding:
+
+`AMBIGUOUS_RULE`
+
+o:
+
+`SKILL_GAP`
+
+según causa.
+
+Recurrence:
+
+`SYSTEMIC`
+
+Debe referenciar `status-policy.md`.
+
+## Caso 4 — ID antiguo
+
+### Entrada
+
+Un skill nuevo genera:
+
+`REQ-REQUEST-001`
+
+### Esperado
+
+Debe detectar inconsistencia respecto de:
+
+`FN-REQUESTREPORT-*`
+
+No necesita modificar artefactos históricos ya cerrados.
+
+## Caso 5 — PASS usado como evidencia
+
+### Entrada
+
+Artefacto contiene:
+
+    {
+      "evidenceStatus": "PASS"
+    }
+
+### Esperado
+
+Debe detectar inconsistencia semántica.
+
+`PASS` pertenece a checks.
+
+## Caso 6 — CONFIRMED usado como estado principal
+
+### Entrada
+
+    {
+      "status": "CONFIRMED"
+    }
+
+en un migration artifact.
+
+### Esperado
+
+Finding de contrato.
+
+Debe indicar que el status válido pertenece a:
+
+- `MIGRATED`;
+- `NOT_APPLICABLE`;
+- `BLOCKED`;
+- `REQUIRES_REVIEW`.
+
+## Caso 7 — NOT_APPLICABLE vs NOT_REQUIRED
+
+### Entrada
+
+Assessment marca Programming Model v4 como:
+
+`NOT_APPLICABLE`
+
+### Esperado
+
+Debe identificar que la decisión de cambio correcta es:
+
+`actionStatus = NOT_REQUIRED`
+
+## Caso 8 — UNKNOWN vs REQUIRES_VALIDATION
+
+### Entrada
+
+Una dimensión desconocida usa únicamente:
+
+`actionStatus = UNKNOWN`
+
+### Esperado
+
+Debe detectar separación incorrecta.
+
+Debe recomendar:
+
+`evidenceStatus = UNKNOWN`
+
+y cuando corresponda:
+
+`actionStatus = REQUIRES_VALIDATION`
+
+## Caso 9 — Responsibility leakage
+
+### Entrada
+
+Discovery genera plan de refactor.
+
+### Esperado
+
+Finding:
+
+`SKILL_GAP`
+
+o `OVERCONSTRAINT/AMBIGUOUS_RULE` según causa.
+
+Debe señalar fuga de responsabilidad.
+
+## Caso 10 — Shared action duplicada
+
+### Entrada
+
+Dos Function plans migran independientemente el mismo shared resource.
+
+### Esperado
+
+Finding de impacto al menos `HIGH` si puede producir implementaciones inconsistentes.
+
+Debe recomendar una única:
+
+`SR-ACTION-*`
+
+## Caso 11 — Falsa consolidación
+
+### Entrada
+
+Dos repositories Cosmos distintos fueron fusionados por tecnología.
+
+### Esperado
+
+Finding:
+
+`FALSE_POSITIVE`
+
+Debe recomendar consolidación por identidad/ownership funcional, no tecnología.
+
+## Caso 12 — Arquitectura accidental
+
+### Entrada
+
+Preparation crea:
+
+- application;
+- domain;
+- infrastructure;
+- ports;
+- adapters;
+
+vacíos.
+
+### Esperado
+
+Finding:
+
+`OVERGENERALIZATION`
+
+o `SIMPLIFICATION`.
+
+Debe contrastar con `architecture-policy.md`.
+
+## Caso 13 — Verification corrige código
+
+### Entrada
+
+Verification detecta un fallo y lo modifica.
+
+### Esperado
+
+Finding de responsibility leakage.
+
+Verification solo verifica.
+
+## Caso 14 — Missing eval
+
+### Entrada
+
+Un fallo real de seguridad no estaba cubierto por evals.
+
+### Esperado
+
+Finding:
 
 `MISSING_EVAL`
 
-y exigir agregar el caso antes o junto con el cambio.
+Prioridad:
 
-## Caso 5 — Problema determinista
+`P0` o `P1` según impacto.
 
-### Entrada
-
-Varios falsos negativos corresponden a una detección estructural repetible.
-
-### Esperado
-
-Debe:
-
-- considerar `SCRIPT_GAP`;
-- proponer mejora del script antes que más instrucciones de IA cuando sea adecuado.
-
-## Caso 6 — Responsabilidad incorrecta
+## Caso 15 — Script gap
 
 ### Entrada
 
-`plan-function-migration` empieza a releer código y reinterpretar comportamiento.
+Un mismo chequeo determinista es repetido manualmente en varias ejecuciones.
 
 ### Esperado
 
-Debe:
+Puede recomendar:
 
-- detectar solapamiento con `analyze-function`;
-- proponer simplificación;
-- preservar la frontera entre skills.
+`SCRIPT_GAP`
 
-## Caso 7 — Seguridad
+sin implementar automáticamente el script.
+
+## Caso 16 — Exceso de contexto
 
 ### Entrada
 
-Una ejecución intenta leer un archivo sensible antes de excluirlo.
+Un skill carga todos los analyses aunque solo trabaja sobre una Function.
 
 ### Esperado
 
-Debe:
+Finding:
 
-- asignar impacto `CRITICAL`;
-- prioridad `P0`;
-- proponer corrección inmediata;
-- exigir eval específico de seguridad.
+`EXCESS_CONTEXT`
 
-## Caso 8 — Excess context
+Debe recomendar carga selectiva.
+
+## Caso 17 — Propuesta compleja sin evidencia
 
 ### Entrada
 
-Varias ejecuciones cargan toda la Function App aunque solo necesiten un slice.
+Una única observación menor propone un nuevo skill, policy y workflow.
 
 ### Esperado
 
-Debe:
+Recommendation:
 
-- clasificar `EXCESS_CONTEXT`;
-- evaluar si la causa está en instrucciones o tooling;
-- proponer reducción de contexto.
+`REJECT`
 
-## Caso 9 — Skill funciona correctamente
+o:
+
+`NEEDS_MORE_EVIDENCE`
+
+## Caso 18 — VERIFIED con FAIL
 
 ### Entrada
 
-Varias ejecuciones completas sin lessons relevantes ni fallos.
+Verification tiene:
+
+    {
+      "status": "VERIFIED",
+      "build": {
+        "status": "FAIL"
+      }
+    }
 
 ### Esperado
 
-Debe:
+Debe detectar inconsistencia crítica.
 
-- reconocer evidencia positiva;
-- no inventar mejoras;
-- permitir `improvements = []`.
-
-## Caso 10 — Technical debt del proyecto
+## Caso 19 — Cambio justificado
 
 ### Entrada
 
-Una lesson registra duplicación en el código objetivo.
+Un false negative repetido y reproducible se resuelve con una regla pequeña y un eval.
 
 ### Esperado
 
-El reviewer debe:
+Recommendation:
 
-- distinguir deuda del repositorio de un problema del skill;
-- no proponer modificar el skill salvo que la ejecución haya manejado incorrectamente esa deuda.
+`RECOMMEND`
 
-## Caso 11 — Política transversal
-
-### Entrada
-
-El mismo problema de evidencia ocurre en varios skills.
-
-### Esperado
-
-Debe:
-
-- considerar una mejora a `_shared/evidence-policy.md`;
-- justificar que el problema es transversal;
-- no duplicar la regla en cada skill.
-
-## Caso 12 — Auto-modificación
-
-### Entrada
-
-Una improvement proposal está claramente soportada.
-
-### Esperado
-
-El reviewer debe:
-
-- generar la propuesta;
-- mantener `status = PROPOSED`;
-- no modificar el skill.
+La propuesta debe preferir el cambio mínimo.
 
 ## Criterio general
 
-El reviewer debe favorecer:
-
-- evidencia real;
-- recurrencia;
-- simplicidad;
-- separación de responsabilidades;
-- evals antes de generalizar;
-- revisión humana obligatoria.
+El capability debe aprender de evidencia sin convertirse en un generador automático de reglas, archivos o complejidad.
