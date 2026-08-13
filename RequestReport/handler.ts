@@ -1,4 +1,4 @@
-import {AzureFunction, Context, HttpRequest} from "@azure/functions";
+import {HttpRequest, HttpResponseInit, InvocationContext} from "@azure/functions";
 
 import {RequestReportUseCase} from "./application/request-report.use-case";
 import {RequestReportHttpRequest, RequestReportHttpResponse} from "./api/request-report.http.types";
@@ -10,100 +10,108 @@ export interface RequestReportHandlerDependencies {
   now: () => string;
 }
 
-export function createRequestReportHandler(dependencies: RequestReportHandlerDependencies): AzureFunction {
+export function createRequestReportHandler(dependencies: RequestReportHandlerDependencies) {
 
-  return async function (context: Context, req: HttpRequest): Promise<void> {
+  return async function (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
 
     try {
 
-      const body = req.body as RequestReportHttpRequest | undefined;
+      const body: RequestReportHttpRequest | undefined = await readRequestBody(request);
 
       if (!body) {
-
-        context.res = {
+        return {
           status: 400,
-          body: {
+          jsonBody: {
             code: "INVALID_REQUEST",
             message: "Request body is required"
           }
         };
-
-        return;
       }
 
-      const idempotencyKey = req.headers["x-idempotency-key"];
+      const idempotencyKey: string | null = request.headers.get("x-idempotency-key");
 
-      if (typeof idempotencyKey !== "string" || !idempotencyKey.trim()) {
+      if (!idempotencyKey?.trim()) {
 
-        context.res = {
+        return {
           status: 400,
-          body: {
+          jsonBody: {
             code: "INVALID_REQUEST",
             message: "x-idempotency-key header is required"
           }
         };
 
-        return;
       }
 
-      const result = await dependencies
-        .useCase
-        .execute({
-          idempotencyKey,
-          customerId: body.customerId,
-          from: body.from,
-          to: body.to,
-          requestedAt: dependencies.now()
-        });
+      const result = await dependencies.useCase.execute({
+        idempotencyKey,
+        customerId: body.customerId,
+        from: body.from,
+        to: body.to,
+        requestedAt: dependencies.now()
+      });
 
       const response: RequestReportHttpResponse = {
 
-        reportId: result.reportId,
-        status: result.status
+        reportId: result.reportId, status: result.status
       };
 
-      context.res = {
+      return {
         status: result.created ? 202 : 200,
-        body: response
+        jsonBody: response
       };
 
     } catch (error: unknown) {
 
       if (error instanceof RequestReportValidationError) {
 
-        context.res = {
+        return {
           status: 400,
-          body: {
+          jsonBody: {
             code: "INVALID_REQUEST",
             message: error.message
           }
         };
 
-        return;
       }
 
       if (error instanceof RequestReportConflictError) {
 
-        context.res = {
+        return {
           status: 409,
-          body: {
+          jsonBody: {
             code: "IDEMPOTENCY_CONFLICT",
             message: error.message
           }
         };
-
-        return;
       }
 
-      context.log.error("Unexpected error requesting report", error);
-
-      context.res = {
+      context.error("Unexpected error requesting report", error);
+      
+      return {
         status: 500,
-        body: {
+        jsonBody: {
           code: "INTERNAL_ERROR",
           message: "Unable to request report"
         }
       };
     }
   };
+}
+
+async function readRequestBody(request: HttpRequest): Promise<RequestReportHttpRequest | undefined> {
+
+  try {
+
+    const body = await request.json();
+
+    if (typeof body !== "object" || body === null) {
+      return undefined;
+    }
+
+    return body as RequestReportHttpRequest;
+
+  } catch {
+
+    return undefined;
+  }
 }
