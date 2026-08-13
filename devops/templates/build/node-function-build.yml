@@ -1,0 +1,317 @@
+parameters:
+  # ============================================================
+  # Agent / Node.js
+  # ============================================================
+
+  - name: vmImage
+    type: string
+    default: 'ubuntu-latest'
+
+  - name: nodeVersion
+    type: string
+    default: '24.x'
+
+  - name: nodeMajorVersion
+    type: number
+    default: 24
+
+  # ============================================================
+  # npm / build
+  # ============================================================
+
+  - name: installCommand
+    type: string
+    default: 'npm ci'
+
+  - name: buildCommand
+    type: string
+    default: 'npm run build'
+
+  - name: buildOutput
+    type: string
+    default: 'dist'
+
+  # ============================================================
+  # Tests
+  # ============================================================
+
+  - name: runTests
+    type: boolean
+    default: true
+
+  - name: testCommand
+    type: string
+    default: 'npm test'
+
+  # ============================================================
+  # Coverage
+  # ============================================================
+
+  - name: runCoverage
+    type: boolean
+    default: false
+
+  - name: coverageCommand
+    type: string
+    default: 'npm run test:coverage'
+
+  - name: coverageReportPath
+    type: string
+    default: 'coverage/lcov.info'
+
+  # ============================================================
+  # SonarQube
+  # ============================================================
+
+  - name: runSonar
+    type: boolean
+    default: false
+
+  - name: sonarServiceConnection
+    type: string
+    default: ''
+
+  - name: sonarProjectKey
+    type: string
+    default: ''
+
+  - name: sonarProjectName
+    type: string
+    default: ''
+
+  - name: sonarSources
+    type: string
+    default: '.'
+
+  - name: sonarExclusions
+    type: string
+    default: >
+      **/node_modules/**,
+      **/dist/**,
+      **/coverage/**,
+      **/*.spec.ts,
+      **/*.test.ts
+
+  - name: sonarCoverageExclusions
+    type: string
+    default: ''
+
+  # ============================================================
+  # Artifact
+  # ============================================================
+
+  - name: artifactName
+    type: string
+    default: 'function-app'
+
+  - name: packageFileName
+    type: string
+    default: 'function-app.zip'
+
+  - name: installProductionDependencies
+    type: boolean
+    default: true
+
+
+jobs:
+
+  - job: Build
+    displayName: Build Azure Function App
+
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+
+    steps:
+
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+
+      # ========================================================
+      # Node.js
+      # ========================================================
+
+      - task: UseNode@1
+        displayName: Use Node.js ${{ parameters.nodeVersion }}
+
+        inputs:
+          version: ${{ parameters.nodeVersion }}
+          checkLatest: false
+          force32bit: false
+
+
+      - script: >
+          node devops/scripts/validate-node.js
+          ${{ parameters.nodeMajorVersion }}
+        displayName: Validate Node.js contract
+
+
+      # ========================================================
+      # Dependencies
+      # ========================================================
+
+      - script: ${{ parameters.installCommand }}
+        displayName: Install dependencies
+
+
+      # ========================================================
+      # SonarQube preparation
+      # ========================================================
+
+      - ${{ if eq(parameters.runSonar, true) }}:
+
+          - task: SonarQubePrepare@8
+            displayName: Prepare SonarQube analysis
+
+            inputs:
+              SonarQube: ${{ parameters.sonarServiceConnection }}
+
+              scannerMode: 'cli'
+
+              configMode: 'manual'
+
+              cliProjectKey: ${{ parameters.sonarProjectKey }}
+
+              cliProjectName: ${{ parameters.sonarProjectName }}
+
+              cliSources: ${{ parameters.sonarSources }}
+
+              extraProperties: |
+                sonar.exclusions=${{ parameters.sonarExclusions }}
+
+                ${{ if ne(parameters.sonarCoverageExclusions, '') }}:
+                  sonar.coverage.exclusions=${{ parameters.sonarCoverageExclusions }}
+
+                ${{ if eq(parameters.runCoverage, true) }}:
+                  sonar.javascript.lcov.reportPaths=${{ parameters.coverageReportPath }}
+
+
+      # ========================================================
+      # Tests / Coverage
+      # ========================================================
+
+      - ${{ if eq(parameters.runCoverage, true) }}:
+
+          - script: ${{ parameters.coverageCommand }}
+            displayName: Run tests with coverage
+
+
+      - ${{ elseif eq(parameters.runTests, true) }}:
+
+          - script: ${{ parameters.testCommand }}
+            displayName: Run tests
+
+
+      # ========================================================
+      # Build
+      # ========================================================
+
+      - script: ${{ parameters.buildCommand }}
+        displayName: Build production application
+
+
+      - script: >
+          node devops/scripts/validate-build-output.js
+          ${{ parameters.buildOutput }}
+        displayName: Validate build output
+
+
+      # ========================================================
+      # SonarQube
+      # ========================================================
+
+      - ${{ if eq(parameters.runSonar, true) }}:
+
+          - task: SonarQubeAnalyze@8
+            displayName: Run SonarQube analysis
+
+
+          - task: SonarQubePublish@8
+            displayName: Publish SonarQube Quality Gate
+
+
+      # ========================================================
+      # Package staging
+      # ========================================================
+
+      - task: CopyFiles@2
+        displayName: Prepare deployment directory
+
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+
+          Contents: |
+            ${{ parameters.buildOutput }}/**
+            host.json
+            package.json
+            package-lock.json
+
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/package'
+
+          CleanTargetFolder: true
+
+
+      # ========================================================
+      # Production dependencies
+      # ========================================================
+
+      - ${{ if eq(parameters.installProductionDependencies, true) }}:
+
+          - script: npm ci --omit=dev
+            displayName: Install production dependencies
+
+            workingDirectory: '$(Build.ArtifactStagingDirectory)/package'
+
+
+      # ========================================================
+      # Manifest
+      # ========================================================
+
+      - script: >
+          node devops/scripts/create-build-manifest.js
+          "$(Build.ArtifactStagingDirectory)/package"
+          "${{ parameters.packageFileName }}"
+        displayName: Create build manifest
+
+
+      # ========================================================
+      # ZIP
+      # ========================================================
+
+      - task: ArchiveFiles@2
+        displayName: Create immutable deployment package
+
+        inputs:
+          rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
+
+          includeRootFolder: false
+
+          archiveType: 'zip'
+
+          archiveFile: '$(Build.ArtifactStagingDirectory)/${{ parameters.packageFileName }}'
+
+          replaceExistingArchive: true
+
+
+      # ========================================================
+      # Checksum
+      # ========================================================
+
+      - script: >
+          node devops/scripts/create-checksum.js
+          "$(Build.ArtifactStagingDirectory)/${{ parameters.packageFileName }}"
+        displayName: Generate artifact SHA-256
+
+
+      # ========================================================
+      # Publish
+      # ========================================================
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish immutable deployment artifact
+
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+
+          artifact: ${{ parameters.artifactName }}

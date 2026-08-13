@@ -1,0 +1,418 @@
+parameters:
+  # ─────────────────────────────────────────────
+  # Environment / Azure
+  # ─────────────────────────────────────────────
+
+  - name: environmentName
+    type: string
+
+  - name: azureServiceConnection
+    type: string
+
+  - name: functionAppName
+    type: string
+
+  - name: appType
+    type: string
+    default: 'functionAppLinux'
+
+  - name: isFlexConsumption
+    type: boolean
+    default: false
+
+  - name: runtimeStack
+    type: string
+    default: 'NODE|24'
+
+  # ─────────────────────────────────────────────
+  # Agent / Node
+  # ─────────────────────────────────────────────
+
+  - name: vmImage
+    type: string
+    default: 'ubuntu-latest'
+
+  - name: nodeVersion
+    type: string
+    default: '24.x'
+
+  # ─────────────────────────────────────────────
+  # npm / build
+  # ─────────────────────────────────────────────
+
+  - name: installCommand
+    type: string
+    default: 'npm ci'
+
+  - name: buildCommand
+    type: string
+    default: 'npm run build'
+
+  - name: buildOutput
+    type: string
+    default: 'dist'
+
+  # ─────────────────────────────────────────────
+  # Tests
+  # ─────────────────────────────────────────────
+
+  - name: runTests
+    type: boolean
+    default: true
+
+  - name: testCommand
+    type: string
+    default: 'npm test'
+
+  # ─────────────────────────────────────────────
+  # Coverage
+  # ─────────────────────────────────────────────
+
+  - name: runCoverage
+    type: boolean
+    default: false
+
+  - name: coverageCommand
+    type: string
+    default: 'npm run test:coverage'
+
+  - name: coverageReportPath
+    type: string
+    default: 'coverage/lcov.info'
+
+  # ─────────────────────────────────────────────
+  # SonarQube
+  # ─────────────────────────────────────────────
+
+  - name: runSonar
+    type: boolean
+    default: false
+
+  - name: sonarServiceConnection
+    type: string
+    default: ''
+
+  - name: sonarProjectKey
+    type: string
+    default: ''
+
+  - name: sonarProjectName
+    type: string
+    default: ''
+
+  - name: sonarSources
+    type: string
+    default: '.'
+
+  - name: sonarExclusions
+    type: string
+    default: >
+      **/node_modules/**,
+      **/dist/**,
+      **/coverage/**,
+      **/*.spec.ts,
+      **/*.test.ts
+
+  - name: sonarCoverageExclusions
+    type: string
+    default: ''
+
+  # ─────────────────────────────────────────────
+  # Package
+  # ─────────────────────────────────────────────
+
+  - name: artifactName
+    type: string
+    default: 'function-app'
+
+  - name: packageFileName
+    type: string
+    default: 'function-app.zip'
+
+  - name: installProductionDependencies
+    type: boolean
+    default: true
+
+  # ─────────────────────────────────────────────
+  # Deployment
+  # ─────────────────────────────────────────────
+
+  - name: deploymentMethod
+    type: string
+    default: 'runFromPackage'
+
+
+stages:
+
+  # ============================================================
+  # BUILD
+  # ============================================================
+
+  - stage: Build
+    displayName: Build and validate
+
+    jobs:
+
+      - job: Build
+        displayName: Build Azure Function App
+
+        pool:
+          vmImage: ${{ parameters.vmImage }}
+
+        steps:
+
+          # ------------------------------------------------------
+          # Checkout
+          # ------------------------------------------------------
+
+          - checkout: self
+            clean: true
+
+
+          # ------------------------------------------------------
+          # Node.js
+          # ------------------------------------------------------
+
+          - task: UseNode@1
+            displayName: Use Node.js ${{ parameters.nodeVersion }}
+            inputs:
+              version: ${{ parameters.nodeVersion }}
+
+
+          - script: |
+              node --version
+              npm --version
+            displayName: Verify Node.js toolchain
+
+
+          # ------------------------------------------------------
+          # Dependencies
+          # ------------------------------------------------------
+
+          - script: ${{ parameters.installCommand }}
+            displayName: Install dependencies
+
+
+          # ------------------------------------------------------
+          # SonarQube Prepare
+          # Must run before source analysis.
+          # ------------------------------------------------------
+
+          - ${{ if eq(parameters.runSonar, true) }}:
+
+              - task: SonarQubePrepare@8
+                displayName: Prepare SonarQube analysis
+
+                inputs:
+                  SonarQube: ${{ parameters.sonarServiceConnection }}
+
+                  scannerMode: 'cli'
+
+                  configMode: 'manual'
+
+                  cliProjectKey: ${{ parameters.sonarProjectKey }}
+
+                  cliProjectName: ${{ parameters.sonarProjectName }}
+
+                  cliSources: ${{ parameters.sonarSources }}
+
+                  extraProperties: |
+                    sonar.exclusions=${{ parameters.sonarExclusions }}
+
+                    ${{ if ne(parameters.sonarCoverageExclusions, '') }}:
+                      sonar.coverage.exclusions=${{ parameters.sonarCoverageExclusions }}
+
+                    ${{ if eq(parameters.runCoverage, true) }}:
+                      sonar.javascript.lcov.reportPaths=${{ parameters.coverageReportPath }}
+
+
+          # ------------------------------------------------------
+          # Tests / Coverage
+          #
+          # Coverage takes precedence because typically the
+          # coverage command already executes the tests.
+          # ------------------------------------------------------
+
+          - ${{ if eq(parameters.runCoverage, true) }}:
+
+              - script: ${{ parameters.coverageCommand }}
+                displayName: Run tests with coverage
+
+
+          - ${{ elseif eq(parameters.runTests, true) }}:
+
+              - script: ${{ parameters.testCommand }}
+                displayName: Run tests
+
+
+          # ------------------------------------------------------
+          # Build
+          # ------------------------------------------------------
+
+          - script: ${{ parameters.buildCommand }}
+            displayName: Build application
+
+
+          # ------------------------------------------------------
+          # SonarQube Analysis
+          # ------------------------------------------------------
+
+          - ${{ if eq(parameters.runSonar, true) }}:
+
+              - task: SonarQubeAnalyze@8
+                displayName: Run SonarQube analysis
+
+
+              - task: SonarQubePublish@8
+                displayName: Publish SonarQube Quality Gate
+
+
+          # ------------------------------------------------------
+          # Prepare deployment folder
+          #
+          # Explicit whitelist:
+          # only files required by Azure Functions runtime.
+          # ------------------------------------------------------
+
+          - task: CopyFiles@2
+            displayName: Prepare deployment package
+
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)'
+
+              Contents: |
+                ${{ parameters.buildOutput }}/**
+                host.json
+                package.json
+                package-lock.json
+
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/package'
+
+              CleanTargetFolder: true
+
+
+          # ------------------------------------------------------
+          # Production dependencies
+          # ------------------------------------------------------
+
+          - ${{ if eq(parameters.installProductionDependencies, true) }}:
+
+              - script: npm ci --omit=dev
+                displayName: Install production dependencies
+
+                workingDirectory: '$(Build.ArtifactStagingDirectory)/package'
+
+
+          # ------------------------------------------------------
+          # Package ZIP
+          #
+          # includeRootFolder=false is important:
+          #
+          # ZIP
+          # ├── host.json
+          # ├── package.json
+          # ├── dist/
+          # └── node_modules/
+          #
+          # not:
+          #
+          # package/
+          # └── host.json
+          # ------------------------------------------------------
+
+          - task: ArchiveFiles@2
+            displayName: Create deployment package
+
+            inputs:
+              rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
+
+              includeRootFolder: false
+
+              archiveType: 'zip'
+
+              archiveFile: '$(Build.ArtifactStagingDirectory)/${{ parameters.packageFileName }}'
+
+              replaceExistingArchive: true
+
+
+          # ------------------------------------------------------
+          # Publish immutable build artifact
+          # ------------------------------------------------------
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish deployment artifact
+
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/${{ parameters.packageFileName }}'
+
+              artifact: ${{ parameters.artifactName }}
+
+
+  # ============================================================
+  # DEPLOY
+  # ============================================================
+
+  - stage: Deploy
+    displayName: Deploy to ${{ upper(parameters.environmentName) }}
+
+    dependsOn:
+      - Build
+
+    condition: succeeded()
+
+    jobs:
+
+      - deployment: DeployFunctionApp
+        displayName: Deploy Azure Function App
+
+        pool:
+          vmImage: ${{ parameters.vmImage }}
+
+        environment: ${{ parameters.environmentName }}
+
+        strategy:
+
+          runOnce:
+
+            deploy:
+
+              steps:
+
+                # ------------------------------------------------
+                # Download artifact produced by Build
+                # ------------------------------------------------
+
+                - download: current
+                  artifact: ${{ parameters.artifactName }}
+
+
+                # ------------------------------------------------
+                # Azure Functions deployment
+                # ------------------------------------------------
+
+                - task: AzureFunctionApp@2
+                  displayName: Deploy Azure Function App
+
+                  inputs:
+                    azureSubscription: ${{ parameters.azureServiceConnection }}
+
+                    appType: ${{ parameters.appType }}
+
+                    appName: ${{ parameters.functionAppName }}
+
+                    package: '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
+
+
+                    # Flex Consumption has different deployment
+                    # semantics.
+
+                    ${{ if eq(parameters.isFlexConsumption, true) }}:
+
+                      isFlexConsumption: true
+
+
+                    ${{ if eq(parameters.isFlexConsumption, false) }}:
+
+                      runtimeStack: ${{ parameters.runtimeStack }}
+
+                      deploymentMethod: ${{ parameters.deploymentMethod }}

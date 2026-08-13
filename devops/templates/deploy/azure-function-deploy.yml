@@ -1,0 +1,149 @@
+parameters:
+  # ============================================================
+  # Environment
+  # ============================================================
+
+  - name: environmentName
+    type: string
+
+  # ============================================================
+  # Azure
+  # ============================================================
+
+  - name: azureServiceConnection
+    type: string
+
+  - name: functionAppName
+    type: string
+
+  - name: appType
+    type: string
+    default: 'functionAppLinux'
+
+  - name: isFlexConsumption
+    type: boolean
+    default: false
+
+  # ============================================================
+  # Agent
+  # ============================================================
+
+  - name: vmImage
+    type: string
+    default: 'ubuntu-latest'
+
+  # ============================================================
+  # Artifact
+  # ============================================================
+
+  - name: artifactName
+    type: string
+    default: 'function-app'
+
+  - name: packageFileName
+    type: string
+    default: 'function-app.zip'
+
+  # ============================================================
+  # Deployment
+  # ============================================================
+
+  - name: deploymentMethod
+    type: string
+    default: 'runFromPackage'
+
+  # ============================================================
+  # Smoke test
+  # ============================================================
+
+  - name: runSmokeTest
+    type: boolean
+    default: false
+
+  - name: smokeTestCommand
+    type: string
+    default: ''
+
+
+jobs:
+
+  - deployment: DeployFunctionApp
+    displayName: Deploy Azure Function App
+
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+
+    environment:
+      name: ${{ parameters.environmentName }}
+
+    strategy:
+
+      runOnce:
+
+        deploy:
+
+          steps:
+
+            # ==================================================
+            # Download artifact
+            # ==================================================
+
+            - download: current
+              artifact: ${{ parameters.artifactName }}
+
+
+            # ==================================================
+            # Verify immutable artifact
+            # ==================================================
+
+            - script: >
+                node
+                "$(Pipeline.Workspace)/${{ parameters.artifactName }}/tools/verify-checksum.js"
+                "$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}"
+                "$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}.sha256"
+              displayName: Verify artifact integrity
+
+
+            # ==================================================
+            # Deploy Azure Function App
+            # ==================================================
+
+            - task: AzureFunctionApp@2
+              displayName: Deploy Azure Function App
+
+              inputs:
+                azureSubscription:
+                  ${{ parameters.azureServiceConnection }}
+
+                appType:
+                  ${{ parameters.appType }}
+
+                appName:
+                  ${{ parameters.functionAppName }}
+
+                package:
+                  '$(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.packageFileName }}'
+
+
+                ${{ if eq(parameters.isFlexConsumption, true) }}:
+
+                  isFlexConsumption: true
+
+
+                ${{ if eq(parameters.isFlexConsumption, false) }}:
+
+                  deploymentMethod:
+                    ${{ parameters.deploymentMethod }}
+
+
+            # ==================================================
+            # Post-deployment validation
+            # ==================================================
+
+            - ${{ if eq(parameters.runSmokeTest, true) }}:
+
+                - script:
+                    ${{ parameters.smokeTestCommand }}
+
+                  displayName:
+                    Run post-deployment smoke test
