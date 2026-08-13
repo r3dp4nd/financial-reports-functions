@@ -8,10 +8,11 @@ name: function-prd-$(Date:yyyyMMdd).$(Rev:r)
 resources:
   pipelines:
 
-    - pipeline: stg
-      source: '<STG-PIPELINE-NAME>'
+    - pipeline: release
 
-      trigger: true
+      source: '<DEV-PIPELINE-NAME>'
+
+      trigger: none
 
 
 stages:
@@ -30,10 +31,8 @@ stages:
 
           functionAppName: '<FUNCTION-APP-PRD>'
 
-          artifactSource: 'stg'
+          artifactSource: 'release'
 
           artifactName: 'function-app'
-
-          republishArtifact: false
 
           isFlexConsumption: false

@@ -8,10 +8,11 @@ name: function-stg-$(Date:yyyyMMdd).$(Rev:r)
 resources:
   pipelines:
 
-    - pipeline: uat
-      source: '<UAT-PIPELINE-NAME>'
+    - pipeline: release
 
-      trigger: true
+      source: '<DEV-PIPELINE-NAME>'
+
+      trigger: none
 
 
 stages:
@@ -30,10 +31,8 @@ stages:
 
           functionAppName: '<FUNCTION-APP-STG>'
 
-          artifactSource: 'uat'
+          artifactSource: 'release'
 
           artifactName: 'function-app'
-
-          republishArtifact: true
 
           isFlexConsumption: false

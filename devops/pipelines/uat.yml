@@ -9,9 +9,10 @@ resources:
   pipelines:
 
     - pipeline: dev
+
       source: '<DEV-PIPELINE-NAME>'
 
-      trigger: true
+      trigger: none
 
 
 stages:
@@ -33,7 +34,5 @@ stages:
           artifactSource: 'dev'
 
           artifactName: 'function-app'
-
-          republishArtifact: true
 
           isFlexConsumption: false
