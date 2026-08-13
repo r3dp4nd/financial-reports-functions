@@ -1,59 +1,14 @@
-parameters:
-  - name: runTests
-    type: boolean
-    default: true
-
-  - name: runCoverage
-    type: boolean
-    default: false
-
-  - name: runSonar
-    type: boolean
-    default: false
-
-  - name: testCommand
-    type: string
-    default: 'npm test'
-
-  - name: coverageCommand
-    type: string
-    default: 'npm run test:coverage'
-
-  - name: buildCommand
-    type: string
-    default: 'npm run build'
-
-  - name: sonarServiceConnection
-    type: string
-    default: ''
-
-  - name: sonarProjectKey
-    type: string
-    default: ''
-
-  - name: sonarProjectName
-    type: string
-    default: ''
-
-  - name: artifactName
-    type: string
-    default: 'function-app'
-
-
 jobs:
-
   - job: Build
-    displayName: Build Azure Function App
+    displayName: Build release artifact
 
     pool:
       vmImage: 'ubuntu-latest'
 
     steps:
-
       - checkout: self
         clean: true
-        fetchDepth: 0
-
+        fetchDepth: 1
 
       - task: UseNode@1
         displayName: Use Node.js 24
@@ -63,83 +18,17 @@ jobs:
           checkLatest: false
           force32bit: false
 
-
-      - script: |
-          node --version
-          npm --version
-        displayName: Show tool versions
-
-
       - script: npm ci
         displayName: Install dependencies
 
-
-      - ${{ if eq(parameters.runSonar, true) }}:
-
-          - task: SonarQubePrepare@8
-            displayName: Prepare SonarQube
-
-            inputs:
-              SonarQube:
-                ${{ parameters.sonarServiceConnection }}
-
-              scannerMode:
-                'cli'
-
-              configMode:
-                'manual'
-
-              cliProjectKey:
-                ${{ parameters.sonarProjectKey }}
-
-              cliProjectName:
-                ${{ parameters.sonarProjectName }}
-
-              cliSources:
-                '.'
-
-
-      - ${{ if eq(parameters.runCoverage, true) }}:
-
-          - script:
-              ${{ parameters.coverageCommand }}
-
-            displayName:
-              Run tests with coverage
-
-
-      - ${{ elseif eq(parameters.runTests, true) }}:
-
-          - script:
-              ${{ parameters.testCommand }}
-
-            displayName:
-              Run tests
-
-
-      - script:
-          ${{ parameters.buildCommand }}
-
-        displayName:
-          Build production application
-
-
-      - ${{ if eq(parameters.runSonar, true) }}:
-
-          - task: SonarQubeAnalyze@8
-            displayName: Analyze with SonarQube
-
-
-          - task: SonarQubePublish@8
-            displayName: Publish SonarQube Quality Gate
-
+      - script: npm run build:prod
+        displayName: Build production application
 
       - task: CopyFiles@2
-        displayName: Prepare Function App package
+        displayName: Prepare deployment package
 
         inputs:
-          SourceFolder:
-            '$(Build.SourcesDirectory)'
+          SourceFolder: '$(Build.SourcesDirectory)'
 
           Contents: |
             dist/**
@@ -147,46 +36,33 @@ jobs:
             package.json
             package-lock.json
 
-          TargetFolder:
-            '$(Build.ArtifactStagingDirectory)/package'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/package'
 
-          CleanTargetFolder:
-            true
-
+          CleanTargetFolder: true
 
       - script: npm ci --omit=dev
         displayName: Install production dependencies
 
-        workingDirectory:
-          '$(Build.ArtifactStagingDirectory)/package'
-
+        workingDirectory: '$(Build.ArtifactStagingDirectory)/package'
 
       - task: ArchiveFiles@2
         displayName: Create deployment ZIP
 
         inputs:
-          rootFolderOrFile:
-            '$(Build.ArtifactStagingDirectory)/package'
+          rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
 
-          includeRootFolder:
-            false
+          includeRootFolder: false
 
-          archiveType:
-            'zip'
+          archiveType: 'zip'
 
-          archiveFile:
-            '$(Build.ArtifactStagingDirectory)/function-app.zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/function-app.zip'
 
-          replaceExistingArchive:
-            true
-
+          replaceExistingArchive: true
 
       - task: PublishPipelineArtifact@1
-        displayName: Publish deployment artifact
+        displayName: Publish release artifact
 
         inputs:
-          targetPath:
-            '$(Build.ArtifactStagingDirectory)/function-app.zip'
+          targetPath: '$(Build.ArtifactStagingDirectory)/function-app.zip'
 
-          artifact:
-            ${{ parameters.artifactName }}
+          artifact: 'function-app'

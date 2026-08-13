@@ -2,35 +2,26 @@ trigger: none
 
 pr: none
 
-name: function-uat-$(Date:yyyyMMdd).$(Rev:r)
+name: cd-uat-$(Date:yyyyMMdd).$(Rev:r)
 
 
 resources:
   pipelines:
-
     - pipeline: release
-
-      source: '<DEV-PIPELINE-NAME>'
-
-      trigger: none
+      source: '<CD-DEV-PIPELINE-NAME>'
+      trigger: true
 
 
 stages:
-
   - stage: Deploy_UAT
     displayName: Deploy UAT
 
     jobs:
-
       - template: ../templates/deploy.yml
 
         parameters:
           environmentName: '<ENVIRONMENT-UAT>'
-
           azureServiceConnection: '<SERVICE-CONNECTION-UAT>'
-
           functionAppName: '<FUNCTION-APP-UAT>'
-
           artifactSource: 'release'
-
-          isFlexConsumption: false
+          publishArtifact: true

@@ -10,20 +10,11 @@ parameters:
 
   - name: artifactSource
     type: string
-    default: 'current'
-
-  - name: artifactName
-    type: string
-    default: 'function-app'
-
-  - name: isFlexConsumption
-    type: boolean
-    default: false
 
 
 jobs:
 
-  - deployment: DeployFunctionApp
+  - deployment: Deploy
     displayName: Deploy Azure Function App
 
     pool:
@@ -33,11 +24,8 @@ jobs:
       name: ${{ parameters.environmentName }}
 
     strategy:
-
       runOnce:
-
         deploy:
-
           steps:
 
             - download: none
@@ -46,18 +34,30 @@ jobs:
             - ${{ if eq(parameters.artifactSource, 'current') }}:
 
                 - download: current
-                  artifact: ${{ parameters.artifactName }}
+                  artifact: function-app
+
+
+                - task: AzureFunctionApp@2
+                  displayName: Deploy Azure Function App
+
+                  inputs:
+                    azureSubscription: ${{ parameters.azureServiceConnection }}
+
+                    appType: 'functionAppLinux'
+
+                    appName: ${{ parameters.functionAppName }}
+
+                    package: '$(Pipeline.Workspace)/function-app/function-app.zip'
+
+                    deploymentMethod: 'auto'
 
 
             - ${{ if ne(parameters.artifactSource, 'current') }}:
 
                 - download: ${{ parameters.artifactSource }}
 
-                  artifact: ${{ parameters.artifactName }}
+                  artifact: function-app
 
-
-            # DEV artifact path
-            - ${{ if and(eq(parameters.artifactSource, 'current'),eq(parameters.isFlexConsumption, false)) }}:
 
                 - task: AzureFunctionApp@2
                   displayName: Deploy Azure Function App
@@ -69,60 +69,6 @@ jobs:
 
                     appName: ${{ parameters.functionAppName }}
 
-                    package: '$(Pipeline.Workspace)/${{ parameters.artifactName }}/function-app.zip'
+                    package: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/function-app/function-app.zip'
 
                     deploymentMethod: 'auto'
-
-
-            # Promoted artifact path
-            - ${{if and(ne(parameters.artifactSource, 'current'),eq(parameters.isFlexConsumption, false))}}:
-
-                - task: AzureFunctionApp@2
-                  displayName: Deploy Azure Function App
-
-                  inputs:
-                    azureSubscription: ${{ parameters.azureServiceConnection }}
-
-                    appType: 'functionAppLinux'
-
-                    appName: ${{ parameters.functionAppName }}
-
-                    package: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/${{ parameters.artifactName }}/function-app.zip'
-
-                    deploymentMethod: 'auto'
-
-
-            # DEV Flex
-            - ${{ if and(eq(parameters.artifactSource, 'current'),eq(parameters.isFlexConsumption, true)) }}:
-
-                - task: AzureFunctionApp@2
-                  displayName: Deploy Azure Function App
-
-                  inputs:
-                    azureSubscription: ${{ parameters.azureServiceConnection }}
-
-                    appType: 'functionAppLinux'
-
-                    isFlexConsumption: true
-
-                    appName: ${{ parameters.functionAppName }}
-
-                    package: '$(Pipeline.Workspace)/${{ parameters.artifactName }}/function-app.zip'
-
-
-            # Promoted Flex
-            - ${{ if and(ne(parameters.artifactSource, 'current'),eq(parameters.isFlexConsumption, true)) }}:
-
-                - task: AzureFunctionApp@2
-                  displayName: Deploy Azure Function App
-
-                  inputs:
-                    azureSubscription: ${{ parameters.azureServiceConnection }}
-
-                    appType: 'functionAppLinux'
-
-                    isFlexConsumption: true
-
-                    appName: ${{ parameters.functionAppName }}
-
-                    package: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/${{ parameters.artifactName }}/function-app.zip'

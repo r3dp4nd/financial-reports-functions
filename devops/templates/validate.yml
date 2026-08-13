@@ -1,0 +1,46 @@
+jobs:
+  - job: Validate
+    displayName: Validate Pull Request
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 0
+
+      - task: UseNode@1
+        displayName: Use Node.js 24
+
+        inputs:
+          version: '24.x'
+          checkLatest: false
+          force32bit: false
+
+      - script: npm ci
+        displayName: Install dependencies
+
+      - task: SonarQubePrepare@8
+        displayName: Prepare SonarQube analysis
+
+        inputs:
+          SonarQube: '<SONAR-SERVICE-CONNECTION>'
+          scannerMode: 'cli'
+          configMode: 'manual'
+          cliProjectKey: '<SONAR-PROJECT-KEY>'
+          cliProjectName: '<SONAR-PROJECT-NAME>'
+          cliSources: '.'
+
+          extraProperties: |
+            sonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts,**/*.test.ts
+            sonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+      - script: npm run test:coverage
+        displayName: Run tests with coverage
+
+      - task: SonarQubeAnalyze@8
+        displayName: Run SonarQube analysis
+
+      - task: SonarQubePublish@8
+        displayName: Publish SonarQube Quality Gate

@@ -1,0 +1,36 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr: none
+
+name: cd-dev-$(Date:yyyyMMdd).$(Rev:r)
+
+
+stages:
+
+  - stage: Build
+    displayName: Build release
+
+    jobs:
+      - template: ../templates/build.yml
+
+
+  - stage: Deploy_DEV
+    displayName: Deploy DEV
+
+    dependsOn:
+      - Build
+
+    condition: succeeded()
+
+    jobs:
+      - template: ../templates/deploy.yml
+
+        parameters:
+          environmentName: '<ENVIRONMENT-DEV>'
+          azureServiceConnection: '<SERVICE-CONNECTION-DEV>'
+          functionAppName: '<FUNCTION-APP-DEV>'
+
+          artifactSource: 'current'

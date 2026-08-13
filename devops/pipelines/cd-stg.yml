@@ -2,35 +2,26 @@ trigger: none
 
 pr: none
 
-name: function-stg-$(Date:yyyyMMdd).$(Rev:r)
+name: cd-stg-$(Date:yyyyMMdd).$(Rev:r)
 
 
 resources:
   pipelines:
-
     - pipeline: release
-
-      source: '<DEV-PIPELINE-NAME>'
-
-      trigger: none
+      source: '<CD-UAT-PIPELINE-NAME>'
+      trigger: true
 
 
 stages:
-
   - stage: Deploy_STG
     displayName: Deploy STG
 
     jobs:
-
       - template: ../templates/deploy.yml
 
         parameters:
           environmentName: '<ENVIRONMENT-STG>'
-
           azureServiceConnection: '<SERVICE-CONNECTION-STG>'
-
           functionAppName: '<FUNCTION-APP-STG>'
-
           artifactSource: 'release'
-
-          isFlexConsumption: false
+          publishArtifact: true

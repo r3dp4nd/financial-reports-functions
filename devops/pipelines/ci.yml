@@ -1,0 +1,16 @@
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+
+name: ci-pr-$(Date:yyyyMMdd).$(Rev:r)
+
+
+stages:
+  - stage: Validate
+    displayName: Validate PR
+
+    jobs:
+      - template: ../templates/validate.yml
