@@ -20,7 +20,7 @@ Ruta nueva: `.migration/40-execution/functions/<FunctionName>/preparation.json`.
 
 ## preparation.md
 
-Usar `../_shared/templates/function-preparation.template.md`.
+Usar `../templates/function-preparation.template.md`.
 
 No registrar como completada una acción cuyo resultado esperado no pueda observarse.
 

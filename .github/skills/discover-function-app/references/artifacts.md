@@ -39,7 +39,7 @@ No incluir:
 
 ## current-state.md
 
-Usar `../_shared/templates/current-state.template.md`.
+Usar `../templates/current-state.template.md`.
 
 Representa exclusivamente BEFORE y no debe mutarse para describir AFTER.
 

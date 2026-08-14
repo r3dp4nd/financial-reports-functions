@@ -44,7 +44,7 @@ No incluir actions definitivas ni orden de ejecución.
 
 ## analysis.md
 
-Usar `../_shared/templates/function-analysis.template.md`.
+Usar `../templates/function-analysis.template.md`.
 
 Rutas nuevas equivalentes a `analysis.json`.
 

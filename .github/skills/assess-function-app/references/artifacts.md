@@ -32,7 +32,7 @@ Evitar duplicar inventario completo. Referenciar `inventory.json` y `current-sta
 
 ## assessment.md
 
-Usar `../_shared/templates/assessment.template.md` como vista humana compacta.
+Usar `../templates/assessment.template.md` como vista humana compacta.
 
 Debe abrir con decision/gates y dejar el detalle estructurado para `assessment.json`.
 

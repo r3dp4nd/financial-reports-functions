@@ -21,7 +21,7 @@ Ruta nueva: `.migration/40-execution/app/preparation.json`.
 
 ## preparation.md
 
-Usar `../_shared/templates/repository-preparation.template.md`.
+Usar `../templates/repository-preparation.template.md`.
 
 No modificar el migration plan para hacer coincidir la ejecución; registrar desviaciones.
 

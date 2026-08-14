@@ -41,7 +41,7 @@ Aplicar:
 - Respuesta en conversación.
 - Opcional: `.migration/40-execution/suggestions/<ActionId>.md`.
 
-Usar `../../_shared/templates/code-suggestion.template.md` cuando se emita artifact.
+Usar `./templates/code-suggestion.template.md` cuando se emita artifact.
 
 ## No hacer
 

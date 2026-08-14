@@ -179,6 +179,8 @@ _shared/
 ├── language-policy.md
 ├── lessons-policy.md
 ├── dependency-baseline.json
+├── templates/
+│   └── function-current-state.template.md
 └── references/
     ├── architecture-examples.md
     ├── artifact-layout.md
@@ -188,6 +190,11 @@ _shared/
     ├── target-architecture.md
     └── validation-tooling.md
 ```
+
+`_shared/` solo contiene lo transversal a más de un skill. `function-current-state.template.md` es el único template
+que permanece aquí porque lo consumen tanto `discover-function-app` como `analyze-function`. Cualquier otro template
+usado por un solo skill vive en `<skill>/templates/` (por ejemplo `assess-function-app/templates/assessment.template.md`
+o `support/run-migration-checks/templates/check-run.template.md`), no en `_shared/`.
 
 La política de seguridad aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, secretos y
 CI/CD no se leen directamente.

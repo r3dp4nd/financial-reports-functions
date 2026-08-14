@@ -21,7 +21,7 @@ El plan global es la única fuente de verdad para instalación/actualización de
 recursos compartidos. No repetir esos comandos ni esa decisión dentro de cada plan por Function; referenciar el
 Action ID correspondiente.
 
-Usar `../_shared/templates/migration-plan.template.md` para Markdown.
+Usar `../templates/migration-plan.template.md` para Markdown.
 
 Ruta nueva: `.migration/30-plan/migration-plan.json|md`.
 
@@ -45,13 +45,13 @@ Owner de:
 Cada plan por Function debe leerse como un manual: un dev o QA debe poder ejecutarlo paso a paso sin releer el
 código fuente por su cuenta ni inferir cómo aplicar el cambio.
 
-Usar `../_shared/templates/function-migration-plan.template.md`.
+Usar `../templates/function-migration-plan.template.md`.
 
 Ruta nueva: `.migration/30-plan/functions/<FunctionName>/migration-plan.json|md`.
 
 ## Shared resources
 
-Usar `../_shared/templates/shared-resources.template.md` cuando aplique.
+Usar `../templates/shared-resources.template.md` cuando aplique.
 
 No duplicar la acción propietaria dentro de cada Function; referenciarla.
 

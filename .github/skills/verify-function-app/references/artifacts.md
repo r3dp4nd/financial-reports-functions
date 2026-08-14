@@ -26,7 +26,7 @@ Incluir:
 
 ## verification.md
 
-Usar `../_shared/templates/verification.template.md`.
+Usar `../templates/verification.template.md`.
 
 No modificar artifacts previos para obtener un cierre positivo.
 

@@ -19,4 +19,4 @@ El artifact propietario del workflow debe incluir cuando aplique:
 - blockers/review requirements;
 - status.
 
-Usar `../_shared/templates/durable-migration.template.md` para la vista humana.
+Usar `../templates/durable-migration.template.md` para la vista humana.

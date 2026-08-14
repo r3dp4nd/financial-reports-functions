@@ -42,7 +42,7 @@ Aplicar:
 - `.migration/40-execution/reviews/<Scope>.json`
 - `.migration/40-execution/reviews/<Scope>.md`
 
-Usar `../../_shared/templates/manual-review.template.md`.
+Usar `./templates/manual-review.template.md`.
 
 ## No hacer
 

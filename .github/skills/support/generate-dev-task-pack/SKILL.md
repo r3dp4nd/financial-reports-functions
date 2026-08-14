@@ -40,7 +40,7 @@ Aplicar:
 - `.migration/40-execution/dev-tasks/<ActionId>.md` para una acción.
 - `.migration/40-execution/dev-tasks/<Scope>.md` para grupo de acciones.
 
-Usar `../../_shared/templates/dev-task-pack.template.md`.
+Usar `./templates/dev-task-pack.template.md`.
 
 ## No hacer
 

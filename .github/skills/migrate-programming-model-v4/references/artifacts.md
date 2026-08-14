@@ -20,4 +20,4 @@ Registrar:
 - blockers/review requirements;
 - status.
 
-Usar `../_shared/templates/function-migration.template.md` para la vista humana cuando sea compatible con el contrato actual.
+Usar `../templates/function-migration.template.md` para la vista humana cuando sea compatible con el contrato actual.

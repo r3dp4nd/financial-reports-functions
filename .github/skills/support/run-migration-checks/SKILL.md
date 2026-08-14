@@ -40,7 +40,7 @@ Aplicar:
 - `.migration/40-execution/checks/<Scope>.json`
 - `.migration/40-execution/checks/<Scope>.md`
 
-Usar `../../_shared/templates/check-run.template.md`.
+Usar `./templates/check-run.template.md`.
 
 ## No hacer
 
