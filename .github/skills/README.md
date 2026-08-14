@@ -1,37 +1,36 @@
 # Azure Functions Migration Skills
 
-Toolkit de skills para migrar Azure Function Apps Node.js hacia el target técnico aprobado con cambios controlados, evidencia reproducible y ejecución manual desde GitHub Copilot Chat.
+Toolkit de skills para migrar Azure Function Apps Node.js hacia el target técnico aprobado con cambios controlados,
+evidencia reproducible y ejecución manual desde GitHub Copilot Chat.
 
 ## Principios
 
-- menos es más;
-- progressive disclosure;
-- no leer secretos ni CI/CD sin sanitización;
-- preservar lógica de negocio;
-- no generar tests en el repositorio objetivo;
-- migrar solo lo necesario, pero completar el target aprobado;
-- arquitectura objetivo incremental para el código refactorizado;
-- una sola fuente de verdad por dato;
-- artifacts Markdown para humanos y JSON para agentes;
-- lessons no modifican automáticamente el toolkit.
+* menos es más;
+* progressive disclosure;
+* no leer secretos ni CI/CD sin sanitización;
+* preservar lógica de negocio;
+* no generar tests en el repositorio objetivo;
+* migrar solo lo necesario, pero completar el target aprobado;
+* arquitectura objetivo incremental;
+* una sola fuente de verdad por dato;
+* artifacts Markdown para humanos y JSON para agentes;
+* lessons no modifican automáticamente el toolkit.
 
 ## Target actual
 
-El baseline aprobado contempla como objetivo de plataforma:
+* Node.js 24;
+* Azure Functions Runtime v4;
+* Programming Model v4 cuando aplique;
+* dependencias según `_shared/dependency-baseline.json`.
 
-- Node.js 24;
-- Azure Functions Runtime v4;
-- Programming Model v4 cuando aplique;
-- dependencias según `_shared/dependency-baseline.json`.
-
-No usar `latest` como sustituto del baseline.
+No usar `latest` como sustituto del baseline aprobado.
 
 ## Flujo
 
 ```text
 discover-function-app
 → assess-function-app
-→ analyze-function                  (por Function)
+→ analyze-function                  (por Function cuando aplique)
 → plan-function-migration
 → prepare-function-app
 → prepare-function                  (por Function cuando aplique)
@@ -40,84 +39,134 @@ discover-function-app
 → verify-function-app
 ```
 
-`review-skill-performance` es una capability de mejora del toolkit y no forma parte del camino obligatorio de migración.
+`review-skill-performance` mejora el toolkit y no forma parte del flujo obligatorio de migración.
 
-## Skills
+## Cómo usar los skills
 
-| Skill | Responsabilidad |
-|---|---|
-| `discover-function-app` | Fotografiar el estado actual de forma segura y determinista. |
-| `assess-function-app` | Medir el gap global frente al target aprobado. |
-| `analyze-function` | Entender impacto y comportamiento de una Function concreta. |
-| `plan-function-migration` | Convertir necesidades en acciones globales, shared y por Function. |
-| `prepare-function-app` | Ejecutar preparación global aprobada. |
-| `prepare-function` | Preparar el slice local y la arquitectura necesaria antes de migrar. |
-| `migrate-programming-model-v4` | Migrar una Function al Programming Model v4. |
-| `migrate-durable-functions-v4` | Migrar un workflow Durable como unidad coherente. |
-| `verify-function-app` | Ejecutar gates finales y cerrar la migración. |
-| `review-skill-performance` | Analizar lessons/evals y proponer mejoras sin autoaplicarlas. |
+Los skills se ejecutan manualmente desde GitHub Copilot Chat. Cada etapa consume la evidencia producida por las
+anteriores en `.migration/`.
+
+```text
+Ejecutar skill
+→ revisar artifacts
+→ resolver BLOCKED / REQUIRES_REVIEW
+→ continuar con el siguiente skill aplicable
+```
+
+No cargar todas las referencias manualmente. Cada `SKILL.md` indica qué archivos de `references/` necesita según el
+caso.
+
+| Skill                          | Cuándo usarlo                                             | Entrada principal              | Resultado principal                           |
+|--------------------------------|-----------------------------------------------------------|--------------------------------|-----------------------------------------------|
+| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio.                   | `inventory.json` + `current-state.md`         |
+| `assess-function-app`          | Después del discovery para medir gaps contra el target.   | Inventory + current state.     | `assessment.json\|md`                         |
+| `analyze-function`             | Cuando una Function necesita análisis específico.         | Inventory + assessment.        | `functions/<name>/analysis.json\|md`          |
+| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.   | Plan global, por Function y shared resources. |
+| `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                   | `repository/preparation.json\|md`             |
+| `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.           | `functions/<name>/preparation.json\|md`       |
+| `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable.  | `migration-programming-model.json\|md`        |
+| `migrate-durable-functions-v4` | Workflow Durable con migración aprobada.                  | Planes de sus participantes.   | Evidencia de migración Durable.               |
+| `verify-function-app`          | Cuando todas las acciones aplicables terminaron.          | Plan + artifacts de ejecución. | `verification.json\|md`                       |
+| `review-skill-performance`     | Para revisar lessons, blockers y efectividad del toolkit. | Lessons + evals + evidencia.   | Findings y propuestas de mejora.              |
+
+### Ejemplos en Copilot Chat
+
+```text
+Ejecuta discover-function-app sobre este repositorio.
+Ejecuta assess-function-app usando el inventario actual.
+Ejecuta analyze-function para ProcessOrders.
+Ejecuta plan-function-migration con la evidencia disponible.
+Ejecuta prepare-function-app siguiendo únicamente el plan aprobado.
+Ejecuta prepare-function para ProcessOrders.
+Ejecuta migrate-programming-model-v4 para ProcessOrders.
+Ejecuta migrate-durable-functions-v4 para el workflow GenerateFinancialReport.
+Ejecuta verify-function-app contra el plan aprobado.
+Ejecuta review-skill-performance sobre las lessons de esta migración.
+```
+
+### Reglas de ejecución
+
+* `analyze-function` y `prepare-function` se ejecutan por Function solo cuando corresponda.
+* `migrate-programming-model-v4` debe devolver `NOT_APPLICABLE` si la Function ya está en v4.
+* `migrate-durable-functions-v4` trata el workflow como una unidad coherente.
+* `prepare-function-app` ejecuta cambios globales una sola vez.
+* `verify-function-app` ejecuta el build global después de completar todas las Functions aplicables.
+* ningún skill debe ampliar el scope más allá del plan aprobado.
+
+## Estados
+
+| Estado            | Significado                                                 |
+|-------------------|-------------------------------------------------------------|
+| `COMPLETED`       | Etapa terminada correctamente.                              |
+| `NOT_APPLICABLE`  | No existe trabajo necesario para esa etapa.                 |
+| `REQUIRES_REVIEW` | Se necesita una decisión humana.                            |
+| `BLOCKED`         | Falta una precondición o existe un impedimento verificable. |
+
+`NOT_APPLICABLE` es un resultado válido y evita transformaciones innecesarias.
 
 ## Progressive disclosure
 
-Cada `SKILL.md` contiene únicamente:
+Cada `SKILL.md` contiene solo:
 
-- objetivo;
-- precondiciones;
-- entradas;
-- workflow;
-- salidas;
-- criterios de cierre;
-- referencias que deben cargarse solo cuando correspondan.
+* objetivo;
+* precondiciones y entradas;
+* workflow;
+* salidas;
+* criterios de cierre;
+* referencias que debe cargar cuando correspondan.
 
-Los detalles viven en `references/` de cada skill o en `_shared/` cuando son políticas transversales.
+El detalle técnico vive en `references/` del skill o en `_shared/` cuando es transversal.
 
 ## Políticas compartidas
 
-- `_shared/security-policy.md`
-- `_shared/evidence-policy.md`
-- `_shared/status-policy.md`
-- `_shared/architecture-policy.md`
-- `_shared/lessons-policy.md`
-- `_shared/dependency-baseline.json`
-- `_shared/references/official-sources.md`
+```text
+_shared/
+├── security-policy.md
+├── evidence-policy.md
+├── status-policy.md
+├── architecture-policy.md
+├── lessons-policy.md
+├── dependency-baseline.json
+└── references/
+    └── official-sources.md
+```
 
-## Seguridad
-
-La política de seguridad se aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, archivos de secretos y CI/CD no se leen directamente.
+La política de seguridad aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, secretos y
+CI/CD no se leen directamente.
 
 ## Evidencia
-
-Separar siempre:
 
 ```text
 BEFORE → PLAN → EXECUTION → AFTER
 ```
 
-Los artifacts de `.migration/` son contratos entre etapas; una etapa posterior consume el artifact del owner en lugar de reconstruirlo.
+Los artifacts de `.migration/` son contratos entre etapas. Una etapa posterior consume el artifact de su owner en lugar
+de reconstruir la información.
 
 ## Validación
 
-No se agregan tests al código objetivo. La verificación usa evidencia determinista disponible, principalmente:
+No se agregan tests al código objetivo. La verificación utiliza evidencia determinista disponible:
 
-- inventario pre/post;
-- instalación de dependencias;
-- typecheck cuando aplique;
-- build global al finalizar la Function App;
-- validaciones estructurales y de configuración;
-- Azure Functions Host local cuando sea seguro y viable;
-- comparación contra acciones y target aprobados.
+* inventario pre/post;
+* instalación de dependencias;
+* typecheck cuando aplique;
+* build global al finalizar la Function App;
+* validaciones estructurales y de configuración;
+* Azure Functions Host local cuando sea seguro y viable;
+* comparación contra plan y target aprobados.
 
-Si el repositorio ya trae tests relevantes, pueden ejecutarse como evidencia adicional, pero no son requisito ni se generan nuevos.
+Tests existentes pueden ejecutarse como evidencia adicional, pero no se generan nuevos.
 
 ## Arquitectura
 
-El código refactorizado durante la migración debe converger incrementalmente hacia la arquitectura aprobada basada en `financial-reports-functions`:
+El código refactorizado debe converger incrementalmente hacia la arquitectura aprobada basada en
+`financial-reports-functions`:
 
-- adapters/composition roots Azure en `src/functions/`;
-- lógica por capability;
-- infraestructura aislada solo cuando existe un boundary real;
-- shared resources con owner único;
-- sin carpetas vacías ni abstracciones decorativas.
+* adapters/composition roots Azure en `src/functions/`;
+* lógica organizada por capability;
+* infraestructura aislada cuando exista un boundary real;
+* shared resources con owner único;
+* sin carpetas vacías ni abstracciones decorativas.
 
 ## Artifacts principales
 
@@ -126,21 +175,17 @@ El código refactorizado durante la migración debe converger incrementalmente h
 ├── repository/
 │   ├── inventory.json
 │   ├── assessment.json
-│   └── assessment.md
+│   └── preparation.json
 ├── catalog/
 │   ├── current-state.md
 │   └── functions/<FunctionName>.md
 ├── functions/<FunctionName>/
-│   ├── analysis.json
-│   ├── analysis.md
-│   ├── migration-plan.json
-│   ├── migration-plan.md
-│   ├── preparation.json
-│   ├── preparation.md
+│   ├── analysis.json|md
+│   ├── migration-plan.json|md
+│   ├── preparation.json|md
 │   └── migration*.json|md
 ├── plans/
-│   ├── migration-plan.json
-│   └── migration-plan.md
+│   └── migration-plan.json|md
 ├── resources/
 │   └── shared-resources.json|md
 ├── verification/
@@ -148,7 +193,7 @@ El código refactorizado durante la migración debe converger incrementalmente h
 └── lessons/
 ```
 
-Crear solo artifacts aplicables. No generar archivos vacíos para satisfacer una forma ideal.
+Crear solo artifacts aplicables. No generar archivos vacíos para satisfacer una estructura ideal.
 
 ## Regla de trabajo
 
