@@ -773,6 +773,34 @@ function packageMajor(version) {
   return Number(match[1]);
 }
 
+function determineNodeVersion(packageInfo) {
+  const declaredEngine = packageInfo.engines && packageInfo.engines.node;
+
+  if (declaredEngine) {
+    return {
+      declared: declaredEngine, evidenceStatus: 'CONFIRMED'
+    };
+  }
+
+  const typesNodeRange = (packageInfo.dependencies && packageInfo.dependencies['@types/node']) || (packageInfo.devDependencies && packageInfo.devDependencies['@types/node']);
+
+  const major = packageMajor(typesNodeRange);
+
+  if (major !== null) {
+    return {
+      declared: String(major),
+      evidenceStatus: 'INFERRED',
+      evidence: [{
+        type: 'TYPES_NODE_MAJOR', package: '@types/node', range: typesNodeRange
+      }]
+    };
+  }
+
+  return {
+    declared: null, evidenceStatus: 'UNKNOWN'
+  };
+}
+
 function determineProgrammingModel(legacyFunctions, v4Registrations, packageInfo) {
   if (legacyFunctions.length > 0 && v4Registrations.length > 0) {
     return {
@@ -1164,11 +1192,7 @@ function buildFunctionApp(candidate, files, warnings) {
     package: packageInfo,
 
     platform: {
-      node: {
-        declared: packageInfo.engines && packageInfo.engines.node ? packageInfo.engines.node : null,
-
-        evidenceStatus: packageInfo.engines && packageInfo.engines.node ? 'CONFIRMED' : 'UNKNOWN'
-      },
+      node: determineNodeVersion(packageInfo),
 
       functionsRuntime: determineFunctionsRuntime(hostInfo),
 

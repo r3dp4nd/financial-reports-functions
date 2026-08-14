@@ -724,6 +724,92 @@ test('detecta señal INCONSISTENT_RETRY_USAGE en orchestrator legacy', function 
   }
 });
 
+test('infiere Node version desde @types/node cuando no hay engines.node', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^1.2.3', '@types/node': '^14.14.37'
+      }
+    });
+
+    const result = executeInventory(root);
+
+    const node = result.functionApps[0].platform.node;
+
+    assert.strictEqual(node.declared, '14');
+
+    assert.strictEqual(node.evidenceStatus, 'INFERRED');
+
+    assert(node.evidence.some(function (entry) {
+      return (entry.type === 'TYPES_NODE_MAJOR' && entry.package === '@types/node');
+    }));
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('no usa @types/node cuando engines.node ya esta declarado (no pisa CONFIRMED)', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      engines: {
+        node: '>=20 <21'
+      }, dependencies: {
+        '@azure/functions': '^4.16.2', '@types/node': '^14.14.37'
+      }
+    });
+
+    const result = executeInventory(root);
+
+    const node = result.functionApps[0].platform.node;
+
+    assert.strictEqual(node.declared, '>=20 <21');
+
+    assert.strictEqual(node.evidenceStatus, 'CONFIRMED');
+
+    assert.strictEqual(node.evidence, undefined);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('Node version queda UNKNOWN sin engines.node ni @types/node', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2'
+      }
+    });
+
+    const result = executeInventory(root);
+
+    const node = result.functionApps[0].platform.node;
+
+    assert.strictEqual(node.declared, null);
+
+    assert.strictEqual(node.evidenceStatus, 'UNKNOWN');
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('excluye @types/* y typescript del calculo de usageDetected', function () {
   const root = createRepository();
 

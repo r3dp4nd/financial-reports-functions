@@ -10,7 +10,7 @@ Debe incluir cuando aplique:
 
 - `schemaVersion`;
 - repository y Function Apps;
-- platform observable;
+- platform observable (incluyendo `platform.node`: `CONFIRMED` cuando existe `package.json.engines.node`; si no existe, se infiere de forma determinista a partir de la versión mayor de `@types/node` declarada en `dependencies`/`devDependencies`, quedando siempre `INFERRED` con `evidence: [{ type: "TYPES_NODE_MAJOR", package: "@types/node", range: ... }]`, ya que es una convención de la comunidad, no una garantía; sin ninguna de las dos señales, `platform.node` queda `UNKNOWN`);
 - dependencies (cada entrada incluye `usageDetected: true|false|null`, calculado de forma determinista por el script buscando el nombre del paquete en imports/requires del código fuente no protegido; `null` cuando no hay archivos de source escaneables para decidir);
 - Functions;
 - triggers y bindings;

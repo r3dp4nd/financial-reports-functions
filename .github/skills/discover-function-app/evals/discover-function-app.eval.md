@@ -92,3 +92,24 @@ Esperado: `inventory.json` registra esa dependencia con `usageDetected: false`, 
 Entrada A (v3/legacy): un binding de `function.json` (por ejemplo `serviceBusTrigger`) declara `connection`/`connectionStringSetting` apuntando a un nombre de Application Setting, y ningún archivo de código fuente lee esa clave vía `process.env`.
 Entrada B (v4): una llamada de registro `app.serviceBusQueue('Name', { connection: 'MyConnectionSetting', ... })` declara el nombre de la Application Setting como opción del segundo argumento, sin que exista ningún `process.env` explícito para esa clave.
 Esperado: en ambos casos la clave aparece en `configurationKeys` con `evidenceStatus: CONFIRMED` y `sources[]` reflejando el origen real (`FUNCTION_JSON_BINDING` para A, `V4_REGISTRATION_OPTION` para B), sin exigir que exista también un `process.env` (`SOURCE_CODE`) para esa misma clave; nunca se registra el valor de la configuración, solo el nombre.
+
+### 23. Node.js version inferida desde @types/node
+Entrada: `package.json` no declara `engines.node`, pero sí declara `@types/node` (en `dependencies` o `devDependencies`) con un rango semver.
+Esperado: `platform.node` queda `evidenceStatus: INFERRED` con `declared` igual a la versión mayor extraída de `@types/node` y `evidence: [{ type: "TYPES_NODE_MAJOR", package: "@types/node", range: ... }]`; si `engines.node` sí existe, esa fuente prevalece (`CONFIRMED`) y `@types/node` se ignora por completo; si ninguna de las dos señales existe, `platform.node` sigue `UNKNOWN`. Nunca se convierte esta inferencia en `CONFIRMED`.
+
+### 24. Estructura de directorios fiel (`directoryTree`)
+Entrada: repositorio con carpetas y archivos anidados (ej. `src/functions/request-report.ts`, `README.md`).
+Esperado: `inventory.json` incluye `directoryTree` como lista de líneas generada deterministamente a partir de los archivos ya recorridos (excluyendo `SKIP_DIRECTORIES` y archivos protegidos); `current-state.md` transcribe ese árbol literalmente en la sección "Estructura de directorios", sin resumir ni reordenar a mano.
+
+### 24. Diagrama de capas con nombres reales de imports
+Entrada: una capability con separación observable (adapter → handler → application/domain → infrastructure), donde el código importa módulos concretos (ej. `ReportCosmosDbService`, `ExcelUtil`).
+Esperado: cada nodo del diagrama de capas (excepto el trigger/adapter) usa como label el nombre real del import/módulo/llamada literal observado en el código, nunca una paráfrasis de comportamiento (ej. prohibido `"Lógica de orquestación"`); si no hay nombre real disponible para una capa, se usa el Caso 2 (sin separación observable) en vez de inventar un label genérico.
+
+### 25. Señales iniciales estructuradas (`initialSignals`)
+Entrada A: una activity/Function con `fs.unlink(...)` sin `await` (callback-style).
+Entrada B: un orchestrator legacy donde algunas llamadas usan `context.df.callActivityWithRetry` y otras `context.df.callActivity` sin retry.
+Esperado: `inventory.json` registra por Function un array `initialSignals[]` con `type: MISSING_AWAIT_FS_UNLINK` (A) y `type: INCONSISTENT_RETRY_USAGE` (B), ambos con `evidenceStatus: CONFIRMED` y detalle citando los nombres literales de activities involucradas; no se generan señales cuando `fs.unlink` se usa con `await` o cuando todas las llamadas del orchestrator usan el mismo patrón de retry.
+
+### 26. Catálogo por Function como espejo fiel del código
+Entrada: una Function con lógica de negocio observable (validaciones, mensajes de error, llamadas a activities/módulos internos).
+Esperado: el catálogo `.migration/00-before/functions/<FunctionName>.md` cita literalmente la firma del handler, los mensajes de error y condiciones de negocio como bloques de código (no parafraseados), incluye una sección "Fragmento de código relevante" con el extracto central del archivo fuente y su referencia de archivo/líneas, y usa nombres literales reales para dependencias internas y llamadas downstream — nunca descripciones de comportamiento genéricas.
