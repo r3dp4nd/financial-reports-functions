@@ -22,6 +22,7 @@ Debe incluir cuando aplique:
 - initial criticality and testability signals when directly observable;
 - patterns relevantes;
 - shared resource candidates;
+- `largeFiles` a nivel de Function App: array determinista de archivos de source cuyo conteo de líneas supera el umbral (300 líneas), cada entrada con `path`, `lineCount`, `threshold` y `evidenceStatus: CONFIRMED` (conteo de líneas es un hecho, no una interpretación); no implica automáticamente necesidad de refactor, solo señala dónde mirar primero;
 - protected files detected, incluyendo `provider` cuando la categoría sea `CI_CD` (`GITHUB_ACTIONS`, `AZURE_DEVOPS`, `GITLAB_CI`, `JENKINS`, `BITBUCKET`, `UNKNOWN`);
 - `ciCdProviders` como resumen agregado de proveedores CI/CD detectados en el repositorio;
 - warnings;
@@ -63,5 +64,9 @@ Debe documentar comportamiento y dependencias observables sin convertir análisi
 **Regla de fidelidad obligatoria**: este documento debe ser un espejo del código, no un resumen interpretado. Nunca parafrasear una condición de negocio, mensaje de error o llamada relevante — citarla como bloque de código con el literal exacto observado en el archivo fuente. Los nombres de dependencias internas, activities llamadas (`callActivity`), registros v4 (`app.X`) deben usar el identificador literal real, nunca una descripción de comportamiento. Incluir siempre el fragmento de código central de la Function (sección "Fragmento de código relevante" del template) como ancla verificable entre el documento y el source.
 
 Si `inventory.json` reportó `initialSignals` para esta Function, transcribirlos literalmente en la sección correspondiente del catálogo, sin suavizar ni reinterpretar el hallazgo.
+
+**Regla de trazabilidad para narrativas**: las secciones "Narrativa funcional" y "Narrativa técnica" deben ser una traducción a prosa de hechos ya citados literalmente en otra sección del mismo documento (Comportamiento, Efectos y errores, Fragmento de código relevante). Nunca introducir en la narrativa un hecho que no esté respaldado por un bloque de código citado en ese mismo documento. Si el propósito de negocio no es 100% claro desde el código, la narrativa funcional debe decirlo explícitamente en vez de asumirlo.
+
+**Regla de trazabilidad para "Servicios externos consumidos" y "Diagrama de dependencias de la Function"**: cada fila de la tabla y cada nodo del diagrama deben corresponder a un dato ya presente en `inventory.json` (`azureResourcePackageUsage`, `sharedResourceCandidates`, `configurationKeys`) o en las secciones "Dependencias"/"Configuración" del mismo documento — nunca un servicio o nodo inventado sin respaldo.
 
 Ruta nueva: `.migration/00-before/functions/<FunctionName>.md`.

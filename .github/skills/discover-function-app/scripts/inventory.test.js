@@ -849,6 +849,78 @@ test('excluye @types/* y typescript del calculo de usageDetected', function () {
   }
 });
 
+test('detecta largeFiles cuando un archivo supera el umbral de lineas', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2'
+      }
+    });
+
+    const lines = [];
+
+    for (let index = 0; index < 320; index += 1) {
+      lines.push('// line ' + index);
+    }
+
+    writeFile(root, 'src/big-file.ts', lines.join('\n'));
+
+    const result = executeInventory(root);
+
+    const largeFiles = result.functionApps[0].largeFiles;
+
+    assert(Array.isArray(largeFiles));
+
+    const entry = largeFiles.find(function (item) {
+      return (item.path === 'src/big-file.ts');
+    });
+
+    assert(entry);
+
+    assert.strictEqual(entry.evidenceStatus, 'CONFIRMED');
+
+    assert.strictEqual(entry.threshold, 300);
+
+    assert(entry.lineCount > 300);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('no marca largeFiles para archivos por debajo del umbral', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2'
+      }
+    });
+
+    writeFile(root, 'src/small-file.ts', "import { app } from '@azure/functions';");
+
+    const result = executeInventory(root);
+
+    const largeFiles = result.functionApps[0].largeFiles;
+
+    assert.strictEqual(largeFiles.some(function (item) {
+      return (item.path === 'src/small-file.ts');
+    }), false);
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('genera directoryTree determinista reflejando la estructura real de carpetas', function () {
   const root = createRepository();
 

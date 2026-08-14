@@ -578,6 +578,43 @@ function sourceFiles(appFiles) {
   });
 }
 
+const LARGE_FILE_LINE_THRESHOLD = 300;
+
+function countLines(content) {
+  if (content.length === 0) {
+    return 0;
+  }
+
+  return content.split('\n').length;
+}
+
+function detectLargeFiles(appSourceFiles, warnings) {
+  const largeFiles = [];
+
+  appSourceFiles.forEach(function (filePath) {
+    const content = safeReadText(filePath, warnings);
+
+    if (content === null) {
+      return;
+    }
+
+    const lineCount = countLines(content);
+
+    if (lineCount > LARGE_FILE_LINE_THRESHOLD) {
+      largeFiles.push({
+        path: normalizeRelative(filePath),
+        lineCount: lineCount,
+        threshold: LARGE_FILE_LINE_THRESHOLD,
+        evidenceStatus: 'CONFIRMED'
+      });
+    }
+  });
+
+  return largeFiles.sort(function (a, b) {
+    return b.lineCount - a.lineCount;
+  });
+}
+
 function extractEnvironmentKeys(content) {
   const keys = new Set();
 
@@ -1219,7 +1256,9 @@ function buildFunctionApp(candidate, files, warnings) {
 
     sharedResourceCandidates: buildSharedResourceCandidates(sourceScan.azureResourcePackageUsage),
 
-    directoryTree: buildDirectoryTree(appRoot, appFiles)
+    directoryTree: buildDirectoryTree(appRoot, appFiles),
+
+    largeFiles: detectLargeFiles(sourceFiles(appFiles), warnings)
   };
 }
 

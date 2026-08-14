@@ -1,6 +1,6 @@
 # <FunctionName>
 
-> Documento BEFORE de una Function. Debe ser un espejo fiel del código, no un resumen interpretado: cada afirmación de comportamiento debe poder verificarse línea por línea contra el archivo fuente citado. Un dev que use este documento para migrar no debería necesitar reabrir el código para confirmar lo que aquí se afirma.
+> Documento BEFORE de una Function. Debe ser un espejo fiel del código, no un resumen interpretado.
 
 ## Identificación
 
@@ -10,9 +10,19 @@
 - Programming Model:
 - Durable role:
 
-## Firma exacta del handler
+## Narrativa
 
-Transcribir literalmente la firma de la función exportada (nombre de parámetros, tipos declarados tal como aparecen), no describirla. Ejemplo de formato:
+> Traducción a prosa de hechos ya citados literalmente en las secciones de abajo (Comportamiento, Efectos y errores, Fragmento de código). Nunca introducir aquí un hecho que no esté respaldado por un bloque de código citado en otra sección de este mismo documento.
+
+### Narrativa funcional (para onboarding no-técnico)
+
+> Qué problema de negocio resuelve esta Function, en 2-4 frases, sin jerga técnica. Si el propósito de negocio no es 100% claro desde el código, decirlo explícitamente en vez de asumirlo.
+
+### Narrativa técnica (para onboarding técnico)
+
+> Cómo lo hace, en 3-6 frases de prosa fluida (paginación, batching, reintentos, validaciones, etc.), siempre trazable a la sección "Comportamiento"/"Fragmento de código relevante" de abajo.
+
+## Firma exacta del handler
 
 ```ts
 ```
@@ -23,17 +33,11 @@ Transcribir literalmente la firma de la función exportada (nombre de parámetro
 
 ### Comportamiento
 
-> Regla de fidelidad: cualquier condición de negocio relevante (validaciones, branching, mensajes de error) debe citarse como bloque de código con el fragmento real, no reformulada en prosa. No escribir "lanza un error si no es válido"; transcribir la línea real, ej. `throw new Error("...");`.
-
 ### Salida
 
 ### Efectos y errores relevantes
 
-> Misma regla de fidelidad que "Comportamiento": literales exactos, no paráfrasis.
-
 ## Fragmento de código relevante
-
-Pegar el fragmento de source más importante de la Function (la lógica de negocio central, no el archivo completo), delimitado por bloque de código con lenguaje, y referencia a archivo/líneas. Este es el ancla textual entre este documento y el código real.
 
 ```ts
 ```
@@ -46,14 +50,29 @@ Pegar el fragmento de source más importante de la Function (la lógica de negoc
 - externas:
 - shared resources/candidates:
 
+## Servicios externos consumidos
+
+> Tabla derivada de los mismos datos ya presentes en `inventory.json` (`azureResourcePackageUsage`, `sharedResourceCandidates`, `configurationKeys`) y en la sección "Dependencias" de arriba — nunca un servicio no respaldado por esos datos.
+
+| Servicio | Tipo | Evidencia |
+|---|---|---|
+
+## Diagrama de dependencias de la Function
+
+> Diagrama específico de esta Function (no el diagrama global de la app). Cada nodo debe corresponder a un dato ya presente en `inventory.json`/en las secciones "Dependencias"/"Servicios externos consumidos"/"Configuración" de este documento — nunca un nodo inventado.
+
+```mermaid
+flowchart LR
+```
+
 ## Configuración
 
 Solo nombres de claves.
 
 ## Relaciones
 
-- callers/producers: (nombres literales exactos usados en `callActivity`/`startNew`/`app.X`, no paráfrasis)
-- consumers/downstream: (idem)
+- callers/producers:
+- consumers/downstream:
 - workflow participants:
 
 ## Arquitectura actual

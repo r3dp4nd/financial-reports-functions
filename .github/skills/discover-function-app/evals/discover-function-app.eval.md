@@ -93,6 +93,10 @@ Entrada A (v3/legacy): un binding de `function.json` (por ejemplo `serviceBusTri
 Entrada B (v4): una llamada de registro `app.serviceBusQueue('Name', { connection: 'MyConnectionSetting', ... })` declara el nombre de la Application Setting como opción del segundo argumento, sin que exista ningún `process.env` explícito para esa clave.
 Esperado: en ambos casos la clave aparece en `configurationKeys` con `evidenceStatus: CONFIRMED` y `sources[]` reflejando el origen real (`FUNCTION_JSON_BINDING` para A, `V4_REGISTRATION_OPTION` para B), sin exigir que exista también un `process.env` (`SOURCE_CODE`) para esa misma clave; nunca se registra el valor de la configuración, solo el nombre.
 
+### 23a. Archivos con tamaño elevado (`largeFiles`)
+Entrada: un archivo de source dentro de la Function App supera las 300 líneas de código.
+Esperado: `inventory.json` registra ese archivo en `largeFiles[]` con `path`, `lineCount`, `threshold: 300` y `evidenceStatus: CONFIRMED`; archivos por debajo del umbral no aparecen; `current-state.md` transcribe la tabla en la sección "Riesgos e incertidumbres" sin interpretar si el archivo debe refactorizarse o no — solo señala dónde mirar.
+
 ### 23. Node.js version inferida desde @types/node
 Entrada: `package.json` no declara `engines.node`, pero sí declara `@types/node` (en `dependencies` o `devDependencies`) con un rango semver.
 Esperado: `platform.node` queda `evidenceStatus: INFERRED` con `declared` igual a la versión mayor extraída de `@types/node` y `evidence: [{ type: "TYPES_NODE_MAJOR", package: "@types/node", range: ... }]`; si `engines.node` sí existe, esa fuente prevalece (`CONFIRMED`) y `@types/node` se ignora por completo; si ninguna de las dos señales existe, `platform.node` sigue `UNKNOWN`. Nunca se convierte esta inferencia en `CONFIRMED`.
@@ -113,3 +117,7 @@ Esperado: `inventory.json` registra por Function un array `initialSignals[]` con
 ### 26. Catálogo por Function como espejo fiel del código
 Entrada: una Function con lógica de negocio observable (validaciones, mensajes de error, llamadas a activities/módulos internos).
 Esperado: el catálogo `.migration/00-before/functions/<FunctionName>.md` cita literalmente la firma del handler, los mensajes de error y condiciones de negocio como bloques de código (no parafraseados), incluye una sección "Fragmento de código relevante" con el extracto central del archivo fuente y su referencia de archivo/líneas, y usa nombres literales reales para dependencias internas y llamadas downstream — nunca descripciones de comportamiento genéricas.
+
+### 27. Narrativa, servicios consumidos y diagrama por Function trazables
+Entrada: una Function con secciones "Comportamiento"/"Fragmento de código relevante" ya completadas, y con dependencias externas observables (ej. `@azure/cosmos`, una configuration key).
+Esperado: "Narrativa funcional"/"Narrativa técnica" son prosa que traduce hechos ya citados en otras secciones del mismo documento, sin introducir afirmaciones no respaldadas por código citado; si el propósito de negocio no es claro, se declara explícitamente en vez de asumirse; la tabla "Servicios externos consumidos" y el diagrama "Diagrama de dependencias de la Function" solo contienen servicios/nodos que corresponden a datos ya presentes en `inventory.json` o en las secciones "Dependencias"/"Configuración" del mismo documento.
