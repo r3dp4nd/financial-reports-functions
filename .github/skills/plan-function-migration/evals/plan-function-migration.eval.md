@@ -37,30 +37,34 @@ Esperado: plan `PARTIAL`/`BLOCKED`; no usar `latest`.
 ### 9. Arquitectura incremental
 Esperado: solo layers/boundaries reales para el slice refactorizado.
 
-### 10. Sin tests generados
+### 10. Ejemplos no plantilla
+Entrada: architecture examples muestran variante completa, pero el slice solo necesita handler.
+Esperado: planificar la variante mínima; no copiar carpetas application/domain/infrastructure sin responsabilidad real.
+
+### 11. Sin tests generados
 Esperado: no etapa ni artifact obligatorio de generación de tests en el repositorio objetivo.
 
-### 11. Orden
+### 12. Orden
 Esperado: dependencies explícitas, shared/global antes de consumers cuando corresponda.
 
-### 12. Carriles de trabajo
+### 13. Carriles de trabajo
 Entrada: necesidades de migración técnica y refactor/testabilidad.
 Esperado: acciones separadas en `TECHNICAL_MIGRATION` y `REFACTOR_TESTABILITY`; no mezclar refactor amplio con cambio técnico mínimo salvo precondición justificada.
 
-### 13. Executor sugerido
+### 14. Executor sugerido
 Entrada: acciones mecánicas, acciones con decisión humana y acciones mixtas.
 Esperado: `suggestedExecutor` es `AI_AGENT`, `HUMAN` o `EITHER` con rationale; no elimina review requirements.
 
-### 14. Plan como eval
+### 15. Plan como eval
 Esperado: cada acción tiene `expectedResult`, `verificationCriteria`, `failureCriteria` y `evidenceRefs` suficientes para verificar ejecución humana o IA.
 
-### 15. Slice no Function
+### 16. Slice no Function
 Entrada: Durable workflow u Outbox involucra varias Functions.
 Esperado: `SLICE-*` o plan por slice propietario; Functions participantes referencian la acción sin duplicarla.
 
-### 16. Preservación funcional
+### 17. Preservación funcional
 Entrada: analysis registra status codes, retries, idempotencia, mensajes o efectos persistentes.
 Esperado: las acciones incluyen preserve/failure criteria; cualquier cambio funcional no aprobado bloquea el plan o requiere decisión humana.
 
-### 17. Salidas
+### 18. Salidas
 Esperado: plan global, planes por Function y shared-resources artifact solo si aplica.

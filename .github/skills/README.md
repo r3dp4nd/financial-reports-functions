@@ -129,7 +129,11 @@ _shared/
 ├── lessons-policy.md
 ├── dependency-baseline.json
 └── references/
-    └── official-sources.md
+    ├── architecture-examples.md
+    ├── evidence-model.md
+    ├── official-sources.md
+    ├── security-patterns.md
+    └── target-architecture.md
 ```
 
 La política de seguridad aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, secretos y

@@ -30,7 +30,7 @@ Cuando se toque el slice correspondiente:
 - infraestructura aislada detrás de límites reales cuando el SDK, recurso externo, storage, mensajería o persistencia lo requiera;
 - recursos compartidos con ownership único y consumidores explícitos.
 
-Consultar [references/target-architecture.md](references/target-architecture.md) para ejemplos y criterios.
+Consultar [references/target-architecture.md](references/target-architecture.md) para criterios y [references/architecture-examples.md](references/architecture-examples.md) solo cuando hagan falta snippets o variantes concretas.
 
 ## Dirección de dependencias
 

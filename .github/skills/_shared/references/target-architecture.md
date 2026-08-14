@@ -4,6 +4,8 @@ Esta referencia describe patrones transferibles para código migrado/refactoriza
 
 No copiar una estructura por imitación. Aplicar solo el patrón que preserve comportamiento y mejore testabilidad real del slice.
 
+Consultar [architecture-examples.md](architecture-examples.md) cuando se necesiten snippets cortos o anti-patrones. No cargarlo si los criterios de esta referencia son suficientes.
+
 ## Variante simple
 
 ```text
