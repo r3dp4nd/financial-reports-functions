@@ -36,11 +36,33 @@ No copiar payloads completos si una descripción breve es suficiente.
 
 Describir comportamiento observable, no implementación línea por línea.
 
+Cuando aporte claridad, representar brevemente el slice observable desde el trigger hasta sus principales dependencias y
+efectos.
+
+No proponer todavía refactorización ni arquitectura objetivo.
+
 ## Salida
 
 <!--
 Resultado observable de la Function.
 -->
+
+## Efectos observables
+
+<!--
+Registrar efectos relevantes que forman parte del comportamiento actual.
+
+Ejemplos:
+- persistencia;
+- publicación de mensajes o eventos;
+- escritura de archivos o blobs;
+- inicio de workflows;
+- llamadas externas.
+
+No confundir efectos observados con recomendaciones de arquitectura.
+-->
+
+-
 
 ## Errores
 
@@ -54,11 +76,13 @@ Errores o comportamientos de fallo relevantes confirmados.
 |-------------|------|-----|--------|
 |             |      |     |        |
 
-## Recursos compartidos
+## Recursos compartidos o candidatos
 
 | Resource ID | Uso | Ownership | Estado |
 |-------------|-----|-----------|--------|
 |             |     |           |        |
+
+No asignar `Resource ID` u `Ownership` como confirmados cuando la evidencia solo permita identificar un candidato.
 
 Referenciar:
 
@@ -115,60 +139,41 @@ SDKs, repositories, messaging, storage, etc.
 
 -
 
+Describir únicamente acoplamientos observados o inferidos con evidencia.
+
+No proponer todavía su solución.
+
 ## Patrones observados
 
 | Patrón | Estado | Evidencia |
 |--------|--------|-----------|
 |        |        |           |
 
-## Tests actuales
+No inferir patrones únicamente por nombres.
 
-| Test | Tipo | Comportamiento cubierto |
-|------|------|-------------------------|
-|      |      |                         |
+## Pruebas actuales
+
+| Prueba | Tipo | Comportamiento cubierto |
+|--------|------|-------------------------|
+|        |      |                         |
 
 Si no existen:
 
-`No se detectaron tests para esta Function.`
-
-## Testabilidad
-
-Estado:
-
-`HIGH | MEDIUM | LOW`
-
-Razones:
-
--
-
-## Compatibilidad Node.js 24
-
-| Elemento | Estado | Evidencia |
-|----------|--------|-----------|
-|          |        |           |
-
-Estados posibles:
-
-- `CONFIRMED_COMPATIBLE`
-- `CHANGE_REQUIRED`
-- `REQUIRES_VALIDATION`
-- `NOT_APPLICABLE`
-
-## Deuda técnica observada
-
--
-
-Registrar únicamente deuda observada.
-
-No resolverla en este documento.
+`No se detectaron pruebas para esta Function.`
 
 ## Riesgos
 
 -
 
-## Unknowns
+Registrar únicamente riesgos derivados del estado observado.
+
+La evaluación contra el target de migración pertenece al análisis.
+
+## Incertidumbres
 
 -
+
+No reemplazar incertidumbres por suposiciones.
 
 ## Referencias
 
@@ -183,6 +188,11 @@ No resolverla en este documento.
 cuando exista.
 
 ## Estado del flujo
+
+<!--
+Esta sección es únicamente navegación.
+No forma parte de la fotografía técnica BEFORE.
+-->
 
 | Etapa       | Estado |
 |-------------|--------|

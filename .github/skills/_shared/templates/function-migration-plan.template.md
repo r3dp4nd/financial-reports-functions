@@ -2,8 +2,8 @@
 
 ## Objetivo
 
-Preparar y migrar `<FunctionName>` preservando su comportamiento actual y convergiendo hacia la arquitectura objetivo
-definida.
+Preparar y migrar `<FunctionName>` preservando su comportamiento actual y aplicando únicamente los cambios estructurales
+requeridos para alcanzar el target técnico de forma segura y verificable.
 
 ## Referencias
 
@@ -27,6 +27,15 @@ Plan global:
 
 `<Capability>`
 
+## Alcance
+
+- `requestedScope`:
+- `effectiveScope`:
+- `affectedFunctionsOutsideScope`:
+
+El `effectiveScope` puede ampliarse únicamente cuando una dependencia técnica o funcional sea necesaria para migrar esta
+Function de forma coherente.
+
 ## Comportamiento a preservar
 
 -
@@ -39,18 +48,22 @@ Registrar únicamente los contratos observables que deben mantenerse durante la 
 
 ## Estado técnico actual
 
-| Dimensión          | Estado |
-|--------------------|--------|
-| Programming Model  |        |
-| Node compatibility |        |
-| Testability        |        |
-| Architecture       |        |
+| Dimensión              | Estado |
+|------------------------|--------|
+| Programming Model      |        |
+| Compatibilidad Node.js |        |
+| Testabilidad           |        |
+| Estructura             |        |
 
-## Arquitectura objetivo
+## Cambios estructurales requeridos
+
+Aplicar únicamente cambios estructurales aprobados y necesarios para la migración o testabilidad.
+
+No reorganizar la capability completa si no es requerido.
 
 ### Azure adapter
 
-Ubicación objetivo:
+Ubicación objetivo, cuando aplique:
 
 `src/functions/<function>.function.ts`
 
@@ -64,7 +77,7 @@ Responsabilidad:
 
 ### Capability
 
-Ubicación:
+Ubicación, cuando aplique:
 
 `src/<Capability>/`
 
@@ -74,20 +87,24 @@ Piezas requeridas:
 
 Crear únicamente componentes con responsabilidad real.
 
-## Architecture gap
+## Gap estructural
 
 -
 -
+
+Distinguir entre cambios requeridos para migración y oportunidades posteriores.
 
 ## Acciones requeridas
 
-| Action ID | Tipo | Acción |
-|-----------|------|--------|
-|           |      |        |
+| Action ID | Tipo | requiredForMigration | Acción |
+|-----------|------|----------------------|--------|
+|           |      |                      |        |
 
 Referenciar `analysis.json`.
 
 No copiar toda la evidencia.
+
+Las acciones con `requiredForMigration: false` no forman parte obligatoria de la migración técnica.
 
 ## Dependencias globales
 
@@ -119,17 +136,21 @@ Criterio:
 
 -
 
-## Tests antes de migración
+## Pruebas antes de migración
 
-Agregar o preservar:
+Pruebas requeridas:
 
 -
+
+La generación puede ejecutarse mediante `generate-function-tests` cuando aplique.
 
 Baseline esperada:
 
 `PASS`
 
-No agregar integration tests en el alcance actual.
+`PASS` significa que las pruebas requeridas para el slice seleccionado están verdes.
+
+No agregar pruebas de integración en el alcance actual.
 
 ## Migración de plataforma
 
@@ -167,7 +188,7 @@ Incluir únicamente acciones necesarias para esta Function.
 
 Durante preparación:
 
-- tests;
+- pruebas selectivas;
 - typecheck selectivo;
 - validaciones estáticas cuando aporten evidencia.
 
@@ -181,10 +202,10 @@ Después de migración:
 
 La Function está lista cuando:
 
-- comportamiento está protegido;
-- arquitectura requerida está aplicada;
-- shared dependencies están disponibles;
-- tests requeridos están verdes;
+- comportamiento relevante está protegido;
+- acciones estructurales requeridas están aplicadas;
+- dependencias compartidas requeridas están disponibles;
+- pruebas requeridas están verdes;
 - migración de plataforma está completa o `NOT_REQUIRED`;
 - no existen blockers locales.
 
@@ -192,13 +213,15 @@ La Function está lista cuando:
 
 -
 
-## Unknowns
+## Incertidumbres
 
 -
 
 ## Deuda fuera de alcance
 
 -
+
+Registrar aquí cambios estructurales o mejoras no requeridas para completar la migración técnica.
 
 ## Ejecución
 

@@ -2,7 +2,8 @@
 
 ## Objetivo
 
-Registrar cómo `<FunctionName>` fue preparada antes de su migración de plataforma.
+Registrar cómo `<FunctionName>` fue preparada mediante los cambios estructurales y de testabilidad aprobados antes de su
+migración técnica.
 
 ## Referencias
 
@@ -31,6 +32,15 @@ Plan:
 -
 -
 
+Registrar únicamente contratos observables cuya preservación haya sido comprobada o protegida.
+
+Considerar cuando corresponda:
+
+- entrada;
+- salida;
+- errores;
+- efectos observables.
+
 ## Arquitectura antes
 
 Resumen breve:
@@ -39,31 +49,37 @@ Resumen breve:
 
 No duplicar el catálogo completo.
 
-## Cambios arquitectónicos
+## Cambios estructurales
 
 | Action ID | Cambio | Resultado |
 |-----------|--------|-----------|
 |           |        |           |
 
+Registrar únicamente acciones estructurales aprobadas y ejecutadas para esta preparación.
+
+Las acciones de modernización con `requiredForMigration: false` no deben ejecutarse en esta etapa.
+
 ## Estructura resultante
 
 ```text
-src/
-├── functions/
-└── <Capability>/
+<estructura relevante después de la preparación>
 ```
 
 Mostrar únicamente la estructura relevante creada o modificada.
 
+No imponer nuevas rutas o convenciones cuando las existentes sean coherentes.
+
 ## Azure adapter
 
-Responsabilidades que permanecen en el adapter:
+Responsabilidades que permanecen en el adapter cuando correspondan:
 
 - registro;
-- mapping;
-- composition;
-- invocation;
-- response mapping.
+- adaptación de entrada;
+- composición de dependencias;
+- invocación;
+- adaptación de salida.
+
+Registrar únicamente responsabilidades realmente presentes.
 
 Registrar desviaciones cuando existan.
 
@@ -72,6 +88,8 @@ Registrar desviaciones cuando existan.
 Responsabilidades extraídas o reorganizadas:
 
 -
+
+No reorganizar responsabilidades fuera del scope efectivo aprobado.
 
 ## Contratos introducidos
 
@@ -83,11 +101,15 @@ Si no fueron necesarios:
 
 `No se introdujeron nuevos contratos.`
 
+No introducir contratos únicamente para satisfacer una estructura arquitectónica.
+
 ## Infraestructura aislada
 
 | Infraestructura | Implementación | Contrato |
 |-----------------|----------------|----------|
 |                 |                |          |
+
+No introducir un contrato únicamente para completar esta tabla.
 
 ## Recursos compartidos
 
@@ -97,21 +119,37 @@ Si no fueron necesarios:
 
 No duplicar acciones compartidas.
 
+Registrar únicamente recursos realmente consumidos por esta Function.
+
 ## Configuración
 
 Cambios relevantes:
 
 -
 
-Solo nombres de claves.
+Registrar únicamente nombres de claves.
 
-## Tests agregados
+Indicar ownership local o compartido cuando haya sido modificado.
 
-| Test | Tipo | Comportamiento protegido |
-|------|------|--------------------------|
-|      |      |                          |
+Nunca valores.
 
-## Baseline
+No leer archivos protegidos para completar esta sección.
+
+## Preparación para pruebas
+
+Cambios realizados para mejorar o habilitar testabilidad:
+
+-
+
+Estado:
+
+`READY | BLOCKED | REQUIRES_REVIEW | NOT_APPLICABLE`
+
+Bloqueos restantes:
+
+-
+
+## Baseline de pruebas disponible
 
 Comando:
 
@@ -119,32 +157,48 @@ Comando:
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`PASS | FAIL | NOT_EXECUTED | NOT_APPLICABLE`
 
 Resumen:
 
 - suites:
-- tests:
-- failures:
+- pruebas:
+- fallos:
 - coverage cuando aplique:
+
+No generar pruebas nuevas desde esta sección.
+
+Si se requieren pruebas adicionales, deben quedar identificadas para la etapa de testing correspondiente.
 
 ## Validaciones adicionales
 
-| Validación | Resultado |
-|------------|-----------|
-|            |           |
+| Validación | Resultado | Evidencia |
+|------------|-----------|-----------|
+|            |           |           |
+
+Estados aplicables:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
+
+No afirmar `PASS` sin evidencia.
 
 ## Riesgos pendientes
 
 -
 
-## Unknowns
+## Incertidumbres
 
 -
 
 ## Deuda restante
 
 -
+
+La deuda restante no bloquea automáticamente la migración.
 
 ## Resultado
 
@@ -154,7 +208,7 @@ La Function:
 
 para la siguiente etapa.
 
-Siguiente capability sugerido:
+Siguiente etapa sugerida:
 
 `migrate-programming-model-v4`
 

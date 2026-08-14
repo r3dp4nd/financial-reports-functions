@@ -2,8 +2,9 @@
 
 ## Objetivo
 
-Migrar la Function App desde su estado actual hacia el target técnico y arquitectónico definido, preservando el
-comportamiento observable y coordinando cambios globales, recursos compartidos y Functions.
+Migrar la Function App desde su estado actual hacia el target técnico definido, preservando el comportamiento
+observable, coordinando cambios globales, recursos compartidos y Functions, y aplicando únicamente los cambios
+estructurales requeridos para una migración segura y verificable.
 
 ## Punto de partida
 
@@ -18,15 +19,25 @@ Máximo unos pocos párrafos.
 No duplicar todo el catálogo.
 -->
 
-## Target
+## Alcance
 
-| Dimensión               | Target                       |
-|-------------------------|------------------------------|
-| Node.js                 | 24                           |
-| Azure Functions Runtime | v4                           |
-| Programming Model       | v4                           |
-| Arquitectura            | `architecture-policy.md`     |
-| Testing                 | Baseline funcional protegida |
+- Alcance solicitado:
+- Alcance efectivo:
+- Functions afectadas fuera del alcance:
+
+<!--
+El alcance efectivo puede expandirse únicamente cuando exista una dependencia
+técnica o funcional necesaria para ejecutar una migración coherente.
+-->
+
+## Target técnico
+
+| Dimensión               | Target                               |
+|-------------------------|--------------------------------------|
+| Node.js                 | 24                                   |
+| Azure Functions Runtime | v4                                   |
+| Programming Model       | v4                                   |
+| Pruebas                 | Baseline de comportamiento protegida |
 
 ## Estrategia
 
@@ -34,8 +45,8 @@ Secuencia general:
 
 1. preparar base global;
 2. preparar recursos compartidos requeridos;
-3. refactorizar Functions hacia arquitectura objetivo;
-4. agregar y validar tests;
+3. aplicar cambios estructurales mínimos requeridos para migración y testabilidad;
+4. proteger y validar el comportamiento mediante pruebas cuando corresponda;
 5. migrar adapters de plataforma;
 6. migrar workflows Durable;
 7. ejecutar build y verificación final.
@@ -48,11 +59,15 @@ Omitir etapas que sean `NOT_APPLICABLE`.
 |--------------|--------|--------|--------------|
 | `GLOBAL-001` |        |        |              |
 
-## Arquitectura objetivo
+## Principios arquitectónicos aplicables
 
 Referencia:
 
 `.github/skills/_shared/architecture-policy.md`
+
+Aplicar únicamente los principios necesarios para las acciones aprobadas de esta migración.
+
+La modernización arquitectónica no requerida para alcanzar el target técnico queda fuera de alcance.
 
 ### Principios aplicables
 
@@ -62,6 +77,10 @@ Referencia:
 - recursos compartidos con ownership explícito;
 - sin carpetas o capas vacías;
 - mínima dependencia del runtime desde lógica funcional.
+
+Toda acción `STRUCTURAL` debe indicar si `requiredForMigration` es `true` o `false`.
+
+Las acciones con `requiredForMigration: false` no forman parte de la ejecución obligatoria de la migración técnica.
 
 ## Recursos compartidos
 
@@ -121,7 +140,7 @@ Solo dependencias que condicionan el orden.
 
 Puede incluir:
 
-- tests selectivos;
+- pruebas selectivas;
 - typecheck selectivo;
 - validaciones estáticas;
 - consistencia de configuración.
@@ -138,21 +157,25 @@ El build global completo se ejecuta como gate final después de completar las ad
 |--------|---------|--------------------|
 |        |         |                    |
 
-## Unknowns
+## Incertidumbres
 
-| Unknown | Afecta | Acción |
-|---------|--------|--------|
-|         |        |        |
+| Incertidumbre | Afecta | Acción |
+|---------------|--------|--------|
+|               |        |        |
 
-Un unknown debe bloquear únicamente las acciones que dependan de él.
+Un estado `UNKNOWN` debe bloquear únicamente las acciones que dependan de él.
 
 ## Deuda fuera de alcance
 
 -
 
+Registrar aquí deuda o mejoras estructurales no requeridas para alcanzar el target técnico.
+
 ## Optimizaciones fuera de alcance
 
 -
+
+Las oportunidades no requeridas para la migración no deben convertirse en acciones obligatorias del plan.
 
 ## Criterios de verificación final
 
@@ -160,10 +183,10 @@ La migración debe demostrar como mínimo:
 
 - target técnico alcanzado;
 - build global exitoso;
-- tests requeridos verdes;
+- pruebas requeridas verdes;
 - Functions esperadas presentes;
 - workflows Durable completos;
-- arquitectura planificada aplicada;
+- acciones estructurales requeridas por el plan aplicadas;
 - recursos compartidos consistentes;
 - legacy residual clasificado;
 - packaging correcto.

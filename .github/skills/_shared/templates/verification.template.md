@@ -26,25 +26,42 @@ AFTER estructurado:
 
 `.migration/verification/verification.json`
 
-## Target
+Estados aplicables a las verificaciones:
 
-| Dimensión               | Esperado      | Resultado | Estado |
-|-------------------------|---------------|-----------|--------|
-| Node.js                 | 24            |           |        |
-| Azure Functions Runtime | v4            |           |        |
-| Programming Model       | v4            |           |        |
-| Arquitectura            | Target policy |           |        |
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
+
+## Target técnico
+
+| Dimensión               | Esperado | Resultado | Estado |
+|-------------------------|----------|-----------|--------|
+| Node.js                 | 24       |           |        |
+| Azure Functions Runtime | v4       |           |        |
+| Programming Model       | v4       |           |        |
 
 ## Runtime de validación
 
-| Operación | Node.js |
-|-----------|---------|
-| Install   |         |
-| Typecheck |         |
-| Build     |         |
-| Tests     |         |
+| Operación   | Node.js |
+|-------------|---------|
+| Instalación |         |
+| Typecheck   |         |
+| Build       |         |
+| Pruebas     |         |
 
 Si no se utilizó Node.js target donde correspondía, hacerlo visible.
+
+## Dependencias
+
+| Paquete | Esperado | Detectado | Estado |
+|---------|----------|-----------|--------|
+|         |          |           |        |
+
+Comparar contra las versiones aprobadas por el plan o baseline.
+
+No resolver nuevas versiones target durante verification.
 
 ## Instalación
 
@@ -54,7 +71,7 @@ Comando:
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`<estado>`
 
 ## Typecheck
 
@@ -64,7 +81,7 @@ Comando:
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`<estado>`
 
 ## Build global
 
@@ -74,25 +91,25 @@ Comando:
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`<estado>`
 
 El build global es gate final.
 
-## Tests
+## Pruebas
 
 | Métrica | Resultado |
 |---------|-----------|
 | Suites  |           |
-| Tests   |           |
+| Pruebas |           |
 | Passed  |           |
 | Failed  |           |
 | Skipped |           |
 
 Resultado:
 
-`PASS | FAIL`
+`<estado>`
 
-## Coverage
+## Cobertura
 
 | Métrica    | Resultado |
 |------------|-----------|
@@ -101,21 +118,39 @@ Resultado:
 | Functions  |           |
 | Lines      |           |
 
+Estado:
+
+`<estado>`
+
 Si no forma parte del contrato:
 
 `NOT_APPLICABLE`
+
+No excluir código únicamente para mejorar porcentajes de cobertura.
+
+## Contratos observables preservados
+
+| Function / Workflow | Contrato | Estado | Evidencia |
+|---------------------|----------|--------|-----------|
+|                     |          |        |           |
+
+Verificar únicamente contratos comprometidos por el plan.
+
+No inferir preservación de comportamiento únicamente a partir de un build exitoso.
 
 ## Azure Functions Host
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`<estado>`
 
 Functions registradas:
 
 -
 
 Si no se ejecutó por falta de configuración sanitizada, indicarlo explícitamente.
+
+No leer archivos protegidos ni secretos para habilitar esta validación.
 
 ## Functions
 
@@ -147,11 +182,25 @@ Si no se ejecutó por falta de configuración sanitizada, indicarlo explícitame
 
 -
 
-## Arquitectura
+No duplicar el detalle de `.migration/workflows/<WorkflowName>/durable-migration.md`.
+
+## Cumplimiento del plan
+
+| Action ID | Requerida para migración | Resultado | Evidencia |
+|-----------|--------------------------|-----------|-----------|
+|           |                          |           |           |
+
+Las acciones requeridas para migración deben estar completadas o justificadas por el estado final.
+
+Las acciones con `requiredForMigration: false` no son gate obligatorio para `VERIFIED`.
+
+## Estructura comprometida por el plan
 
 Resultado:
 
-`PASS | FAIL | REQUIRES_REVIEW`
+`PASS | FAIL | NOT_APPLICABLE | REQUIRES_REVIEW`
+
+Verificar únicamente límites o cambios estructurales exigidos por acciones aprobadas con `requiredForMigration: true`.
 
 ### Azure adapters
 
@@ -161,17 +210,19 @@ Resultado:
 
 -
 
-### Infrastructure boundaries
+### Límites de infraestructura
 
 -
 
-### Configuration boundaries
+### Límites de configuración
 
 -
 
-No verificar arquitectura por cantidad de carpetas.
+Omitir subsecciones que no apliquen.
 
-Verificar los límites exigidos por el plan.
+No verificar estructura por cantidad de carpetas.
+
+No convertir verification en una revisión general de arquitectura o modernización.
 
 ## Recursos compartidos
 
@@ -187,7 +238,7 @@ Verificar los límites exigidos por el plan.
 
 -
 
-## Legacy scan
+## Legacy residual
 
 | Artefacto | Clasificación | Evidencia |
 |-----------|---------------|-----------|
@@ -200,11 +251,16 @@ Clasificaciones:
 - `EXPECTED`
 - `UNKNOWN`
 
+Revisar únicamente artefactos legacy relacionados con el scope efectivo, el target técnico o acciones comprometidas por
+el plan.
+
+`TECHNICAL_DEBT` y `EXPECTED` no bloquean automáticamente el cierre.
+
 ## Packaging
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`<estado>`
 
 Comprobar cuando corresponda:
 
@@ -225,7 +281,7 @@ Comprobar cuando corresponda:
 
 -
 
-### Arquitectura
+### Estructura
 
 -
 
@@ -239,7 +295,7 @@ Comprobar cuando corresponda:
 
 Esta sección debe resumir cambios relevantes, no repetir todo el dossier.
 
-## Blockers
+## Bloqueos
 
 -
 
@@ -251,13 +307,17 @@ Si no existen:
 
 -
 
+La deuda no bloqueante puede producir `VERIFIED_WITH_DEBT`.
+
 ## Optimizaciones fuera de alcance
 
 -
 
-## Unknowns
+## Incertidumbres
 
 -
+
+No reemplazar incertidumbres por supuestos.
 
 ## Riesgos posteriores a migración
 
@@ -284,7 +344,7 @@ Migración técnica cerrada con deuda documentada.
 
 ### BLOCKED
 
-Volver únicamente al capability responsable del bloqueo.
+Volver únicamente a la etapa o acción responsable del bloqueo.
 
 ### REQUIRES_REVIEW
 

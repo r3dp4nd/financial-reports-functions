@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Registrar la migración de plataforma ejecutada sobre `<FunctionName>`.
+Registrar la migración técnica ejecutada sobre `<FunctionName>`.
 
 ## Referencias
 
@@ -28,6 +28,26 @@ Preparación:
 |-------------------|-------|---------|
 | Programming Model |       |         |
 
+## Dependencias y APIs
+
+| Dependencia | Antes | Después | Adaptación realizada |
+|-------------|-------|---------|----------------------|
+|             |       |         |                      |
+
+Registrar únicamente dependencias o APIs modificadas por esta Function.
+
+No volver a resolver versiones objetivo en esta etapa.
+
+## Compatibilidad Node.js
+
+Cambios específicos de esta Function:
+
+-
+
+Si no fueron necesarios:
+
+`NOT_APPLICABLE`
+
 ## Trigger
 
 Tipo:
@@ -37,6 +57,10 @@ Tipo:
 Configuración preservada:
 
 -
+
+Registrar únicamente nombres de configuración cuando corresponda.
+
+Nunca valores.
 
 ## Bindings
 
@@ -48,23 +72,23 @@ Configuración preservada:
 
 Archivo:
 
-`src/functions/<function>.function.ts`
+`<ruta del adapter migrado>`
 
 Cambios realizados:
 
 -
 
-## Arquitectura preservada
+Preservar la convención existente del repositorio cuando sea coherente con el plan.
+
+## Estructura preservada
 
 Resultado:
 
 `PASS | FAIL | REQUIRES_REVIEW`
 
-Confirmar únicamente aspectos definidos en el plan:
+Confirmar únicamente que la migración técnica no revirtió cambios estructurales requeridos por el plan.
 
-- lógica funcional permanece fuera del adapter;
-- infraestructura permanece aislada;
-- capability conserva sus límites.
+No realizar refactorización adicional desde esta etapa.
 
 ## Recursos compartidos
 
@@ -74,6 +98,8 @@ Confirmar únicamente aspectos definidos en el plan:
 
 Confirmar que no se duplicaron implementaciones compartidas.
 
+No modificar recursos compartidos fuera de las acciones aprobadas.
+
 ## Artefactos legacy
 
 | Artefacto | Acción | Resultado |
@@ -82,11 +108,13 @@ Confirmar que no se duplicaron implementaciones compartidas.
 
 No listar limpieza no relacionada.
 
+No eliminar artefactos legacy salvo que el plan determine que quedaron reemplazados de forma segura.
+
 ## Archivos modificados
 
 -
 
-## Tests
+## Pruebas
 
 Comando:
 
@@ -94,19 +122,41 @@ Comando:
 
 Resultado:
 
-`PASS | FAIL | NOT_EXECUTED`
+`PASS | FAIL | NOT_EXECUTED | NOT_APPLICABLE | REQUIRES_REVIEW`
+
+Esta etapa puede ejecutar la baseline existente.
+
+No generar nuevas pruebas desde la migración técnica.
 
 ## Validaciones
 
-| Validación | Resultado |
-|------------|-----------|
-|            |           |
+| Validación | Resultado | Evidencia |
+|------------|-----------|-----------|
+|            |           |           |
+
+Estados aplicables:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
+
+No afirmar `PASS` sin evidencia.
+
+## Desviaciones del plan
+
+-
+
+Registrar únicamente diferencias entre las acciones planificadas y las ejecutadas.
+
+No introducir modernización adicional desde esta sección.
 
 ## Riesgos
 
 -
 
-## Unknowns
+## Incertidumbres
 
 -
 

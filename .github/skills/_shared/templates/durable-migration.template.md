@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Registrar la migración coordinada del workflow Durable `<WorkflowName>`.
+Registrar la migración técnica coordinada del workflow Durable `<WorkflowName>`.
 
 ## Referencias
 
@@ -45,6 +45,10 @@ flowchart LR
 
 Incluir el diagrama únicamente si mejora la comprensión.
 
+Si la topología cambió mediante una acción aprobada, representar BEFORE y AFTER.
+
+No duplicar diagramas cuando las relaciones entre participantes se preservaron.
+
 ## Comportamiento preservado
 
 Registrar únicamente los elementos que realmente existan:
@@ -59,19 +63,34 @@ Registrar únicamente los elementos que realmente existan:
 - outputs;
 - errores.
 
-## Arquitectura
+No modificar lógica funcional como parte de la migración Durable salvo que exista una acción aprobada que lo requiera.
 
-### Runtime integration
+## Integración técnica
+
+### Durable Functions y APIs
+
+| Elemento | Antes | Después | Adaptación realizada |
+|----------|-------|---------|----------------------|
+|          |       |         |                      |
+
+Registrar únicamente paquetes o APIs realmente modificados.
+
+No volver a resolver versiones target en esta etapa.
+
+### Integración con runtime
 
 Cambios realizados:
 
 -
 
-### Capability logic
+### Lógica funcional
 
 Resultado:
 
 `PRESERVED | CHANGED | REQUIRES_REVIEW`
+
+Si existe `CHANGED`, debe corresponder a una acción aprobada y documentarse su impacto sobre el comportamiento
+observable.
 
 ## Recursos compartidos
 
@@ -79,15 +98,23 @@ Resultado:
 |-------------|--------------|--------|
 |             |              |        |
 
+No duplicar ni modificar recursos compartidos fuera de las acciones aprobadas.
+
 ## Determinismo
 
 Resultado:
 
 `PASS | FAIL | REQUIRES_REVIEW`
 
+Evidencia:
+
+-
+
 Observaciones:
 
 -
+
+No afirmar `PASS` únicamente porque el código compile.
 
 ## Retries
 
@@ -107,7 +134,7 @@ Si no aplica:
 
 `NOT_APPLICABLE`
 
-## External Events
+## Eventos externos
 
 -
 
@@ -143,21 +170,48 @@ Riesgos:
 
 No afirmar seguridad de replay productivo sin evidencia.
 
-## Tests
+Si existen instancias potencialmente activas y la compatibilidad de replay permanece `UNKNOWN`, la migración requiere
+revisión antes de asumir seguridad para despliegue productivo.
 
-| Suite | Resultado |
-|-------|-----------|
-|       |           |
+## Pruebas
+
+| Suite | Resultado | Evidencia |
+|-------|-----------|-----------|
+|       |           |           |
+
+Estados aplicables:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
 
 ## Validaciones
 
+| Validación | Resultado | Evidencia |
+|------------|-----------|-----------|
+|            |           |           |
+
+No afirmar `PASS` sin evidencia.
+
+## Archivos modificados
+
 -
+
+## Desviaciones del plan
+
+-
+
+Registrar únicamente diferencias entre la migración Durable planificada y la realmente ejecutada.
+
+No introducir rediseño del workflow desde esta sección.
 
 ## Riesgos
 
 -
 
-## Unknowns
+## Incertidumbres
 
 -
 

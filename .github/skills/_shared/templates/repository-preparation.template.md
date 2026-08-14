@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Registrar los cambios globales ejecutados antes de la migración de Functions.
+Registrar los cambios globales aprobados y realmente ejecutados antes de la migración de Functions.
 
 Referencia del plan:
 
@@ -20,34 +20,41 @@ Referencia del plan:
 
 ## Plataforma
 
-| Dimensión                    | Antes | Después | Resultado |
-|------------------------------|-------|---------|-----------|
-| Node.js                      |       |         |           |
-| Azure Functions dependencies |       |         |           |
-| TypeScript                   |       |         |           |
-| Testing tooling              |       |         |           |
+| Dimensión                       | Antes | Después | Resultado |
+|---------------------------------|-------|---------|-----------|
+| Node.js                         |       |         |           |
+| Dependencias de Azure Functions |       |         |           |
+| TypeScript                      |       |         |           |
+| Herramientas de pruebas         |       |         |           |
 
 Registrar únicamente dimensiones realmente modificadas.
 
-## Preparación arquitectónica
+No presentar configuración externa no modificada como si hubiese sido actualizada.
 
-Cambios globales realizados para soportar la arquitectura objetivo:
+## Preparación estructural global
+
+Cambios globales ejecutados porque eran requeridos por acciones aprobadas de la migración:
 
 -
 
 Ejemplos:
 
-- creación de `src/functions/`;
-- preparación de configuration wiring;
-- estructura transversal realmente necesaria.
+- wiring global requerido;
+- infraestructura transversal confirmada;
+- configuración de herramientas compartidas;
+- estructura común requerida por acciones aprobadas.
 
-No listar carpetas creadas sin responsabilidad.
+No crear ni listar carpetas sin responsabilidad real.
+
+No realizar modernización arquitectónica fuera del plan aprobado.
 
 ## Recursos compartidos
 
 | Action ID | Resource ID | Ownership | Resultado |
 |-----------|-------------|-----------|-----------|
 |           |             |           |           |
+
+Registrar únicamente acciones `SR-ACTION-*` aprobadas para ejecución.
 
 ## Cambios de dependencias
 
@@ -56,6 +63,10 @@ No listar carpetas creadas sin responsabilidad.
 |         |       |         |        |
 
 No listar dependencias que no cambiaron.
+
+Las versiones deben corresponder al plan aprobado.
+
+Esta etapa no selecciona nuevos targets.
 
 ## Archivos modificados
 
@@ -67,11 +78,23 @@ Registrar únicamente cambios estructurales o nombres de configuración.
 
 Nunca valores.
 
+No leer ni documentar contenido de archivos protegidos para completar esta sección.
+
 ## Validaciones ejecutadas
 
-| Validación | Resultado |
-|------------|-----------|
-|            | `PASS     | FAIL | NOT_EXECUTED` |
+| Validación | Resultado | Evidencia |
+|------------|-----------|-----------|
+|            |           |           |
+
+Estados aplicables:
+
+- `PASS`
+- `FAIL`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `REQUIRES_REVIEW`
+
+No afirmar `PASS` sin evidencia de ejecución.
 
 ## Acciones omitidas
 
@@ -85,11 +108,19 @@ Nunca valores.
 |-----------|--------|
 |           |        |
 
+## Desviaciones del plan
+
+-
+
+Registrar únicamente diferencias respecto del plan aprobado.
+
+No utilizar esta sección para introducir trabajo nuevo no aprobado.
+
 ## Riesgos
 
 -
 
-## Unknowns
+## Incertidumbres
 
 -
 
@@ -101,4 +132,4 @@ Functions que pueden continuar:
 
 Functions o workflows bloqueados:
 
-- 
+-

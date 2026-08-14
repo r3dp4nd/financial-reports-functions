@@ -15,6 +15,12 @@ No inventar contexto funcional que no pueda inferirse o confirmarse.
 
 ## Plataforma actual
 
+<!--
+Si el repositorio contiene más de una Function App con plataformas diferentes,
+registrar esta sección por Function App o indicar explícitamente a cuál corresponde.
+No combinar versiones diferentes como si representaran un único estado.
+-->
+
 | Dimensión               | Estado | Evidencia |
 |-------------------------|--------|-----------|
 | Node.js                 |        |           |
@@ -22,7 +28,7 @@ No inventar contexto funcional que no pueda inferirse o confirmarse.
 | Programming Model       |        |           |
 | TypeScript              |        |           |
 | Durable Functions       |        |           |
-| Package manager         |        |           |
+| Gestor de paquetes      |        |           |
 | Testing                 |        |           |
 
 Usar cuando corresponda:
@@ -91,11 +97,15 @@ No presentar todavía la arquitectura objetivo.
 ### Acoplamientos relevantes
 
 <!--
+Registrar únicamente acoplamientos observados o inferidos con evidencia.
+
 Ejemplos:
 - lógica dentro de Azure entrypoints;
 - acceso directo a SDK;
 - process.env dentro de servicios;
 - recursos compartidos sin ownership.
+
+No proponer todavía su refactorización.
 -->
 
 ## Patrones observados
@@ -115,13 +125,33 @@ Ejemplos posibles:
 
 No inferir patrones únicamente por nombres.
 
-## Recursos compartidos
+## Dependencias relevantes
+
+<!--
+Vista humana resumida de las dependencias que ayudan a comprender el estado actual.
+
+El inventario completo pertenece a:
+../repository/inventory.json
+
+No recomendar versiones objetivo ni evaluar compatibilidad en esta sección.
+-->
+
+| Paquete | Versión declarada | Tipo | Evidencia |
+|---------|-------------------|------|-----------|
+|         |                   |      |           |
+
+## Recursos compartidos observados o candidatos
 
 | Recurso | Tipo | Ownership | Consumidores | Estado |
 |---------|------|-----------|--------------|--------|
 |         |      |           |              |        |
 
-El detalle estructurado vive en:
+Discovery puede registrar candidatos.
+
+No completar `Ownership` o `Consumidores` como hechos cuando la evidencia solo permita inferir que el recurso podría ser
+compartido.
+
+El detalle estructurado consolidado vive en:
 
 `.migration/resources/shared-resources.json`
 
@@ -145,7 +175,19 @@ Solo registrar nombres de claves.
 
 Nunca incluir valores.
 
-## Testing actual
+## Archivos protegidos detectados
+
+<!--
+Registrar únicamente metadata permitida por security-policy.md.
+
+Nunca leer ni incluir contenido.
+-->
+
+| Ruta | Categoría | Contenido leído |
+|------|-----------|-----------------|
+|      |           | `false`         |
+
+## Pruebas actuales
 
 ### Framework
 
@@ -166,13 +208,22 @@ No utilizar ausencia de tests como evidencia automática de baja testabilidad.
 |--------|---------|-----------|
 |        |         |           |
 
-## Unknowns
+Registrar únicamente riesgos sustentados por el estado observado.
+
+La evaluación del gap contra el target pertenece al assessment.
+
+## Incertidumbres
 
 -
 
-No reemplazar unknowns por suposiciones.
+No reemplazar incertidumbres por suposiciones.
 
 ## Estado del análisis
+
+<!--
+Esta sección es únicamente navegación del proceso.
+No forma parte de la fotografía técnica BEFORE.
+-->
 
 | Etapa                | Estado |
 |----------------------|--------|
