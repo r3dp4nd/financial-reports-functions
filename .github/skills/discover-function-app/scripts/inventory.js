@@ -357,18 +357,34 @@ function hostMetadata(appRoot, warnings) {
   };
 }
 
-function dependencyList(packageInfo) {
+function dependencyUsageStatus(dependencyUsage, name) {
+  if (!dependencyUsage || !Object.prototype.hasOwnProperty.call(dependencyUsage, name)) {
+    return null;
+  }
+
+  return Boolean(dependencyUsage[name]);
+}
+
+function dependencyList(packageInfo, dependencyUsage) {
   const result = [];
 
   Object.keys(packageInfo.dependencies || {}).forEach(function (name) {
     result.push({
-      name: name, version: packageInfo.dependencies[name], scope: 'RUNTIME', azurePackage: isAzurePackage(name)
+      name: name,
+      version: packageInfo.dependencies[name],
+      scope: 'RUNTIME',
+      azurePackage: isAzurePackage(name),
+      usageDetected: dependencyUsageStatus(dependencyUsage, name)
     });
   });
 
   Object.keys(packageInfo.devDependencies || {}).forEach(function (name) {
     result.push({
-      name: name, version: packageInfo.devDependencies[name], scope: 'DEVELOPMENT', azurePackage: isAzurePackage(name)
+      name: name,
+      version: packageInfo.devDependencies[name],
+      scope: 'DEVELOPMENT',
+      azurePackage: isAzurePackage(name),
+      usageDetected: dependencyUsageStatus(dependencyUsage, name)
     });
   });
 
@@ -565,11 +581,14 @@ function deduplicateObjects(values, keyFunction) {
   });
 }
 
-function scanSources(appSourceFiles, warnings) {
+function scanSources(appSourceFiles, warnings, declaredPackageNames) {
   const v4Registrations = [];
   const durableRegistrations = [];
   const environmentUsage = {};
   const azureResourcePackageUsage = {};
+  const dependencyUsage = {};
+
+  const packageNames = Array.isArray(declaredPackageNames) ? declaredPackageNames : [];
 
   appSourceFiles.forEach(function (filePath) {
     const content = safeReadText(filePath, warnings);
@@ -603,6 +622,16 @@ function scanSources(appSourceFiles, warnings) {
         azureResourcePackageUsage[packageName].push(normalizeRelative(filePath));
       }
     });
+
+    packageNames.forEach(function (packageName) {
+      if (!dependencyUsage[packageName]) {
+        dependencyUsage[packageName] = false;
+      }
+
+      if (!dependencyUsage[packageName] && sourceReferencesPackage(content, packageName)) {
+        dependencyUsage[packageName] = true;
+      }
+    });
   });
 
   return {
@@ -616,7 +645,9 @@ function scanSources(appSourceFiles, warnings) {
 
     environmentUsage: normalizeUsageMap(environmentUsage),
 
-    azureResourcePackageUsage: normalizeUsageMap(azureResourcePackageUsage)
+    azureResourcePackageUsage: normalizeUsageMap(azureResourcePackageUsage),
+
+    dependencyUsage: dependencyUsage
   };
 }
 
@@ -818,7 +849,9 @@ function buildFunctionApp(candidate, files, warnings) {
 
   const legacyFunctions = findLegacyFunctions(appRoot, appFiles, warnings);
 
-  const sourceScan = scanSources(sourceFiles(appFiles), warnings);
+  const declaredPackageNames = Object.keys(packageInfo.dependencies || {}).concat(Object.keys(packageInfo.devDependencies || {}));
+
+  const sourceScan = scanSources(sourceFiles(appFiles), warnings, declaredPackageNames);
 
   const v4Functions = buildV4Functions(sourceScan.v4Registrations, sourceScan.durableRegistrations);
 
@@ -849,7 +882,7 @@ function buildFunctionApp(candidate, files, warnings) {
 
     durable: durable,
 
-    dependencies: dependencyList(packageInfo),
+    dependencies: dependencyList(packageInfo, sourceScan.dependencyUsage),
 
     functions: legacyFunctions.concat(v4Functions),
 

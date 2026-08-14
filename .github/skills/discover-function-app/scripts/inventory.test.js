@@ -472,6 +472,66 @@ test('detecta varias Function Apps separadamente', function () {
   }
 });
 
+test('detecta usageDetected true para dependencia usada', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2', 'moment-timezone': '^0.5.33'
+      }
+    });
+
+    writeFile(root, 'src/a.ts', "import moment from 'moment-timezone';");
+
+    const result = executeInventory(root);
+
+    const dependency = result.functionApps[0].dependencies.find(function (entry) {
+      return (entry.name === 'moment-timezone');
+    });
+
+    assert(dependency);
+
+    assert.strictEqual(dependency.usageDetected, true);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('detecta usageDetected false para dependencia declarada sin uso', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2', uuid: '^8.3.2'
+      }
+    });
+
+    writeFile(root, 'src/a.ts', "import { app } from '@azure/functions';");
+
+    const result = executeInventory(root);
+
+    const dependency = result.functionApps[0].dependencies.find(function (entry) {
+      return (entry.name === 'uuid');
+    });
+
+    assert(dependency);
+
+    assert.strictEqual(dependency.usageDetected, false);
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('stdout contiene JSON puro', function () {
   const root = createRepository();
 

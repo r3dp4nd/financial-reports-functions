@@ -1,0 +1,80 @@
+{
+    "schemaVersion": "1",
+    "review": {
+        "skillUnderReview": "discover-function-app",
+        "date": "2026-08-14",
+        "sourceLesson": {
+            "id": "discover-function-app-20260814",
+            "status": "OBSERVED",
+            "originRepository": "assi-report-disbursement-export",
+            "note": "Insumo externo referenciado, no copiado; el review es agnóstico al repositorio objetivo."
+        }
+    },
+    "scope": "Revisión puntual de una ejecución de discover-function-app, usando como único insumo la lesson discover-function-app-20260814. Las propuestas resultantes afectan únicamente al toolkit, nunca al repositorio objetivo.",
+    "evidenceRefs": [
+        "discover-function-app-20260814.md",
+        "discover-function-app-20260814.json",
+        ".github/skills/discover-function-app/SKILL.md",
+        ".github/skills/discover-function-app/scripts/inventory.js",
+        ".github/skills/discover-function-app/references/graphify-usage.md",
+        ".github/skills/_shared/evidence-policy.md",
+        ".github/skills/_shared/status-policy.md"
+    ],
+    "findings": [
+        {
+            "id": "F1",
+            "type": "MISSING_COVERAGE",
+            "description": "scripts/inventory.js no ejecuta verificación determinista de uso real de dependencias runtime declaradas en package.json. El evidence status de cada dependencia depende del criterio del ejecutor al redactar current-state.md, no de un hecho determinista del script.",
+            "observedEvidence": "3 dependencias (exceljs, moment-timezone, find-remove) marcadas INFERRED cuando grep confirma uso directo en source no protegido.",
+            "attributionNote": "Parte de la imprecisión es responsabilidad de disciplina de ejecución del agente, no exclusivamente un gap del skill. Se documenta como finding de skill porque mover la verificación a un paso determinista elimina la dependencia de esa disciplina en ejecuciones futuras.",
+            "recurrence": "ISOLATED",
+            "impact": {
+                "security": "NONE",
+                "correctness": "LOW",
+                "migrationCompletion": "LOW_MEDIUM",
+                "tokenConsumption": "NEUTRAL_TO_POSITIVE",
+                "maintainability": "POSITIVE_IF_MOVED_TO_SCRIPT",
+                "portability": "NONE"
+            }
+        },
+        {
+            "id": "F2",
+            "type": "MISSING_COVERAGE",
+            "description": "El vocabulario de evidencia compartido (_shared/evidence-policy.md, _shared/status-policy.md) no distingue 'ausencia de uso confirmada por verificación determinista' de 'evidencia insuficiente' (UNKNOWN genérico).",
+            "observedEvidence": "uuid declarada en package.json sin ningún uso detectable en source (grep -r sin resultados fuera de node_modules); quedó marcada UNKNOWN en vez de reflejar evidencia positiva de no-uso.",
+            "recurrence": "ISOLATED",
+            "impact": {
+                "security": "NONE",
+                "correctness": "LOW",
+                "migrationCompletion": "LOW_MEDIUM",
+                "tokenConsumption": "NONE",
+                "maintainability": "HIGHER_GOVERNANCE_COST_IF_SHARED_VOCAB_CHANGES",
+                "portability": "NONE"
+            }
+        },
+        {
+            "id": "F3",
+            "type": "REDUNDANCY",
+            "description": "God node del grafo (ReportDto, 215 edges) pertenece a un dominio de reporting distinto al slice bajo análisis (Disbursement). El grafo no distingue automáticamente nodos relevantes al slice objetivo de nodos de slices hermanos.",
+            "evaluation": "Evidencia empírica que refuerza una regla ya existente en references/graphify-usage.md (no convertir coincidencia de grafo en hecho confirmado sin verificación cruzada). El proceso se comportó correctamente; no se identifica gap.",
+            "recurrence": "ISOLATED",
+            "impact": {
+                "security": "NONE",
+                "correctness": "NONE",
+                "migrationCompletion": "NONE",
+                "tokenConsumption": "NONE",
+                "maintainability": "NONE",
+                "portability": "NONE"
+            },
+            "recommendation": "MONITOR"
+        }
+    ],
+    "affectedSkills": [
+        "discover-function-app"
+    ],
+    "affectedSharedPolicies": [
+        "_shared/evidence-policy.md (solo si se elige alternativa de mayor impacto para F2)",
+        "_shared/status-policy.md (solo si se elige alternativa de mayor impacto para F2)"
+    ],
+    "baselineCandidates": []
+}

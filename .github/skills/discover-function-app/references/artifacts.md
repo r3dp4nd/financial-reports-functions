@@ -11,7 +11,7 @@ Debe incluir cuando aplique:
 - `schemaVersion`;
 - repository y Function Apps;
 - platform observable;
-- dependencies;
+- dependencies (cada entrada incluye `usageDetected: true|false|null`, calculado de forma determinista por el script buscando el nombre del paquete en imports/requires del código fuente no protegido; `null` cuando no hay archivos de source escaneables para decidir);
 - Functions;
 - triggers y bindings;
 - configuration keys;

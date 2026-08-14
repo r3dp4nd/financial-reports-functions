@@ -1,0 +1,100 @@
+{
+    "schemaVersion": "1",
+    "skillUnderReview": "discover-function-app",
+    "reviewDate": "2026-08-14",
+    "note": "Las propuestas PROPOSAL_1 y PROPOSAL_2A fueron aceptadas e implementadas tras aprobación humana explícita del usuario. PROPOSAL_2B permanece pospuesta y PROPOSAL_3 permanece en MONITOR sin cambio de código.",
+    "proposals": [
+        {
+            "id": "PROPOSAL_1",
+            "findingRef": "F1",
+            "recommendation": "RECOMMEND",
+            "status": "ACCEPTED",
+            "implementationNote": "Implementado en scripts/inventory.js (campo usageDetected), scripts/inventory.test.js (2 tests nuevos, 15/15 PASS), references/artifacts.md y eval #21.",
+            "minimalChange": "Agregar a scripts/inventory.js un paso determinista que verifique si cada dependencia runtime declarada en package.json aparece en algún import/require dentro del código fuente no protegido, anotando el resultado como campo booleano usageDetected en la entrada correspondiente de dependencies en inventory.json.",
+            "affectedFiles": [
+                ".github/skills/discover-function-app/scripts/inventory.js",
+                ".github/skills/discover-function-app/scripts/inventory.test.js",
+                ".github/skills/discover-function-app/references/artifacts.md"
+            ],
+            "compatibilityRisk": "LOW",
+            "requiredEvals": [
+                "Nuevo caso en discover-function-app.eval.md: dependencia usada vs. dependencia declarada sin uso detectado."
+            ],
+            "requiresHumanApproval": true
+        },
+        {
+            "id": "PROPOSAL_2A",
+            "findingRef": "F2",
+            "recommendation": "RECOMMEND",
+            "status": "ACCEPTED",
+            "implementationNote": "Cubierta por el mismo cambio de PROPOSAL_1 (campo usageDetected). No se modificó _shared/evidence-policy.md ni _shared/status-policy.md.",
+            "minimalChange": "Reutilizar el campo usageDetected:false de PROPOSAL_1 como señal suficiente para distinguir 'declarada sin uso detectado' de 'evidencia insuficiente', sin ampliar el vocabulario de evidencia compartido.",
+            "affectedFiles": [
+                ".github/skills/discover-function-app/scripts/inventory.js",
+                ".github/skills/discover-function-app/references/artifacts.md"
+            ],
+            "compatibilityRisk": "LOW",
+            "requiredEvals": [
+                "Mismo caso de eval que PROPOSAL_1."
+            ],
+            "requiresHumanApproval": true
+        },
+        {
+            "id": "PROPOSAL_2B",
+            "findingRef": "F2",
+            "recommendation": "NEEDS_MORE_EVIDENCE",
+            "proposedChange": "Agregar una categoría explícita de evidencia (p. ej. NOT_USED_CONFIRMED) al vocabulario compartido en _shared/evidence-policy.md y _shared/status-policy.md.",
+            "affectedFiles": [
+                ".github/skills/_shared/evidence-policy.md",
+                ".github/skills/_shared/status-policy.md"
+            ],
+            "compatibilityRisk": "MEDIUM_HIGH",
+            "requiredEvals": [
+                "Evals de todas las skills que referencien el vocabulario de evidencia, si se decidiera avanzar."
+            ],
+            "requiresHumanApproval": true,
+            "deferralNote": "Posponer hasta observar recurrencia en más de una ejecución/repositorio. Preferir PROPOSAL_2A por menor costo de gobernanza (regla 'menos es más' de review-model.md)."
+        },
+        {
+            "id": "PROPOSAL_3",
+            "findingRef": "F3",
+            "recommendation": "MONITOR",
+            "proposedChange": "Ninguno. Comportamiento ya cubierto por regla existente en references/graphify-usage.md.",
+            "affectedFiles": [],
+            "compatibilityRisk": "NOT_APPLICABLE",
+            "requiredEvals": [],
+            "requiresHumanApproval": false
+        }
+    ],
+    "summary": [
+        {
+            "proposal": "PROPOSAL_1",
+            "finding": "F1",
+            "recommendation": "RECOMMEND",
+            "status": "ACCEPTED",
+            "requiresHumanApproval": true
+        },
+        {
+            "proposal": "PROPOSAL_2A",
+            "finding": "F2",
+            "recommendation": "RECOMMEND",
+            "status": "ACCEPTED",
+            "requiresHumanApproval": true
+        },
+        {
+            "proposal": "PROPOSAL_2B",
+            "finding": "F2",
+            "recommendation": "NEEDS_MORE_EVIDENCE",
+            "status": "DEFERRED",
+            "requiresHumanApproval": true
+        },
+        {
+            "proposal": "PROPOSAL_3",
+            "finding": "F3",
+            "recommendation": "MONITOR",
+            "status": "NO_CHANGE",
+            "requiresHumanApproval": false
+        }
+    ],
+    "closureNote": "Este plan no modifica automáticamente SKILL.md, scripts, policies, templates ni evals. Nunca se autoaplica, conforme a review-skill-performance/SKILL.md y lessons-policy.md."
+}

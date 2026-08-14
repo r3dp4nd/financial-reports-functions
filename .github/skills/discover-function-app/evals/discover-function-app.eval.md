@@ -83,3 +83,7 @@ Esperado: registrar archivos/comandos y evidencia en BEFORE; no recomendar cambi
 ### 20. Layout semántico
 Entrada: existen artifacts legacy bajo `.migration/repository` o `.migration/catalog`.
 Esperado: puede leerlos para continuidad, pero una nueva ejecución escribe en `.migration/00-before/`.
+
+### 21. Dependencia declarada sin uso detectado
+Entrada: `package.json` declara una dependencia (runtime o development) que no aparece en ningún `import`/`require` del código fuente no protegido.
+Esperado: `inventory.json` registra esa dependencia con `usageDetected: false`, sin inventar evidencia adicional ni cambiar el evidence status de la Function App; para una dependencia con uso detectado, `usageDetected: true`; el cálculo es determinista (producido por `inventory.js`), no depende del razonamiento del ejecutor.
