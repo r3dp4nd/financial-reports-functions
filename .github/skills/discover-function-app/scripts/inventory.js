@@ -125,6 +125,33 @@ function isCiCdFile(relativePath) {
   return (normalized.startsWith('.github/workflows/') || normalized === '.gitlab-ci.yml' || normalized === '.gitlab-ci.yaml' || base === 'jenkinsfile' || normalized === 'bitbucket-pipelines.yml' || normalized === 'bitbucket-pipelines.yaml' || normalized === 'azure-pipelines.yml' || normalized === 'azure-pipelines.yaml' || normalized.startsWith('pipelines/') || normalized.includes('/pipelines/') || normalized.startsWith('devops/') || normalized.includes('/devops/'));
 }
 
+function detectCiCdProvider(relativePath) {
+  const normalized = relativePath.toLowerCase();
+  const base = path.basename(normalized);
+
+  if (normalized.startsWith('.github/workflows/')) {
+    return 'GITHUB_ACTIONS';
+  }
+
+  if (normalized.startsWith('devops/') || normalized.includes('/devops/') || normalized.startsWith('pipelines/') || normalized.includes('/pipelines/') || normalized === 'azure-pipelines.yml' || normalized === 'azure-pipelines.yaml') {
+    return 'AZURE_DEVOPS';
+  }
+
+  if (normalized === '.gitlab-ci.yml' || normalized === '.gitlab-ci.yaml') {
+    return 'GITLAB_CI';
+  }
+
+  if (base === 'jenkinsfile') {
+    return 'JENKINS';
+  }
+
+  if (normalized === 'bitbucket-pipelines.yml' || normalized === 'bitbucket-pipelines.yaml') {
+    return 'BITBUCKET';
+  }
+
+  return 'UNKNOWN';
+}
+
 function classifyProtectedFile(filePath) {
   const relativePath = normalizeRelative(filePath);
   const name = path.basename(filePath);
@@ -161,9 +188,15 @@ function recordProtectedFile(filePath, protectedFiles, category) {
     return;
   }
 
-  protectedFiles.push({
+  const entry = {
     path: relativePath, category: category, contentRead: false
-  });
+  };
+
+  if (category === 'CI_CD') {
+    entry.provider = detectCiCdProvider(relativePath);
+  }
+
+  protectedFiles.push(entry);
 }
 
 function walkProtectedTree(directory, protectedFiles, category) {
@@ -857,6 +890,15 @@ function createInventory() {
     sensitiveFilesDetected: protectedFiles.sort(function (a, b) {
       return a.path.localeCompare(b.path);
     }),
+
+    ciCdProviders: Array.from(new Set(protectedFiles
+      .filter(function (entry) {
+        return entry.category === 'CI_CD' && entry.provider;
+      })
+      .map(function (entry) {
+        return entry.provider;
+      })))
+      .sort(),
 
     warnings: warnings
   };

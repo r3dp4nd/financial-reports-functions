@@ -16,6 +16,7 @@
 | Azure Functions Runtime | | |
 | Programming Model | | |
 | Durable Functions | | |
+| CI/CD provider(s) | | |
 
 ## Functions
 
@@ -76,8 +77,8 @@ Solo nombres de claves; nunca valores.
 
 ## Archivos protegidos detectados
 
-| Ruta | Categoría | contentRead |
-|---|---|---|
+| Ruta | Categoría | Provider (si CI_CD) | contentRead |
+|---|---|---|---|
 
 ## Riesgos e incertidumbres
 

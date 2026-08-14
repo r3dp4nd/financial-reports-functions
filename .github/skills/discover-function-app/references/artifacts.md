@@ -22,7 +22,8 @@ Debe incluir cuando aplique:
 - initial criticality and testability signals when directly observable;
 - patterns relevantes;
 - shared resource candidates;
-- protected files detected;
+- protected files detected, incluyendo `provider` cuando la categoría sea `CI_CD` (`GITHUB_ACTIONS`, `AZURE_DEVOPS`, `GITLAB_CI`, `JENKINS`, `BITBUCKET`, `UNKNOWN`);
+- `ciCdProviders` como resumen agregado de proveedores CI/CD detectados en el repositorio;
 - warnings;
 - unknowns;
 - evidence/provenance.
