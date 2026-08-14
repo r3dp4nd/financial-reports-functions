@@ -151,7 +151,27 @@ Describir sin puntuar:
 
 No comparar todavía contra arquitectura target.
 
-Cuando sea útil, incluir un diagrama Mermaid `flowchart` con nodos principales: triggers, Functions, orchestrator/activities, capabilities, shared resources y external resources candidatos. Usar enlaces sólidos solo para relaciones `CONFIRMED`; usar enlaces punteados para relaciones `INFERRED`.
+Cuando sea útil, incluir un diagrama Mermaid `flowchart` con nodos principales: triggers, Functions, orchestrator/activities, capabilities, shared resources y external resources candidatos. Usar enlaces sólidos solo para relaciones `CONFIRMED`; usar enlaces punteados para relaciones `INFERRED`. Este diagrama documenta el **flujo entre Functions** (quién dispara a quién), no la organización interna de una capability.
+
+### Diagrama de capas (organización interna)
+
+Además del diagrama de flujo, cuando exista evidencia suficiente de la estructura interna de al menos una capability representativa (adapter → handler → application → domain → infrastructure), incluir un segundo diagrama Mermaid `flowchart` compacto que muestre esa composición por capas para 1-2 capabilities representativas, no todas. Este diagrama documenta **cómo está organizado el código dentro de una capability**, complementando (no reemplazando) el diagrama de flujo entre Functions.
+
+Ejemplo de estructura del diagrama de capas (usar nombres reales del repositorio, no genéricos):
+
+```mermaid
+flowchart TB
+    subgraph Capability["<NombreDeCapability>"]
+        Adapter["Adaptador Azure Functions<br/>(trigger + registro)"] --> Handler["Controlador<br/>(handler.ts)"]
+        Handler --> UseCase["Caso de uso<br/>(application/)"]
+        UseCase --> Domain["Reglas de dominio<br/>(domain/)"]
+        UseCase --> Infra["Infraestructura<br/>(infrastructure/ — SDK/cliente)"]
+    end
+```
+
+### Idioma del artifact
+
+`current-state.md` está dirigido a lectores humanos, no solo al toolkit. Usar español simple y claro en los labels y prosa, explicando el término técnico en inglés entre paréntesis cuando se use por primera vez (ej. "Puntos de entrada de Azure (adapters)", "Controlador (handler)"). Mantener sin traducir los nombres literales de archivos, carpetas, packages y estados de evidencia (`CONFIRMED`/`INFERRED`/`UNKNOWN`), agregando una leyenda breve al inicio del documento que explique esos estados en español.
 
 ## Shared resource candidates
 

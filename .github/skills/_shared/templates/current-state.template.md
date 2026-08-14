@@ -2,6 +2,15 @@
 
 > Documento BEFORE. No actualizar con estado posterior a la migración.
 
+## Cómo leer este documento
+
+Los estados de evidencia usados en las tablas significan:
+
+- **CONFIRMED** (confirmado): hay evidencia directa y suficiente.
+- **INFERRED** (inferido): conclusión razonable a partir de señales parciales, no confirmada al 100%.
+- **UNKNOWN** (desconocido): no hay evidencia suficiente todavía.
+- **NOT_APPLICABLE** (no aplica): esa dimensión no corresponde a este repositorio.
+
 ## Resumen
 
 - Repositorio:
@@ -25,11 +34,17 @@
 
 ## Arquitectura observable
 
-- organización:
-- adapters/composition roots:
-- lógica funcional:
-- infraestructura:
-- acoplamientos relevantes:
+- Organización del código:
+- Puntos de entrada de Azure (adapters):
+- Lógica de negocio (application/domain):
+- Conexión a servicios externos (infraestructura):
+- Dependencias importantes entre partes (acoplamientos):
+
+### Diagrama de capas (organización interna de una capability representativa)
+
+```mermaid
+flowchart TB
+```
 
 ## Grafo auxiliar
 
@@ -48,12 +63,12 @@
 flowchart LR
 ```
 
-## Dependencias relevantes
+## Dependencias relevantes (paquetes de software usados)
 
 | Package | Versión observable | Consumidores | Evidencia |
 |---|---|---|---|
 
-## Tooling de validación observable
+## Herramientas de calidad y pruebas (tooling de validación)
 
 | Tooling | Archivo/comando | Estado | Evidencia |
 |---|---|---|---|
