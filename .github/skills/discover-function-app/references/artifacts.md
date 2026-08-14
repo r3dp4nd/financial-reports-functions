@@ -14,7 +14,7 @@ Debe incluir cuando aplique:
 - dependencies (cada entrada incluye `usageDetected: true|false|null`, calculado de forma determinista por el script buscando el nombre del paquete en imports/requires del código fuente no protegido; `null` cuando no hay archivos de source escaneables para decidir);
 - Functions;
 - triggers y bindings;
-- configuration keys;
+- configuration keys (cada entrada incluye `sources[]` con el origen de la evidencia — `SOURCE_CODE` cuando la clave se lee vía `process.env` en el código; `FUNCTION_JSON_BINDING` cuando la clave solo aparece declarada en `connection`/`connectionStringSetting` de un binding v3/legacy, sin lectura por código; `V4_REGISTRATION_OPTION` cuando la clave aparece como opción `connection` dentro de la llamada de registro v4 `app.X(...)`; una clave puede tener múltiples orígenes simultáneos);
 - relationships observables;
 - architecture observations;
 - compact Mermaid diagram when relationships are sufficient;

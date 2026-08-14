@@ -532,6 +532,84 @@ test('detecta usageDetected false para dependencia declarada sin uso', function 
   }
 });
 
+test('detecta configuration key solo declarada en binding v3/legacy (sin process.env en código)', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^1.2.3'
+      }
+    });
+
+    writeJson(root, 'NotifierActivity/function.json', {
+      bindings: [{
+        type: 'serviceBusTrigger', direction: 'in', name: 'message', topicName: 'disbursement', subscriptionName: 'notifier', connection: 'SERVICEBUS_CONNECTION_ONLY_BINDING'
+      }]
+    });
+
+    writeFile(root, 'NotifierActivity/index.ts', 'export default async function () { return; }');
+
+    const result = executeInventory(root);
+
+    const configKey = result.functionApps[0].configurationKeys.find(function (entry) {
+      return (entry.key === 'SERVICEBUS_CONNECTION_ONLY_BINDING');
+    });
+
+    assert(configKey);
+
+    assert.strictEqual(configKey.evidenceStatus, 'CONFIRMED');
+
+    assert(configKey.sources.some(function (source) {
+      return (source.origin === 'FUNCTION_JSON_BINDING');
+    }));
+
+    assert.strictEqual(configKey.sources.some(function (source) {
+      return (source.origin === 'SOURCE_CODE');
+    }), false);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('detecta configuration key solo declarada en opciones de registro v4', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2'
+      }
+    });
+
+    writeFile(root, 'src/functions/notifier.ts', ["const { app } = require('@azure/functions');", '', "app.serviceBusQueue('NotifierV4', {", "  connection: 'SERVICEBUS_CONNECTION_V4_OPTION',", "  queueName: 'notify',", '  handler: async () => undefined', '});'].join('\n'));
+
+    const result = executeInventory(root);
+
+    const configKey = result.functionApps[0].configurationKeys.find(function (entry) {
+      return (entry.key === 'SERVICEBUS_CONNECTION_V4_OPTION');
+    });
+
+    assert(configKey);
+
+    assert.strictEqual(configKey.evidenceStatus, 'CONFIRMED');
+
+    assert(configKey.sources.some(function (source) {
+      return (source.origin === 'V4_REGISTRATION_OPTION');
+    }));
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('stdout contiene JSON puro', function () {
   const root = createRepository();
 

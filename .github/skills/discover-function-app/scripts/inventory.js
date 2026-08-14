@@ -506,6 +506,20 @@ function extractEnvironmentKeys(content) {
   return Array.from(keys);
 }
 
+const V4_CALL_OPTIONS_WINDOW = 1000;
+
+function extractV4ConnectionSetting(content, matchIndex) {
+  const windowEnd = Math.min(content.length, matchIndex + V4_CALL_OPTIONS_WINDOW);
+
+  const window = content.slice(matchIndex, windowEnd);
+
+  const connectionPattern = /\bconnection\s*:\s*['"`]([^'"`]+)['"`]/;
+
+  const match = connectionPattern.exec(window);
+
+  return match ? match[1] : null;
+}
+
 function parseV4Registrations(filePath, content) {
   const registrations = [];
 
@@ -519,7 +533,8 @@ function parseV4Registrations(filePath, content) {
       registrationMethod: match[1],
       triggerType: AZURE_REGISTRATION_METHODS[match[1]] || null,
       file: normalizeRelative(filePath),
-      evidenceStatus: 'CONFIRMED'
+      evidenceStatus: 'CONFIRMED',
+      connectionSetting: extractV4ConnectionSetting(content, match.index)
     });
   }
 
@@ -539,7 +554,8 @@ function parseDurableRegistrations(filePath, content) {
       registrationMethod: match[1],
       role: DURABLE_REGISTRATION_METHODS[match[1]],
       file: normalizeRelative(filePath),
-      evidenceStatus: 'CONFIRMED'
+      evidenceStatus: 'CONFIRMED',
+      connectionSetting: extractV4ConnectionSetting(content, match.index)
     });
   }
 
@@ -797,12 +813,93 @@ function buildV4Functions(v4Registrations, durableRegistrations) {
   });
 }
 
-function buildConfigurationKeys(environmentUsage) {
-  return Object.keys(environmentUsage)
+function extractBindingConfigurationKeys(legacyFunctions) {
+  const map = {};
+
+  legacyFunctions.forEach(function (fn) {
+    (fn.bindings || []).forEach(function (binding) {
+      ['connection', 'connectionStringSetting'].forEach(function (field) {
+        const value = binding[field];
+
+        if (typeof value !== 'string' || value.length === 0) {
+          return;
+        }
+
+        if (!map[value]) {
+          map[value] = [];
+        }
+
+        map[value].push(fn.functionJson);
+      });
+    });
+  });
+
+  return normalizeUsageMap(map);
+}
+
+function extractV4ConfigurationKeys(v4Registrations, durableRegistrations) {
+  const map = {};
+
+  v4Registrations.concat(durableRegistrations).forEach(function (registration) {
+    const value = registration.connectionSetting;
+
+    if (typeof value !== 'string' || value.length === 0) {
+      return;
+    }
+
+    if (!map[value]) {
+      map[value] = [];
+    }
+
+    map[value].push(registration.file);
+  });
+
+  return normalizeUsageMap(map);
+}
+
+function mergeConfigurationSources(key, sourceCodeUsage, bindingUsage, v4Usage) {
+  const sources = [];
+
+  if (sourceCodeUsage[key]) {
+    sources.push({
+      origin: 'SOURCE_CODE', usedByFiles: sourceCodeUsage[key]
+    });
+  }
+
+  if (bindingUsage[key]) {
+    sources.push({
+      origin: 'FUNCTION_JSON_BINDING', usedByFiles: bindingUsage[key]
+    });
+  }
+
+  if (v4Usage[key]) {
+    sources.push({
+      origin: 'V4_REGISTRATION_OPTION', usedByFiles: v4Usage[key]
+    });
+  }
+
+  return sources;
+}
+
+function buildConfigurationKeys(environmentUsage, bindingUsage, v4Usage) {
+  const safeBindingUsage = bindingUsage || {};
+  const safeV4Usage = v4Usage || {};
+
+  const allKeys = new Set(Object.keys(environmentUsage)
+    .concat(Object.keys(safeBindingUsage))
+    .concat(Object.keys(safeV4Usage)));
+
+  return Array.from(allKeys)
     .sort()
     .map(function (key) {
+      const sources = mergeConfigurationSources(key, environmentUsage, safeBindingUsage, safeV4Usage);
+
+      const usedByFiles = Array.from(new Set(sources.reduce(function (accumulator, source) {
+        return accumulator.concat(source.usedByFiles);
+      }, []))).sort();
+
       return {
-        key: key, usedByFiles: environmentUsage[key], evidenceStatus: 'CONFIRMED'
+        key: key, usedByFiles: usedByFiles, evidenceStatus: 'CONFIRMED', sources: sources
       };
     });
 }
@@ -886,7 +983,11 @@ function buildFunctionApp(candidate, files, warnings) {
 
     functions: legacyFunctions.concat(v4Functions),
 
-    configurationKeys: buildConfigurationKeys(sourceScan.environmentUsage),
+    configurationKeys: buildConfigurationKeys(
+      sourceScan.environmentUsage,
+      extractBindingConfigurationKeys(legacyFunctions),
+      extractV4ConfigurationKeys(sourceScan.v4Registrations, sourceScan.durableRegistrations)
+    ),
 
     azureResourcePackageUsage: sourceScan.azureResourcePackageUsage,
 

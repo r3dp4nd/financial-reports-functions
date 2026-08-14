@@ -87,3 +87,8 @@ Esperado: puede leerlos para continuidad, pero una nueva ejecución escribe en `
 ### 21. Dependencia declarada sin uso detectado
 Entrada: `package.json` declara una dependencia (runtime o development) que no aparece en ningún `import`/`require` del código fuente no protegido.
 Esperado: `inventory.json` registra esa dependencia con `usageDetected: false`, sin inventar evidencia adicional ni cambiar el evidence status de la Function App; para una dependencia con uso detectado, `usageDetected: true`; el cálculo es determinista (producido por `inventory.js`), no depende del razonamiento del ejecutor.
+
+### 22. Configuration key solo declarada en binding v3/legacy o en opciones de registro v4
+Entrada A (v3/legacy): un binding de `function.json` (por ejemplo `serviceBusTrigger`) declara `connection`/`connectionStringSetting` apuntando a un nombre de Application Setting, y ningún archivo de código fuente lee esa clave vía `process.env`.
+Entrada B (v4): una llamada de registro `app.serviceBusQueue('Name', { connection: 'MyConnectionSetting', ... })` declara el nombre de la Application Setting como opción del segundo argumento, sin que exista ningún `process.env` explícito para esa clave.
+Esperado: en ambos casos la clave aparece en `configurationKeys` con `evidenceStatus: CONFIRMED` y `sources[]` reflejando el origen real (`FUNCTION_JSON_BINDING` para A, `V4_REGISTRATION_OPTION` para B), sin exigir que exista también un `process.env` (`SOURCE_CODE`) para esa misma clave; nunca se registra el valor de la configuración, solo el nombre.
