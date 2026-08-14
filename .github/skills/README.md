@@ -40,6 +40,9 @@ No usar `latest` como sustituto del baseline aprobado.
 30 PLAN
   plan-function-migration            (plan global de tooling/ownership + plan ejecutable por cada Function)
 
+DOCUMENTATION (independiente del flujo de migración)
+  document-function-app              (baseline reutilizable; no planifica ni ejecuta cambios)
+
 40 EXECUTION
   prepare-function-app               (solo GLOBAL/SR-ACTION aprobadas)
   prepare-function                   (solo FN/SLICE estructural aprobado)
@@ -92,6 +95,7 @@ caso.
 | `assess-function-app`          | Después del discovery para triage global contra target.   | BEFORE.                       | `10-assessment/assessment.json\|md`           |
 | `analyze-function`             | Cuando una Function o slice necesita análisis específico. | BEFORE + assessment.          | `20-analysis/functions|slices/.../analysis.*` (incluye narrativa funcional/técnica trazable a la evidencia ya documentada en el propio analysis) |
 | `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.  | `30-plan/migration-plan.*` (global) + `30-plan/functions/<FunctionName>/migration-plan.*` (uno por Function) + Action IDs |
+| `document-function-app`        | Cuando se necesita una línea base de documentación reutilizable, con o sin intención de migrar. | Repositorio; reusa BEFORE/analyses si existen. | `documentation/repository.md` + `documentation/functions/<FunctionName>.md` (complejidad y deuda técnica incluidas) |
 | `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                  | `40-execution/app/preparation.json\|md`       |
 | `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.          | `40-execution/functions/<name>/preparation.*` |
 | `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable. | `40-execution/functions/<name>/programming-model-v4.*` |
@@ -113,6 +117,7 @@ Ejecuta discover-function-app sobre este repositorio.
 Ejecuta assess-function-app usando el inventario actual.
 Ejecuta analyze-function para ProcessOrders.
 Ejecuta plan-function-migration con la evidencia disponible.
+Ejecuta document-function-app sobre este repositorio para generar la documentación de referencia.
 Ejecuta prepare-function-app siguiendo únicamente el plan aprobado.
 Ejecuta prepare-function para ProcessOrders.
 Ejecuta migrate-programming-model-v4 para ProcessOrders.
@@ -143,6 +148,7 @@ Ejecuta review-skill-performance sobre las lessons de esta migración.
 * support skills pueden modificar código solo cuando su descripción lo permite y existe solicitud explícita o Action ID aprobado.
 * generar tests está prohibido en migración por defecto, pero permitido en `support/generate-tests-for-function-slice` cuando el usuario lo pide explícitamente o el plan lo aprueba.
 * `support/suggest-code-change` y `support/review-manual-migration` nunca aplican correcciones; solo proponen o revisan.
+* `document-function-app` es independiente del flujo de migración: puede ejecutarse en cualquier momento, reusa evidencia ya generada por `discover-function-app`/`analyze-function` cuando exista, y nunca genera Action IDs ni plan de migración.
 
 ## Estados
 
@@ -291,8 +297,14 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 │   └── workflows/<WorkflowName>/durable-v4.json|md
 ├── 50-verification/
 │   └── verification.json|md
-└── 90-lessons/
+├── 90-lessons/
+└── documentation/
+    ├── repository.md
+    └── functions/<FunctionName>.md
 ```
+
+`documentation/` es la salida de `document-function-app`: una línea base reutilizable, independiente del flujo
+BEFORE→PLAN→EXECUTION→AFTER. Puede existir sin que ninguna otra fase de `.migration/` se haya ejecutado.
 
 Crear solo artifacts aplicables. No generar archivos vacíos para satisfacer una estructura ideal.
 
