@@ -38,7 +38,7 @@ No usar `latest` como sustituto del baseline aprobado.
   analyze-function                   (solo Functions/slices priorizados)
 
 30 PLAN
-  plan-function-migration            (contrato/eval y router de ejecución)
+  plan-function-migration            (plan global de tooling/ownership + plan ejecutable por cada Function)
 
 40 EXECUTION
   prepare-function-app               (solo GLOBAL/SR-ACTION aprobadas)
@@ -91,7 +91,7 @@ caso.
 | `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio; Graphify opcional. | `00-before/inventory.json` + `current-state.md` (incluye `directoryTree`, `largeFiles`, `initialSignals` y `usageDetected`/`sources` deterministas por dependencia/configuration key — todo trazable a `inventory.json`, sin narrativa interpretativa) |
 | `assess-function-app`          | Después del discovery para triage global contra target.   | BEFORE.                       | `10-assessment/assessment.json\|md`           |
 | `analyze-function`             | Cuando una Function o slice necesita análisis específico. | BEFORE + assessment.          | `20-analysis/functions|slices/.../analysis.*` (incluye narrativa funcional/técnica trazable a la evidencia ya documentada en el propio analysis) |
-| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.  | `30-plan/migration-plan.*` + Action IDs       |
+| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.  | `30-plan/migration-plan.*` (global) + `30-plan/functions/<FunctionName>/migration-plan.*` (uno por Function) + Action IDs |
 | `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                  | `40-execution/app/preparation.json\|md`       |
 | `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.          | `40-execution/functions/<name>/preparation.*` |
 | `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable. | `40-execution/functions/<name>/programming-model-v4.*` |
@@ -139,6 +139,7 @@ Ejecuta review-skill-performance sobre las lessons de esta migración.
 * `verify-function-app` ejecuta el build global después de completar todas las Functions aplicables.
 * ningún skill debe ampliar el scope más allá del plan aprobado.
 * `plan-function-migration` separa migración técnica de refactor/testabilidad y puede sugerir executor `HUMAN`, `AI_AGENT` o `EITHER`.
+* `plan-function-migration` genera siempre un plan global (tooling/dependencias/runtime/ownership) y un plan por cada Function individual; no agrupa Functions en un plan colectivo tipo slice, incluso cuando pertenezcan al mismo workflow Durable.
 * support skills pueden modificar código solo cuando su descripción lo permite y existe solicitud explícita o Action ID aprobado.
 * generar tests está prohibido en migración por defecto, pero permitido en `support/generate-tests-for-function-slice` cuando el usuario lo pide explícitamente o el plan lo aprueba.
 * `support/suggest-code-change` y `support/review-manual-migration` nunca aplican correcciones; solo proponen o revisan.
@@ -175,6 +176,7 @@ _shared/
 ├── evidence-policy.md
 ├── status-policy.md
 ├── architecture-policy.md
+├── language-policy.md
 ├── lessons-policy.md
 ├── dependency-baseline.json
 └── references/
@@ -250,7 +252,6 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 ├── 30-plan/
 │   ├── migration-plan.json|md
 │   ├── functions/<FunctionName>/migration-plan.json|md
-│   ├── slices/<SliceName>/migration-plan.json|md
 │   └── resources/shared-resources.json|md
 ├── 40-execution/
 │   ├── app/preparation.json|md

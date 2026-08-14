@@ -18,6 +18,7 @@ Cargar y aplicar antes de cualquier lectura, búsqueda, listado recursivo o insp
 - `../_shared/security-policy.md`
 - `../_shared/evidence-policy.md`
 - `../_shared/status-policy.md`
+- `../_shared/language-policy.md`
 
 No ejecutar `rg`, `find`, `ls` recursivo, scripts de inventario ni abrir archivos del repositorio objetivo antes de haber cargado estas políticas y aplicado sus exclusiones.
 

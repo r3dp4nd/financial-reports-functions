@@ -18,6 +18,7 @@ Aplicar:
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
 - `../_shared/status-policy.md`
+- `../_shared/language-policy.md`
 
 Consultar:
 
