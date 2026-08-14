@@ -35,9 +35,10 @@ Para cada acción asignada a esta etapa:
 2. comprobar estado actual;
 3. preservar lo ya válido;
 4. aplicar solo el cambio planificado;
-5. validar el resultado local seguro;
-6. registrar `executionStatus` y evidencia;
-7. registrar cualquier desviación sin inventar una nueva acción.
+5. mantener comportamiento/configuración observable no afectada por la acción;
+6. validar el resultado local seguro;
+7. registrar `executionStatus` y evidencia;
+8. registrar cualquier desviación sin inventar una nueva acción.
 
 Cargar:
 
@@ -60,4 +61,5 @@ Terminar cuando todas las acciones globales/shared de esta etapa estén completa
 - migrar una Function individual;
 - generar tests;
 - ejecutar build global como gate final antes de completar todas las Functions;
-- usar `latest` fuera del target aprobado.
+- usar `latest` fuera del target aprobado;
+- limpiar, renombrar o reorganizar estructura global sin acción aprobada.

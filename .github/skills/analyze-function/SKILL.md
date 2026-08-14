@@ -50,10 +50,11 @@ artifacts existentes
 3. Analizar dependencias e impacto de target.
 4. Confirmar shared resources relevantes.
 5. Evaluar criticidad, testabilidad y código difícil de probar.
-6. Evaluar estructura/acoplamiento frente al slice migrado o refactorizado.
+6. Evaluar estructura/acoplamiento frente al slice migrado o refactorizado, separando gaps reales de preferencias estéticas.
 7. Evaluar Node.js, Programming Model y Durable.
-8. Registrar `migrationNeeds`, `refactorTestabilityNeeds`, lane recomendado, deuda, risks y unknowns sin crear acciones.
-9. Crear analysis y completar catálogo BEFORE de la Function si faltaba.
+8. Registrar comportamiento que no debe cambiar: contratos, estados, retries, idempotencia, efectos persistentes y mensajes.
+9. Registrar `migrationNeeds`, `refactorTestabilityNeeds`, lane recomendado, deuda, risks y unknowns sin crear acciones.
+10. Crear analysis y completar catálogo BEFORE de la Function si faltaba.
 
 Cargar según necesidad:
 
@@ -78,4 +79,5 @@ Terminar cuando existe evidencia suficiente para planning o el blocker/review es
 - generar tests;
 - diseñar Action IDs;
 - definir orden de ejecución;
-- ampliar el scope por modernización opcional.
+- ampliar el scope por modernización opcional;
+- proponer optimizaciones funcionales sin cambio aprobado.

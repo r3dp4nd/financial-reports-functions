@@ -53,11 +53,15 @@ Esperado: analysis puede producir artifact de slice y `affectedFunctionsOutsideS
 Entrada: mejora no necesaria para target.
 Esperado: `TECHNICAL_DEBT`/`OPTIMIZATION`, no required automáticamente.
 
-### 14. Repo sin tests
+### 14. No optimizar comportamiento
+Entrada: flujo con retry/idempotencia/status codes observables y oportunidad aparente de simplificación.
+Esperado: registrar contrato a preservar y bloquear optimización funcional salvo cambio aprobado.
+
+### 15. Repo sin tests
 Esperado: no generar necesidad de testing obligatoria ni crear archivos de tests.
 
-### 15. Unknown crítico
+### 16. Unknown crítico
 Esperado: `PARTIAL`/`BLOCKED`/`REQUIRES_REVIEW` según impacto; no asumir.
 
-### 16. Salida
+### 17. Salida
 Esperado: analysis JSON/MD y BEFORE por Function cuando faltaba; sin `FN-*`.

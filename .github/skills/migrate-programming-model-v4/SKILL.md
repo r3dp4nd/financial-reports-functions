@@ -36,9 +36,10 @@ La dependencia `@azure/functions` debe usar el target aprobado por planning/base
 2. Cargar solo el adapter/entrypoint y dependencias necesarias.
 3. Migrar registration y bindings según el plan.
 4. Mantener lógica funcional fuera del adapter cuando el slice ya fue preparado.
-5. Eliminar artifacts v3 solo cuando su reemplazo esté confirmado.
-6. Ejecutar validaciones selectivas.
-7. Registrar actionResults, evidence y deviations.
+5. Preservar contrato, nombres, bindings, errores, payloads y side effects observables.
+6. Eliminar artifacts v3 solo cuando su reemplazo esté confirmado.
+7. Ejecutar validaciones selectivas.
+8. Registrar actionResults, evidence y deviations.
 
 Cargar:
 
@@ -60,4 +61,5 @@ Status `MIGRATED` solo cuando las acciones de modelo requeridas estén completad
 - generar tests;
 - migrar Durable topology desde este skill;
 - corregir acciones no planificadas;
+- cambiar semántica funcional por simplificación;
 - desplegar.

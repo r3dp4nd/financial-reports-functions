@@ -34,9 +34,10 @@ Deben existir inventory, assessment y los analyses requeridos para el effective 
 5. Asignar ownership: global, shared, Function o slice.
 6. Marcar `requiredForMigration` y si aplica `requiredForRefactor`.
 7. Sugerir executor: `HUMAN`, `AI_AGENT` o `EITHER`, con rationale.
-8. Definir `dependsOn`, orden lógico y criterios de evaluación.
-9. Crear plan global y planes por Function/slice.
-10. Detenerse si una decisión necesaria carece de target/evidencia aprobada.
+8. Definir comportamiento preservado por acción y qué cambios funcionales están prohibidos.
+9. Definir `dependsOn`, orden lógico y criterios de evaluación.
+10. Crear plan global y planes por Function/slice.
+11. Detenerse si una decisión necesaria carece de target/evidencia aprobada.
 
 Cargar según necesidad:
 
@@ -63,4 +64,5 @@ Terminar cuando todas las necesidades requeridas tienen owner, lane, executor su
 - usar `latest`;
 - crear acciones duplicadas para el mismo shared resource;
 - generar tests;
-- convertir deuda opcional en requisito sin evidencia.
+- convertir deuda opcional en requisito sin evidencia;
+- planificar optimizaciones funcionales como parte de refactor estructural.

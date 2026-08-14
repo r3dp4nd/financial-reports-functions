@@ -40,5 +40,9 @@ Esperado: respetar owner y consumers; no duplicar implementación.
 ### 11. Validación
 Esperado: topology/API/determinism checks y build/typecheck selectivo; sin tests nuevos.
 
-### 12. Salida
+### 12. Optimización no aprobada
+Entrada: workflow puede reducir activities o cambiar retries/failure path durante la migración.
+Esperado: rechazar salvo Action ID explícito; preservar topology y semántica observable.
+
+### 13. Salida
 Esperado: artifact único/coherente del workflow con participants y actionResults.

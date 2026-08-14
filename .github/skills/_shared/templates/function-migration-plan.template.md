@@ -18,8 +18,8 @@
 
 ## Acciones FN
 
-| Action ID | Lane | Cambio | Executor sugerido | Owner/stage | requiredForMigration | requiredForRefactor | dependsOn | Criterio verificable |
-|---|---|---|---|---|---|---|---|---|
+| Action ID | Lane | Cambio | Executor sugerido | Owner/stage | requiredForMigration | requiredForRefactor | Preserve behavior | Prohibited changes | dependsOn | Criterio verificable |
+|---|---|---|---|---|---|---|---|---|---|---|
 
 ## Dependencias globales/shared
 
@@ -51,8 +51,8 @@
 
 ## Contrato de evaluación local
 
-| Action ID | Expected result | Verification criteria | Failure criteria |
-|---|---|---|---|
+| Action ID | Expected result | Preserve behavior | Prohibited changes | Verification criteria | Failure criteria |
+|---|---|---|---|---|---|
 
 ## Riesgos, unknowns y deuda
 

@@ -46,8 +46,9 @@ Verification no corrige ni redefine targets.
 7. Validar Functions, Programming Model y Durable.
 8. Validar estructura requerida y shared resources.
 9. Ejecutar `func start` local solo si es seguro/viable y no requiere secretos reales.
-10. Comparar inventario/estructura AFTER contra BEFORE/PLAN.
-11. Agregar gates y emitir status final.
+10. Comparar contratos, efectos, topology y comportamiento preservado contra BEFORE/PLAN.
+11. Comparar inventario/estructura AFTER contra BEFORE/PLAN.
+12. Agregar gates y emitir status final.
 
 Cargar:
 
@@ -70,4 +71,5 @@ Aplicar la agregación de `../_shared/status-policy.md`.
 - cambiar tests existentes para hacerlos pasar;
 - seleccionar nuevas versiones;
 - crear Action IDs;
-- desplegar.
+- desplegar;
+- aceptar optimizaciones funcionales no aprobadas como mejora.

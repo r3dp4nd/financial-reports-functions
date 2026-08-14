@@ -7,8 +7,8 @@
 
 ## Acciones propietarias
 
-| Action ID | Resource ID | Expected result | Verification criteria | Failure criteria |
-|---|---|---|---|---|
+| Action ID | Resource ID | Expected result | Preserve behavior | Prohibited changes | Verification criteria | Failure criteria |
+|---|---|---|---|---|---|---|
 
 ## Candidatos no confirmados
 

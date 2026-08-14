@@ -39,5 +39,9 @@ Esperado: registration/imports/typecheck selectivo; sin tests nuevos.
 ### 11. Necesidad nueva
 Esperado: deviation/blocker, no acción improvisada.
 
-### 12. Salida
+### 12. Optimización no aprobada
+Entrada: migración permitiría cambiar payload/error/side effect para simplificar adapter.
+Esperado: preservar comportamiento observable; bloquear o pedir replan si el cambio parece necesario.
+
+### 13. Salida
 Esperado: migration JSON/MD con before/after, actionResults y residuals.

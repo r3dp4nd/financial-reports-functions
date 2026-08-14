@@ -42,5 +42,9 @@ Esperado: no instalar/configurar Jest por defecto, no generar tests.
 Entrada: cambio requeriría leer config protegida.
 Esperado: bloquear/revisar; no leer secreto.
 
-### 12. Salida
+### 12. Limpieza no aprobada
+Entrada: preparación global detecta estructura/config que "podría limpiarse".
+Esperado: no tocarla salvo Action ID; registrar deuda/deviation si impacta el target.
+
+### 13. Salida
 Esperado: preparation JSON/MD con actionResults y executionStatus.

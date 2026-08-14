@@ -163,13 +163,15 @@ Tests existentes pueden ejecutarse como evidencia adicional, pero no se generan 
 
 ## Arquitectura
 
-El código refactorizado debe converger incrementalmente hacia la arquitectura aprobada basada en
-`financial-reports-functions`:
+El código refactorizado debe converger incrementalmente hacia la arquitectura aprobada como policy transferible:
 
-* adapters/composition roots Azure en `src/functions/`;
-* lógica organizada por capability;
+* adapters/composition roots Azure delgados;
+* handlers testeables para traducir runtime/contrato;
+* lógica organizada por capability, workflow o flujo observable;
+* application/domain/infrastructure solo cuando tengan responsabilidad real;
 * infraestructura aislada cuando exista un boundary real;
 * shared resources con owner único;
+* sin optimizar comportamiento descubierto;
 * sin carpetas vacías ni abstracciones decorativas.
 
 ## Artifacts principales

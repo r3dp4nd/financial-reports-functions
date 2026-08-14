@@ -32,8 +32,8 @@
 
 ## Acciones globales
 
-| Action ID | Lane | Cambio | Executor sugerido | requiredForMigration | dependsOn | Criterio verificable |
-|---|---|---|---|---|---|---|
+| Action ID | Lane | Cambio | Executor sugerido | requiredForMigration | Preserve behavior | Prohibited changes | dependsOn | Criterio verificable |
+|---|---|---|---|---|---|---|---|---|
 
 ## Recursos compartidos
 
@@ -58,8 +58,8 @@
 
 ## Contrato de evaluación
 
-| Action ID | Expected result | Verification criteria | Failure criteria |
-|---|---|---|---|
+| Action ID | Expected result | Preserve behavior | Prohibited changes | Verification criteria | Failure criteria |
+|---|---|---|---|---|---|
 
 ## Riesgos, unknowns y deuda
 

@@ -29,8 +29,9 @@ Deben existir analysis, plan de Function, plan global y preparación global apli
 3. Aplicar el menor cambio estructural/adaptación local aprobado.
 4. Preservar comportamiento observable y configuración por nombre de clave.
 5. Respetar owner de shared resources.
-6. Ejecutar validaciones selectivas seguras.
-7. Registrar Action IDs, evidence y deviations.
+6. Rechazar optimizaciones funcionales no planificadas aunque parezcan mejoras.
+7. Ejecutar validaciones selectivas seguras.
+8. Registrar Action IDs, evidence y deviations.
 
 Cargar:
 
@@ -52,4 +53,5 @@ Status `READY_FOR_MIGRATION` cuando todas las precondiciones locales requeridas 
 - migrar registration/bindings v4;
 - migrar topology Durable;
 - modificar shared resources sin su acción propietaria;
-- modernizar código fuera del slice aprobado.
+- modernizar código fuera del slice aprobado;
+- cambiar reglas, contratos, retries, idempotencia o side effects no aprobados.

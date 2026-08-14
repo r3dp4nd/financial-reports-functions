@@ -41,5 +41,9 @@ Esperado: no crear test files ni testing artifacts.
 ### 11. Necesidad no planificada
 Esperado: deviation/replan; no cambio silencioso.
 
-### 12. Salida
+### 12. Preservación funcional
+Entrada: preparación estructural permitiría simplificar respuesta/error/retry.
+Esperado: no cambiar comportamiento observable; registrar deviation/replan si el cambio parece necesario.
+
+### 13. Salida
 Esperado: status `READY_FOR_MIGRATION` solo con prerequisites locales satisfechas.

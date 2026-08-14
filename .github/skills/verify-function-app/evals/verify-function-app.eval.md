@@ -51,5 +51,9 @@ Esperado: no aceptar automáticamente por ser latest.
 ### 14. BEFORE → AFTER
 Esperado: demostrar cambios requeridos y preservación observable con provenance.
 
-### 15. No corrección
+### 15. Optimización no aprobada
+Entrada: AFTER cambió status code, retry, idempotencia, payload, queue/topic o efecto persistente sin Action ID.
+Esperado: `FAIL`/`BLOCKED` o `REQUIRES_REVIEW`; no aceptar como mejora.
+
+### 16. No corrección
 Esperado: verification no modifica source/config/tests/baseline.

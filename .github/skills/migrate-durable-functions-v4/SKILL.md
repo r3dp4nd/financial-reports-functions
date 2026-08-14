@@ -42,9 +42,10 @@ Deben existir:
 3. Adaptar dependency/API target.
 4. Migrar starter/client, orchestrator, activities, entities y sub-orchestrators según aplique.
 5. Preservar determinismo, retries, timers y external events.
-6. Validar referencias/nombres entre participantes.
-7. Registrar deviations y active-instance risk cuando corresponda.
-8. Emitir artifacts de workflow.
+6. Preservar ordering, fan-out/fan-in, failure handling, inputs/outputs y nombres observables.
+7. Validar referencias/nombres entre participantes.
+8. Registrar deviations y active-instance risk cuando corresponda.
+9. Emitir artifacts de workflow.
 
 Cargar:
 
@@ -64,5 +65,6 @@ Crear el artifact Durable definido por planning para el workflow y los participa
 - usar `latest`;
 - generar tests;
 - cambiar semántica del workflow por simplificación;
+- optimizar topology, retries, timers o failure handling sin acción aprobada;
 - ignorar participantes fuera del requested scope si pertenecen al effective scope;
 - desplegar.

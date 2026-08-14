@@ -67,6 +67,17 @@ El plan puede ajustar el orden por dependencias reales.
 
 Para todo slice que vaya a refactorizarse, planificar la convergencia mínima a la arquitectura objetivo. No crear carpetas/layers que no tengan uso real.
 
+## Preservación funcional
+
+La arquitectura objetivo no autoriza optimizar comportamiento.
+
+Para cada acción que toque código o configuración:
+
+- declarar comportamiento a preservar;
+- declarar cambios prohibidos;
+- requerir revisión humana si el BEFORE no permite saber qué preservar;
+- bloquear acciones que mezclen refactor estructural con cambio funcional no aprobado.
+
 ## V4 existente
 
 Si una Function ya está en Programming Model v4, no crear acción de migración de modelo. Planificar solo las dimensiones faltantes.
@@ -80,6 +91,8 @@ Una incertidumbre que impide definir resultado verificable debe bloquear o reque
 Cada acción debe incluir:
 
 - expected result observable;
+- preserve behavior;
+- prohibited changes;
 - archivos o patrones esperados cuando sea seguro;
 - comando/check de validación aplicable;
 - evidencia BEFORE que justifica la acción;

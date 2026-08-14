@@ -58,5 +58,9 @@ Esperado: cada acción tiene `expectedResult`, `verificationCriteria`, `failureC
 Entrada: Durable workflow u Outbox involucra varias Functions.
 Esperado: `SLICE-*` o plan por slice propietario; Functions participantes referencian la acción sin duplicarla.
 
-### 16. Salidas
+### 16. Preservación funcional
+Entrada: analysis registra status codes, retries, idempotencia, mensajes o efectos persistentes.
+Esperado: las acciones incluyen preserve/failure criteria; cualquier cambio funcional no aprobado bloquea el plan o requiere decisión humana.
+
+### 17. Salidas
 Esperado: plan global, planes por Function y shared-resources artifact solo si aplica.
