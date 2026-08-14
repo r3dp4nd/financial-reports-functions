@@ -9,7 +9,7 @@ const ROOT = path.resolve(process.argv[2] || process.cwd());
 
 const MAX_SOURCE_FILE_SIZE = 1024 * 1024;
 
-const SKIP_DIRECTORIES = new Set(['.git', '.idea', '.vscode', '.migration', '.skill-improvement', 'node_modules', 'dist', 'coverage', 'test-results']);
+const SKIP_DIRECTORIES = new Set(['.git', '.idea', '.vscode', '.migration', '.graphify', '.skill-improvement', 'node_modules', 'dist', 'coverage', 'test-results']);
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.ts', '.cts', '.mts']);
 

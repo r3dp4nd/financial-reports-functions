@@ -48,7 +48,12 @@ dist/**
 coverage/**
 test-results/**
 .migration/**
+.graphify/**
 ```
+
+`.graphify/**` es metadata/cache regenerable del propio indexador Graphify (grafo, ASTs, análisis intermedios), no
+source de la Function App bajo migración; nunca debe escanearse como código ni citarse como evidencia de arquitectura
+del repositorio objetivo.
 
 El propio toolkit (`.github/skills/**` cuando se instale allí) tampoco forma parte del source de la Function App.
 
