@@ -1,510 +1,84 @@
 ---
 name: discover-function-app
-description: Descubre de forma segura Azure Function Apps Node.js dentro de un repositorio antes de migrarlas. Inventaría estructura, Functions, triggers, bindings, configuración, dependencias, Programming Model, Durable Functions, arquitectura observable y candidatos a recursos compartidos sin modificar código ni leer contenido protegido.
+description: Descubre de forma segura Azure Function Apps Node.js dentro de un repositorio. Úsalo antes de cualquier cambio para inventariar Functions, triggers, bindings, configuración por nombre de clave, dependencias, Programming Model, Durable, arquitectura observable y candidatos a recursos compartidos sin leer contenido protegido.
 ---
 
 # Discover Function App
 
 ## Objetivo
 
-Construir una fotografía segura, reproducible y reutilizable del estado actual del repositorio antes de modificar
-código.
+Crear la fotografía BEFORE del repositorio sin modificar código ni decidir todavía qué debe migrarse.
 
-Debe producir:
+## Políticas obligatorias
 
-- inventario estructurado;
-- catálogo humano BEFORE;
-- candidatos a recursos compartidos cuando exista evidencia suficiente.
-
-Discovery registra hechos observables.
-
-No evalúa todavía qué cambios requiere el target.
-
-## Políticas
-
-Aplicar siempre:
+Aplicar antes de leer source:
 
 - `../_shared/security-policy.md`
 - `../_shared/evidence-policy.md`
 - `../_shared/status-policy.md`
 
-Aplicar cuando corresponda:
+Consultar `../_shared/architecture-policy.md` solo como vocabulario para describir estructura observable.
 
-- `../_shared/lessons-policy.md`
-- `../_shared/architecture-policy.md`
-
-`architecture-policy.md` puede utilizarse únicamente como vocabulario para describir límites observables.
-
-No utilizarla para evaluar convergencia hacia una arquitectura target.
-
-Este skill no refactoriza.
-
-## Entradas
-
-Requerida:
+## Entrada
 
 - raíz del repositorio objetivo.
 
-Opcionales:
+Artifacts previos en `.migration/` pueden usarse únicamente para detectar una ejecución anterior o decidir si corresponde rediscovery.
 
-- artefactos existentes en `.migration/` únicamente para detectar ejecución previa, preservar trazabilidad o determinar
-  si corresponde rediscovery.
+## Workflow
 
-Los artefactos previos no sustituyen la observación actual cuando discovery deba volver a ejecutarse.
+1. Aplicar exclusiones de seguridad.
+2. Ejecutar `scripts/inventory.js <repository-root>`.
+3. Usar su salida como fuente primaria de hechos deterministas.
+4. Inspeccionar source adicional solo para resolver gaps concretos.
+5. Documentar estado actual y candidatos a shared resources.
+6. Crear los artifacts BEFORE.
 
-## Principio
+Para criterios de detección cargar solo cuando haga falta:
 
-Preferir descubrimiento determinista antes que razonamiento.
+- `references/discovery-rules.md`
 
-No usar IA para repetir hechos obtenibles mediante el script interno.
+Para el contrato de salida:
 
-Usar progressive disclosure:
+- `references/artifacts.md`
 
-```text
-security exclusions
-→ deterministic inventory
-→ selective source inspection
-```
+## Script
 
-No realizar un análisis amplio del repositorio cuando el inventario ya sea suficiente.
-
-## Seguridad previa
-
-Aplicar `security-policy.md` antes de cualquier lectura.
-
-La detección de archivos protegidos debe realizarse por ruta, nombre, extensión o patrón antes de cargar contenido.
-
-Los archivos protegidos pueden registrarse mediante metadata segura como:
-
-- ruta;
-- categoría;
-- `contentRead = false`.
-
-Nunca leerlos para decidir posteriormente si debían excluirse.
-
-## Exclusiones operativas
-
-No inspeccionar como source de aplicación:
-
-- `.git/**`;
-- `.idea/**`;
-- `.vscode/**`;
-- `.migration/**`;
-- `.skill-improvement/**`;
-- `node_modules/**`;
-- `dist/**`;
-- `coverage/**`;
-- `test-results/**`.
-
-`.github/skills/**` pertenece al toolkit y no debe analizarse como source de la Function App.
-
-El contenido CI/CD protegido debe detectarse y excluirse conforme a `security-policy.md`.
-
-## Script de inventario
-
-Ejecutar después de aplicar las exclusiones de seguridad:
-
-`scripts/inventory.js`
-
-Invocarlo directamente con Node.js cuando sea posible para mantener estable el contrato de salida.
-
-Ejemplo conceptual:
+Ejecutar desde la raíz del skill:
 
 ```text
-node .github/skills/discover-function-app/scripts/inventory.js <repository-root>
+node scripts/inventory.js <repository-root>
 ```
 
-Contrato:
+No duplicar con razonamiento hechos que el script ya produce.
 
-```text
-stdout
-→ JSON puro del inventario
+## Salidas
 
-stderr
-→ diagnósticos seguros
+Obligatorias:
 
-exit code != 0
-→ fallo de ejecución
-```
+- `.migration/repository/inventory.json`
+- `.migration/catalog/current-state.md`
 
-No mezclar salida de package managers u otros wrappers con el JSON.
+Por Function, crear `.migration/catalog/functions/<FunctionName>.md` solo cuando la inspección necesaria para BEFORE ya sea suficiente; de lo contrario `analyze-function` lo completa antes de cualquier modificación.
 
-Los scripts internos deben ser compatibles con Node.js 14 o superior.
+Lessons son opcionales y siguen `../_shared/lessons-policy.md`.
 
-## Fuente primaria
+## Cierre
 
-Usar la salida de `inventory.js` como fuente primaria para:
+Terminar cuando:
 
-- Function Apps;
-- `package.json`;
-- `host.json`;
-- Functions v3;
-- Functions v4;
-- triggers;
-- bindings;
-- Durable Functions;
-- `dependencies`;
-- `devDependencies`;
-- Node.js declarado;
-- claves `process.env`;
-- archivos protegidos detectados sin lectura.
+- la seguridad se aplicó antes de leer;
+- las Function Apps y Functions observables fueron inventariadas;
+- Programming Model, Runtime, Durable y dependencias quedaron documentados con evidence status;
+- configuration keys se registraron sin valores;
+- shared resource candidates y unknowns quedaron explícitos;
+- los artifacts BEFORE fueron creados.
 
-No volver a calcular mediante IA hechos ya obtenidos de forma determinista.
+## No hacer
 
-## Múltiples Function Apps
-
-El repositorio puede contener una o varias Function Apps.
-
-Inventariar cada Function App como unidad independiente cuando corresponda.
-
-Cada una puede tener:
-
-- versión Node distinta;
-- dependencias propias;
-- Programming Model distinto;
-- Functions propias;
-- configuración y build propios.
-
-No asumir que el primer `host.json` encontrado representa todo el repositorio.
-
-El catálogo humano debe distinguir las Function Apps cuando exista más de una.
-
-## Análisis selectivo
-
-A partir del inventario determinista, leer únicamente source permitido cuando sea necesario para complementar hechos
-como:
-
-- relaciones relevantes entre Functions;
-- capabilities observables;
-- workflows Durable;
-- límites estructurales actuales;
-- patrones observables;
-- infraestructura potencialmente compartida;
-- candidatos a recursos compartidos.
-
-No construir un call graph completo.
-
-No recorrer transitivamente toda la lógica funcional durante discovery.
-
-El análisis profundo por slice pertenece a:
-
-`analyze-function`
-
-No evaluar todavía el cambio requerido hacia el target.
-
-## Arquitectura actual
-
-Registrar únicamente lo observable:
-
-- organización del source;
-- ubicación de entrypoints;
-- mezcla o separación entre runtime, lógica e infraestructura;
-- contracts existentes;
-- repositories;
-- services;
-- dependencias compartidas observables.
-
-No diseñar arquitectura futura.
-
-No clasificar un módulo como monolito únicamente por tamaño, nombre o ubicación.
-
-## Patrones
-
-Registrar patrones únicamente cuando exista evidencia.
-
-Ejemplos:
-
-- Durable Workflow;
-- Repository;
-- Outbox;
-- Adapter;
-- Service;
-- Factory;
-- direct SDK usage.
-
-No inferir un patrón únicamente por naming.
-
-Cuando la evidencia sea parcial utilizar:
-
-`evidenceStatus: INFERRED`
-
-## Dependencias
-
-Inventariar todas las dependencias declaradas en:
-
-- `dependencies`;
-- `devDependencies`.
-
-Identificar como Azure ecosystem cuando corresponda:
-
-- `@azure/*`;
-- packages Azure adicionales reconocidos por el toolkit, como `durable-functions`.
-
-Discovery no determina si una dependencia debe actualizarse.
-
-No seleccionar versiones target.
-
-No eliminar ni ignorar dependencias desconocidas.
-
-## Recursos compartidos candidatos
-
-Detectar candidatos utilizados por múltiples Functions, capabilities o workflows cuando exista evidencia suficiente.
-
-Ejemplos:
-
-- Cosmos DB;
-- MongoDB;
-- SQL;
-- Service Bus;
-- Blob Storage;
-- HTTP clients;
-- repositories;
-- configuración;
-- servicios comunes.
-
-Registrar cuando sea posible:
-
-- id candidato;
-- type;
-- paths;
-- consumers observados;
-- configuration keys;
-- ownership observable;
-- `evidenceStatus`;
-- evidence.
-
-Scopes iniciales:
-
-- `REPOSITORY`
-- `FUNCTION_APP`
-- `CAPABILITY`
-- `WORKFLOW`
-
-En esta etapa siguen siendo candidatos.
-
-Un identificador asignado durante discovery no implica consolidación definitiva del recurso.
-
-No consolidar ownership ni consumidores cuando la evidencia requiera análisis por Function.
-
-No fusionar recursos únicamente porque utilicen:
-
-- el mismo SDK;
-- la misma tecnología;
-- el mismo tipo de servicio.
-
-## Evidence status
-
-Para candidatos y hallazgos que necesiten expresar certeza usar:
-
-- `CONFIRMED`
-- `INFERRED`
-- `UNKNOWN`
-- `NOT_APPLICABLE`
-
-mediante:
-
-`evidenceStatus`
-
-Ejemplo:
-
-    {
-      "id": "SR-COSMOS-REPORTS",
-      "type": "COSMOS_DB",
-      "evidenceStatus": "INFERRED"
-    }
-
-No utilizar:
-
-`status: CONFIRMED`
-
-para representar evidencia.
-
-No convertir una inferencia en un hecho durante discovery.
-
-## Configuración
-
-Puede analizarse source permitido para detectar referencias como:
-
-`process.env.COSMOS_DATABASE`
-
-Registrar únicamente:
-
-- nombre de la clave;
-- ubicación de uso.
-
-Nunca registrar valores.
-
-Detectar una clave no autoriza resolver su valor desde archivos protegidos.
-
-## Programming Model
-
-Clasificar cuando exista evidencia como:
-
-- `V3`;
-- `V4`;
-- `MIXED`;
-- `UNKNOWN`.
-
-Usar evidencia de registro o bindings cuando esté disponible.
-
-La versión declarada de `@azure/functions` puede apoyar una inferencia, pero no debe utilizarse por sí sola como prueba
-definitiva del Programming Model efectivo.
-
-No asumir que toda Function App requiere migración de Programming Model.
-
-## Azure Functions Runtime
-
-Registrar únicamente evidencia observable permitida.
-
-No inferir automáticamente el Runtime desplegado a partir de configuración local insuficiente.
-
-Cuando no exista evidencia suficiente:
-
-`UNKNOWN`
-
-La evaluación contra Runtime v4 pertenece a:
-
-`assess-function-app`
-
-## Durable
-
-Identificar cuando exista evidencia:
-
-- client;
-- starter;
-- orchestrator;
-- activity;
-- sub-orchestrator;
-- entity.
-
-Registrar relaciones observables necesarias para identificar el workflow.
-
-No analizar todavía el workflow en profundidad.
-
-La unidad coherente de migración Durable se determina posteriormente.
-
-## Salida estructurada
-
-Crear:
-
-`.migration/repository/inventory.json`
-
-`inventory.json` es el owner de los hechos estructurados producidos durante discovery.
-
-Debe contener cuando corresponda:
-
-- repository;
-- Function Apps;
-- platform observable;
-- dependencies;
-- Functions;
-- triggers;
-- bindings;
-- configuration keys;
-- relationships observables;
-- architecture observations;
-- patterns;
-- shared resource candidates;
-- protected files detected;
-- warnings;
-- unknowns;
-- evidence.
-
-No incluir:
-
-- recomendaciones;
-- acciones de migración;
-- architecture target;
-- refactors;
-- migration plan;
-- dependency targets seleccionados durante discovery.
-
-## Catálogo BEFORE
-
-Crear:
-
-`.migration/catalog/current-state.md`
-
-Usar:
-
-`../_shared/templates/current-state.template.md`
-
-Este es el único documento Markdown humano obligatorio generado por discovery.
-
-No generar:
-
-`.migration/repository/inventory.md`
-
-El catálogo debe representar exclusivamente el estado anterior a la migración.
-
-Si contiene varias Function Apps, representarlas de forma diferenciada.
-
-No convertirlo posteriormente en documentación del target.
-
-Si ya existe un BEFORE histórico y el repositorio fue modificado posteriormente por el flujo, no sobrescribirlo
-silenciosamente para representar el nuevo estado.
-
-Registrar la inconsistencia o necesidad de rediscovery conforme a `evidence-policy.md`.
-
-## Lecciones
-
-Aplicar:
-
-`../_shared/lessons-policy.md`
-
-Registrar lessons únicamente cuando exista aprendizaje relevante.
-
-Cuando corresponda pueden utilizarse:
-
-```text
-.migration/lessons/discover-function-app/lessons.json
-.migration/lessons/discover-function-app/lessons.md
-```
-
-No crear artifacts de lessons vacíos únicamente para satisfacer el cierre del skill.
-
-## Criterio de cierre
-
-El skill termina cuando:
-
-- las exclusiones de seguridad fueron aplicadas antes de leer contenido;
-- `inventory.js` fue ejecutado correctamente;
-- las Function Apps fueron identificadas;
-- las Functions fueron inventariadas;
-- `dependencies` y `devDependencies` fueron registradas;
-- configuración observable fue registrada sin valores;
-- Programming Model quedó identificado o `UNKNOWN`;
-- Durable quedó identificado cuando corresponda;
-- arquitectura y patrones observables necesarios quedaron registrados;
-- candidatos a recursos compartidos quedaron registrados cuando exista evidencia;
-- archivos protegidos detectados conservan `contentRead = false`;
-- se creó `inventory.json`;
-- se creó `current-state.md`;
-- no se generó `inventory.md`;
-- no se realizaron assessment, planning o modificaciones de código.
-
-La ausencia de lessons no impide cerrar discovery.
-
-## Fuera de alcance
-
-No debe:
-
-- modificar código;
+- leer archivos protegidos;
+- evaluar compatibilidad target;
+- seleccionar versiones;
+- planificar o migrar;
 - refactorizar;
-- actualizar dependencias;
-- agregar pruebas;
-- evaluar detalladamente compatibilidad con Node.js 24;
-- decidir dependency targets;
-- consolidar definitivamente shared resources;
-- migrar Runtime;
-- migrar Programming Model;
-- migrar Durable;
-- realizar análisis funcional profundo;
-- modernizar;
-- optimizar;
-- generar acciones;
-- generar planes.
-
-Siguiente skill sugerido:
-
-`assess-function-app`
+- desplegar.
