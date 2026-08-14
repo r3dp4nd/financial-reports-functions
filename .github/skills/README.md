@@ -73,6 +73,7 @@ El plan decide qué skills de ejecución aplican. No ejecutar la cadena completa
 | Prompt | Uso |
 |--------|-----|
 | [`prompts/master-before-to-plan.md`](prompts/master-before-to-plan.md) | Orquestar discovery, assessment, analysis por cada Function y planning, con metricas de consumo/modelo. |
+| [`prompts/document-function-app.md`](prompts/document-function-app.md) | Generar solo `documentation/` (baseline reutilizable) sin ejecutar ningún paso del flujo de migración. |
 | [`prompts/document-then-migrate.md`](prompts/document-then-migrate.md) | Generar primero `documentation/` (baseline reutilizable) y luego orquestar discovery/assessment/analysis/planning reusando esa evidencia, sin recomenzar desde cero. |
 
 ## Cómo usar los skills
