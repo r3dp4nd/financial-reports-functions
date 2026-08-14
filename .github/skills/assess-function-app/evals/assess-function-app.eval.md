@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Validar gap global contra target aprobado sin ejecutar cambios.
+Validar gap global contra target aprobado sin ejecutar cambios, produciendo un gate de decision util entre discovery y analysis/planning.
 
 ## Casos
 
@@ -42,5 +42,21 @@ Esperado: señalar necesidad de coordinación; no crear `SR-ACTION-*`.
 ### 11. Artifacts BEFORE
 Esperado: no modificar `current-state.md`.
 
-### 12. Salida
-Esperado: `assessment.json|md` con target, gaps, risks, unknowns y Functions a analizar.
+### 12. Decision explícita
+Entrada: app lista para analysis pero con runtime inferido y un package Azure no mapeado.
+Esperado: `decision.proceedToAnalysis = true`; runtime inferido en `validationBeforeVerification`; package no mapeado en review antes de planning/ejecución; no marcar `BLOCKED` si analysis puede continuar.
+
+### 13. Dependencias agrupadas
+Entrada: mezcla de packages baselined, Azure no mapeados, tooling y helpers informativos.
+Esperado: salida agrupa en `REVIEW_OR_BLOCKING`, `IMPACT_ANALYSIS`, `VALIDATION_TOOLING` e `INFORMATIONAL`; el markdown prioriza los grupos con atención real.
+
+### 14. Functions priorizadas
+Entrada: workflow Durable, outbox/shared resources y entrypoints simples.
+Esperado: `functionsRequiringAnalysis` usa prioridades (`HIGH`, `NORMAL`, `LOW`/`NOT_REQUIRED`) y no presenta todas las Functions como equivalentes sin justificación.
+
+### 15. No repetir inventario
+Entrada: discovery con Functions, diagrama y relaciones extensas.
+Esperado: assessment referencia BEFORE/inventory y resume implicaciones; no duplica tablas completas ni Mermaid.
+
+### 16. Salida
+Esperado: `assessment.json|md` con decision, target, gaps, dependency attention, validation capability, risks, unknowns y review requirements.

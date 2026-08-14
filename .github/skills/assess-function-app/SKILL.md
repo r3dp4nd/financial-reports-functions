@@ -7,7 +7,9 @@ description: Evalúa una Azure Function App ya descubierta. Úsalo para determin
 
 ## Objetivo
 
-Determinar qué dimensiones globales ya cumplen el target, cuáles requieren cambio y cuáles requieren validación o revisión.
+Determinar qué dimensiones globales ya cumplen el target, cuáles requieren cambio y cuáles requieren validación o revisión, y emitir una decisión clara para el siguiente paso del flujo.
+
+Assessment no es un segundo inventario. Debe convertir discovery en gates, prioridades y condiciones para analysis/planning.
 
 ## Políticas
 
@@ -33,9 +35,10 @@ Deben existir:
 2. Leer el baseline aprobado.
 3. Evaluar dimensiones globales sin volver a ejecutar discovery.
 4. Clasificar dependencias y tooling.
-5. Determinar qué Functions requieren análisis profundo.
-6. Registrar risks, unknowns y review requirements.
-7. Emitir assessment.
+5. Agrupar dependencias por impacto: bloquean/requieren review, requieren impact analysis, tooling de validación o informativas.
+6. Determinar qué Functions requieren análisis profundo con prioridad, sin listar todo como igual salvo que la evidencia lo justifique.
+7. Registrar decision, blocking issues, review requirements, risks y unknowns.
+8. Emitir assessment compacto.
 
 Cargar cuando sea necesario:
 
@@ -58,8 +61,9 @@ Terminar cuando:
 - Node, Runtime, Programming Model y Durable estén evaluados globalmente;
 - dependencias aplicables estén clasificadas;
 - capacidad de validación determinista esté registrada;
-- Functions que requieren analysis estén identificadas;
-- risks/unknowns estén explícitos;
+- decision, blocking issues y review requirements queden explícitos;
+- Functions que requieren analysis estén identificadas con prioridad;
+- risks/unknowns estén explícitos sin repetir inventario;
 - el status sea coherente con `status-policy.md`.
 
 ## No hacer

@@ -10,6 +10,15 @@
 
 `READY_FOR_ANALYSIS | PARTIAL | BLOCKED | REQUIRES_REVIEW`
 
+## Decision
+
+- proceedToAnalysis:
+- proceedToPlanning:
+- blockingIssues:
+- reviewBeforePlanning:
+- reviewBeforeExecution:
+- validationBeforeVerification:
+
 ## Target técnico
 
 | Dimensión               | Actual | Target | Action status | Evidencia |
@@ -19,10 +28,10 @@
 | Programming Model       |        |        |               |           |
 | Durable Functions       |        |        |               |           |
 
-## Dependencias que requieren atención
+## Dependencias que requieren atencion
 
-| Package | Actual | Target | Clasificación | Motivo |
-|---------|--------|--------|---------------|--------|
+| Grupo | Package(s) | Motivo | Decision |
+|-------|------------|--------|----------|
 
 ## Capacidad de validación
 
@@ -39,8 +48,8 @@
 
 ## Functions que requieren análisis
 
-| Function | Motivo |
-|----------|--------|
+| Prioridad | Function(s) | Motivo |
+|-----------|-------------|--------|
 
 ## Riesgos, unknowns y revisión
 
