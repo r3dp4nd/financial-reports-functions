@@ -19,9 +19,12 @@ Esperado:
 - Reporta estado por etapa y artifacts generados.
 - Reporta tabla de metricas de consumo por etapa (Etapa | Modelo usado | Input | Output | Reasoning | Total | Evidencia), usando `UNKNOWN` para tokens no observables sin inventar cifras exactas.
 - Recomienda criterio de modelo/razonamiento por tipo de tarea de forma agnostica a proveedor (sin nombres de modelo hardcodeados).
-- Si `.migration/00-before/inventory.json` ya existia y seguia vigente, lo reusa en vez de rediscover completo.
+- Antes de reejecutar discovery completo, compara `.migration/00-before/inventory.json` existente contra el commit/arbol de archivos actual; lo reusa solo si sigue vigente.
+- Antes de releer un archivo o repetir una consulta de Graphify, verifica `.migration/_cache/index.json` y relaciones ya persistidas en `analysis.json`/`project-graph.json`.
+- Agrupa Functions en el mismo slice que discovery ya identifico (Durable/Outbox/shared resource) en vez de re-derivar la agrupacion o fragmentarla en Functions aisladas.
 - Analiza Functions/slices una por vez (progressive disclosure), sin recargar el repositorio completo en cada invocacion de `analyze-function`.
-- Si detecta una oportunidad real de reuso de contexto/tokens, registra una lesson `OBSERVED` en `.migration/90-lessons/` siguiendo `_shared/lessons-policy.md`, sin modificar el toolkit automaticamente por eso.
+- Si detecta una oportunidad real de reuso de contexto/tokens (incluyendo cache/Graphify), registra una lesson `OBSERVED` en `.migration/90-lessons/` siguiendo `_shared/lessons-policy.md`, sin modificar el toolkit automaticamente por eso.
+- Reporta un resumen de cuantas lecturas/consultas se evitaron reusando `_cache/`/evidencia persistida frente a las que se ejecutaron de nuevo.
 
 ## Caso: Function bloqueada
 
