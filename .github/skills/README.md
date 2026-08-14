@@ -88,9 +88,9 @@ caso.
 
 | Skill                          | Cuándo usarlo                                             | Entrada principal              | Resultado principal                           |
 |--------------------------------|-----------------------------------------------------------|--------------------------------|-----------------------------------------------|
-| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio; Graphify opcional. | `00-before/inventory.json` + `current-state.md` |
+| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio; Graphify opcional. | `00-before/inventory.json` + `current-state.md` (incluye `directoryTree`, `largeFiles`, `initialSignals` y `usageDetected`/`sources` deterministas por dependencia/configuration key — todo trazable a `inventory.json`, sin narrativa interpretativa) |
 | `assess-function-app`          | Después del discovery para triage global contra target.   | BEFORE.                       | `10-assessment/assessment.json\|md`           |
-| `analyze-function`             | Cuando una Function o slice necesita análisis específico. | BEFORE + assessment.          | `20-analysis/functions|slices/.../analysis.*` |
+| `analyze-function`             | Cuando una Function o slice necesita análisis específico. | BEFORE + assessment.          | `20-analysis/functions|slices/.../analysis.*` (incluye narrativa funcional/técnica trazable a la evidencia ya documentada en el propio analysis) |
 | `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.  | `30-plan/migration-plan.*` + Action IDs       |
 | `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                  | `40-execution/app/preparation.json\|md`       |
 | `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.          | `40-execution/functions/<name>/preparation.*` |
@@ -201,6 +201,8 @@ de reconstruir la información.
 
 El plan es además un contrato de evaluación: cada acción debe tener resultado esperado, criterios de verificación,
 criterios de fallo y evidencia BEFORE para que pueda ejecutarla un humano o una IA y verificarse sin reinterpretación.
+
+**Fotografía factual vs. interpretación**: `00-before/` debe ser un espejo determinista del código — cero narrativa, cero interpretación de propósito de negocio. Cualquier síntesis en prosa (narrativa funcional/técnica de una Function o slice) es responsabilidad exclusiva de `analyze-function`, y debe derivarse únicamente de evidencia ya documentada en el propio `analysis.md`/BEFORE referenciado, nunca introducir un hecho no respaldado. Esta separación es lo que permite que `00-before/inventory.json` sea reproducible byte a byte entre ejecuciones, independientemente del ejecutor o del proyecto.
 
 ## Validación
 
