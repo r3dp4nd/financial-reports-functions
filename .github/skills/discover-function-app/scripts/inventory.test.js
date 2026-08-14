@@ -610,6 +610,205 @@ test('detecta configuration key solo declarada en opciones de registro v4', func
   }
 });
 
+test('detecta señal MISSING_AWAIT_FS_UNLINK en activity legacy', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^1.2.3'
+      }
+    });
+
+    writeJson(root, 'DeleteTempFileActivity/function.json', {
+      bindings: [{
+        name: 'name', type: 'activityTrigger', direction: 'in'
+      }]
+    });
+
+    writeFile(root, 'DeleteTempFileActivity/index.ts', ["import * as fs from 'fs';", '', 'export default async function (context: any) {', "  fs.unlink(context.bindingData.data.path, (err) => { if (err) console.error(err); });", '  return "ok";', '}'].join('\n'));
+
+    const result = executeInventory(root);
+
+    const fn = result.functionApps[0].functions.find(function (entry) {
+      return (entry.name === 'DeleteTempFileActivity');
+    });
+
+    assert(fn);
+
+    assert(fn.initialSignals.some(function (signal) {
+      return (signal.type === 'MISSING_AWAIT_FS_UNLINK' && signal.evidenceStatus === 'CONFIRMED');
+    }));
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('no marca MISSING_AWAIT_FS_UNLINK cuando fs.unlink se usa con await', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^1.2.3'
+      }
+    });
+
+    writeJson(root, 'DeleteTempFileActivity/function.json', {
+      bindings: [{
+        name: 'name', type: 'activityTrigger', direction: 'in'
+      }]
+    });
+
+    writeFile(root, 'DeleteTempFileActivity/index.ts', ["import { promises as fs } from 'fs';", '', 'export default async function (context: any) {', '  await fs.unlink(context.bindingData.data.path);', '  return "ok";', '}'].join('\n'));
+
+    const result = executeInventory(root);
+
+    const fn = result.functionApps[0].functions.find(function (entry) {
+      return (entry.name === 'DeleteTempFileActivity');
+    });
+
+    assert(fn);
+
+    assert.strictEqual(fn.initialSignals.some(function (signal) {
+      return (signal.type === 'MISSING_AWAIT_FS_UNLINK');
+    }), false);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('detecta señal INCONSISTENT_RETRY_USAGE en orchestrator legacy', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^1.2.3', 'durable-functions': '^1.4.6'
+      }
+    });
+
+    writeJson(root, 'ExportOrchestrator/function.json', {
+      bindings: [{
+        name: 'context', type: 'orchestrationTrigger', direction: 'in'
+      }]
+    });
+
+    writeFile(root, 'ExportOrchestrator/index.ts', ["import * as df from 'durable-functions';", '', 'const orchestrator = df.orchestrator(function* (context) {', "  yield context.df.callActivityWithRetry('QueryActivity', retryOptions, input);", "  yield context.df.callActivity('ExcelActivity', input);", '});', '', 'export default orchestrator;'].join('\n'));
+
+    const result = executeInventory(root);
+
+    const fn = result.functionApps[0].functions.find(function (entry) {
+      return (entry.name === 'ExportOrchestrator');
+    });
+
+    assert(fn);
+
+    assert(fn.initialSignals.some(function (signal) {
+      return (signal.type === 'INCONSISTENT_RETRY_USAGE' && signal.evidenceStatus === 'CONFIRMED');
+    }));
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('excluye @types/* y typescript del calculo de usageDetected', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2', '@types/node': '^20.0.0'
+      },
+      devDependencies: {
+        typescript: '^5.0.0'
+      }
+    });
+
+    writeFile(root, 'src/a.ts', "import { app } from '@azure/functions';");
+
+    const result = executeInventory(root);
+
+    const byName = {};
+
+    result.functionApps[0].dependencies.forEach(function (dependency) {
+      byName[dependency.name] = dependency;
+    });
+
+    assert.strictEqual(byName['@types/node'].usageDetected, null);
+
+    assert.strictEqual(byName['@types/node'].usageScopeNote, 'TYPES_OR_TOOLING');
+
+    assert.strictEqual(byName.typescript.usageDetected, null);
+
+    assert.strictEqual(byName.typescript.usageScopeNote, 'TYPES_OR_TOOLING');
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('genera directoryTree determinista reflejando la estructura real de carpetas', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0'
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2'
+      }
+    });
+
+    writeFile(root, 'src/functions/request-report.ts', "const { app } = require('@azure/functions');");
+
+    writeFile(root, 'src/index.js', 'module.exports = {};');
+
+    writeFile(root, 'README.md', '# repo');
+
+    const result = executeInventory(root);
+
+    const tree = result.functionApps[0].directoryTree;
+
+    assert(Array.isArray(tree));
+
+    assert(tree.some(function (line) {
+      return line.includes('src/');
+    }));
+
+    assert(tree.some(function (line) {
+      return line.includes('functions/');
+    }));
+
+    assert(tree.some(function (line) {
+      return line.includes('request-report.ts');
+    }));
+
+    assert(tree.some(function (line) {
+      return line.includes('README.md');
+    }));
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('stdout contiene JSON puro', function () {
   const root = createRepository();
 

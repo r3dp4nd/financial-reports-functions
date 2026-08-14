@@ -357,12 +357,26 @@ function hostMetadata(appRoot, warnings) {
   };
 }
 
+const TYPES_OR_TOOLING_PACKAGES = new Set(['typescript']);
+
+function isTypesOrToolingPackage(name) {
+  return (name.startsWith('@types/') || TYPES_OR_TOOLING_PACKAGES.has(name));
+}
+
 function dependencyUsageStatus(dependencyUsage, name) {
+  if (isTypesOrToolingPackage(name)) {
+    return null;
+  }
+
   if (!dependencyUsage || !Object.prototype.hasOwnProperty.call(dependencyUsage, name)) {
     return null;
   }
 
   return Boolean(dependencyUsage[name]);
+}
+
+function dependencyScopeNote(name) {
+  return isTypesOrToolingPackage(name) ? 'TYPES_OR_TOOLING' : null;
 }
 
 function dependencyList(packageInfo, dependencyUsage) {
@@ -374,7 +388,8 @@ function dependencyList(packageInfo, dependencyUsage) {
       version: packageInfo.dependencies[name],
       scope: 'RUNTIME',
       azurePackage: isAzurePackage(name),
-      usageDetected: dependencyUsageStatus(dependencyUsage, name)
+      usageDetected: dependencyUsageStatus(dependencyUsage, name),
+      usageScopeNote: dependencyScopeNote(name)
     });
   });
 
@@ -384,7 +399,8 @@ function dependencyList(packageInfo, dependencyUsage) {
       version: packageInfo.devDependencies[name],
       scope: 'DEVELOPMENT',
       azurePackage: isAzurePackage(name),
-      usageDetected: dependencyUsageStatus(dependencyUsage, name)
+      usageDetected: dependencyUsageStatus(dependencyUsage, name),
+      usageScopeNote: dependencyScopeNote(name)
     });
   });
 
@@ -399,6 +415,82 @@ function filesUnderRoot(files, appRoot) {
   return files.filter(function (filePath) {
     return (filePath === appRoot || filePath.startsWith(rootWithSeparator));
   });
+}
+
+function buildDirectoryTreeNode() {
+  return {
+    directories: {}, files: []
+  };
+}
+
+function insertIntoTree(root, relativeSegments) {
+  let node = root;
+
+  for (let index = 0; index < relativeSegments.length - 1; index += 1) {
+    const segment = relativeSegments[index];
+
+    if (!node.directories[segment]) {
+      node.directories[segment] = buildDirectoryTreeNode();
+    }
+
+    node = node.directories[segment];
+  }
+
+  node.files.push(relativeSegments[relativeSegments.length - 1]);
+}
+
+function renderDirectoryTreeNode(node, prefix, lines) {
+  const directoryNames = Object.keys(node.directories).sort();
+
+  const fileNames = node.files.slice().sort();
+
+  const entries = directoryNames
+    .map(function (name) {
+      return {
+        name: name, isDirectory: true
+      };
+    })
+    .concat(fileNames.map(function (name) {
+      return {
+        name: name, isDirectory: false
+      };
+    }));
+
+  entries.forEach(function (entry, index) {
+    const isLast = (index === entries.length - 1);
+
+    const connector = isLast ? '└── ' : '├── ';
+
+    const label = entry.isDirectory ? entry.name + '/' : entry.name;
+
+    lines.push(prefix + connector + label);
+
+    if (entry.isDirectory) {
+      const childPrefix = prefix + (isLast ? '    ' : '│   ');
+
+      renderDirectoryTreeNode(node.directories[entry.name], childPrefix, lines);
+    }
+  });
+}
+
+function buildDirectoryTree(appRoot, appFiles) {
+  const root = buildDirectoryTreeNode();
+
+  appFiles.forEach(function (filePath) {
+    const relativePath = normalizeRelative(filePath);
+
+    if (!relativePath) {
+      return;
+    }
+
+    insertIntoTree(root, relativePath.split('/'));
+  });
+
+  const lines = [];
+
+  renderDirectoryTreeNode(root, '', lines);
+
+  return lines;
 }
 
 function findLegacyFunctions(appRoot, appFiles, warnings) {
@@ -813,6 +905,112 @@ function buildV4Functions(v4Registrations, durableRegistrations) {
   });
 }
 
+const FS_UNLINK_PATTERN = /\bfs(?:\.promises)?\.unlink\s*\(/g;
+
+const AWAIT_PREFIX_PATTERN = /\bawait\s+$/;
+
+function detectMissingAwaitFsUnlink(content) {
+  const matches = [];
+
+  let match;
+
+  while ((match = FS_UNLINK_PATTERN.exec(content)) !== null) {
+    const prefix = content.slice(Math.max(0, match.index - 20), match.index);
+
+    if (!AWAIT_PREFIX_PATTERN.test(prefix)) {
+      matches.push(match.index);
+    }
+  }
+
+  return matches;
+}
+
+const CALL_ACTIVITY_PATTERN = /\bcontext\.df\.(callActivity|callActivityWithRetry)\s*\(\s*['"`]([^'"`]+)['"`]/g;
+
+function detectRetryInconsistency(content) {
+  const withRetry = [];
+
+  const withoutRetry = [];
+
+  let match;
+
+  while ((match = CALL_ACTIVITY_PATTERN.exec(content)) !== null) {
+    if (match[1] === 'callActivityWithRetry') {
+      withRetry.push(match[2]);
+    } else {
+      withoutRetry.push(match[2]);
+    }
+  }
+
+  if (withRetry.length > 0 && withoutRetry.length > 0) {
+    return {
+      withRetry: Array.from(new Set(withRetry)), withoutRetry: Array.from(new Set(withoutRetry))
+    };
+  }
+
+  return null;
+}
+
+function getFunctionSourceFiles(fn, appFiles) {
+  if (fn.file) {
+    return appFiles.filter(function (filePath) {
+      return (normalizeRelative(filePath) === fn.file);
+    });
+  }
+
+  if (!fn.directory) {
+    return [];
+  }
+
+  const directoryPrefix = fn.directory + '/';
+
+  return sourceFiles(appFiles).filter(function (filePath) {
+    const relativePath = normalizeRelative(filePath);
+
+    return (relativePath.startsWith(directoryPrefix) && !relativePath.slice(directoryPrefix.length).includes('/'));
+  });
+}
+
+function detectFunctionInitialSignals(fn, appFiles, warnings) {
+  const signals = [];
+
+  const functionSourceFiles = getFunctionSourceFiles(fn, appFiles);
+
+  functionSourceFiles.forEach(function (filePath) {
+    const content = safeReadText(filePath, warnings);
+
+    if (content === null) {
+      return;
+    }
+
+    const relativePath = normalizeRelative(filePath);
+
+    if (detectMissingAwaitFsUnlink(content).length > 0) {
+      signals.push({
+        type: 'MISSING_AWAIT_FS_UNLINK',
+        evidenceStatus: 'CONFIRMED',
+        file: relativePath,
+        detail: 'fs.unlink llamado sin await; el callback puede resolver despues de que la Function ya haya retornado, generando falso positivo de exito.'
+      });
+    }
+
+    if (fn.durableRole === 'ORCHESTRATOR') {
+      const inconsistency = detectRetryInconsistency(content);
+
+      if (inconsistency) {
+        signals.push({
+          type: 'INCONSISTENT_RETRY_USAGE',
+          evidenceStatus: 'CONFIRMED',
+          file: relativePath,
+          detail: 'El orchestrator usa RetryOptions para algunas activities (' + inconsistency.withRetry.join(', ') + ') pero no para otras (' + inconsistency.withoutRetry.join(', ') + ').'
+        });
+      }
+    }
+  });
+
+  return signals;
+}
+
 function extractBindingConfigurationKeys(legacyFunctions) {
   const map = {};
 
@@ -981,7 +1179,11 @@ function buildFunctionApp(candidate, files, warnings) {
 
     dependencies: dependencyList(packageInfo, sourceScan.dependencyUsage),
 
-    functions: legacyFunctions.concat(v4Functions),
+    functions: legacyFunctions.concat(v4Functions).map(function (fn) {
+      return Object.assign({}, fn, {
+        initialSignals: detectFunctionInitialSignals(fn, appFiles, warnings)
+      });
+    }),
 
     configurationKeys: buildConfigurationKeys(
       sourceScan.environmentUsage,
@@ -991,7 +1193,9 @@ function buildFunctionApp(candidate, files, warnings) {
 
     azureResourcePackageUsage: sourceScan.azureResourcePackageUsage,
 
-    sharedResourceCandidates: buildSharedResourceCandidates(sourceScan.azureResourcePackageUsage)
+    sharedResourceCandidates: buildSharedResourceCandidates(sourceScan.azureResourcePackageUsage),
+
+    directoryTree: buildDirectoryTree(appRoot, appFiles)
   };
 }
 

@@ -35,6 +35,8 @@ flowchart TB
     end
 ```
 
+**Regla obligatoria de fidelidad en los labels**: cada nodo del diagrama de capas (excepto el nodo raíz del trigger/adapter) debe usar como label el **nombre real de la clase, módulo o servicio importado** en el código fuente (por ejemplo `ReportCosmosDbService`, `ExcelUtil`, `ReportServiceBusService`), obtenido de un `import`/`require` observado directamente en el archivo, o del nombre literal usado en `callActivity('NombreLiteral', ...)`/`app.X('NombreLiteral', ...)`. No usar paráfrasis de comportamiento como label (ejemplos prohibidos: `"Lógica de orquestación"`, `"Procesamiento de datos"`, `"context.df.callActivity / callActivityWithRetry"`). Si no hay un nombre de import/módulo real disponible para una capa, es señal de que esa capa no existe como módulo separado — usar el Caso 2 en su lugar en vez de inventar un label genérico.
+
 ### Caso 2 — código legacy o sin separación observable
 
 Muchos repositorios objetivo son legacy o tienen arquitectura deficiente: un único archivo puede concentrar trigger, validación, lógica de negocio y llamadas directas a un SDK, sin carpetas `application/`/`domain/`/`infrastructure/` observables. **Revelar esa falta de separación es tan valioso como documentar una estructura limpia** — no es un fallo de discovery, es evidencia crítica para `analyze-function` y para dimensionar el esfuerzo de migración/refactor.

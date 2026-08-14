@@ -17,6 +17,13 @@ Los estados de evidencia usados en las tablas significan:
 - Function App(s):
 - Fecha/evidencia:
 
+## Estructura de directorios
+
+> Generada de forma determinista por `scripts/inventory.js` (campo `directoryTree`), reflejando literalmente los archivos y carpetas observados en la Function App, excluyendo archivos protegidos y directorios ignorados (`node_modules`, `dist`, etc.). No editar a mano ni resumir.
+
+```text
+```
+
 ## Plataforma actual
 
 | Dimensión | Estado observado | Evidencia |

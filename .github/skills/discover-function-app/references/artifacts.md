@@ -60,4 +60,8 @@ Usar `../_shared/templates/function-current-state.template.md` cuando exista evi
 
 Debe documentar comportamiento y dependencias observables sin convertir análisis posterior en hechos retroactivos.
 
+**Regla de fidelidad obligatoria**: este documento debe ser un espejo del código, no un resumen interpretado. Nunca parafrasear una condición de negocio, mensaje de error o llamada relevante — citarla como bloque de código con el literal exacto observado en el archivo fuente. Los nombres de dependencias internas, activities llamadas (`callActivity`), registros v4 (`app.X`) deben usar el identificador literal real, nunca una descripción de comportamiento. Incluir siempre el fragmento de código central de la Function (sección "Fragmento de código relevante" del template) como ancla verificable entre el documento y el source.
+
+Si `inventory.json` reportó `initialSignals` para esta Function, transcribirlos literalmente en la sección correspondiente del catálogo, sin suavizar ni reinterpretar el hallazgo.
+
 Ruta nueva: `.migration/00-before/functions/<FunctionName>.md`.
