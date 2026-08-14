@@ -59,3 +59,6 @@ coverage/
 test-results/
 
 .env.*
+
+.migration
+.migration/repository/inventory.json

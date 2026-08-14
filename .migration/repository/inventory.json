@@ -1,121 +1,644 @@
 {
   "schemaVersion": "1",
-  "skill": "discover-function-app",
-  "status": "completed",
-  "generatedAt": "2026-08-13T13:33:00-05:00",
+  "tool": {
+    "name": "inventory",
+    "runtimeCompatibility": "node>=14"
+  },
   "repository": {
-    "name": "financial-reports-functions",
-    "root": ".",
-    "language": "TypeScript",
-    "packageManager": "npm"
+    "root": "/Users/vladimirolekmallquiperez/Code/azure-function/financial-reports-functions"
   },
   "functionApps": [
     {
-      "id": "financial-reports-functions",
-      "path": ".",
-      "runtime": {
-        "version": "3",
-        "status": "CONFIRMED",
-        "evidence": [
-          "repository configuration"
-        ]
+      "root": ".",
+      "evidenceStatus": "CONFIRMED",
+      "host": {
+        "path": "host.json",
+        "version": "2.0"
       },
-      "node": {
-        "version": "14",
-        "status": "CONFIRMED",
-        "evidence": [
-          "package.json"
-        ]
+      "package": {
+        "path": "package.json",
+        "name": "financial-reports-functions",
+        "version": "1.0.0",
+        "engines": {
+          "node": ">=24 <25"
+        },
+        "scripts": {
+          "clean": "rimraf dist",
+          "typecheck": "tsc --noEmit -p tsconfig.prod.json",
+          "build": "npm run build:prod",
+          "build:dev": "npm run clean && tsc -p tsconfig.json",
+          "build:prod": "npm run clean && tsc -p tsconfig.prod.json",
+          "test": "jest",
+          "test:watch": "jest --watch",
+          "test:coverage": "jest --coverage",
+          "test:ci": "jest --ci --coverage --runInBand",
+          "start": "npm run build:dev && func start"
+        },
+        "dependencies": {
+          "@azure/cosmos": "^4.10.0",
+          "@azure/functions": "~4.16.2",
+          "@azure/service-bus": "^7.9.5",
+          "@azure/storage-blob": "^12.33.0",
+          "durable-functions": "~3.5.0",
+          "exceljs": "^4.4.0"
+        },
+        "devDependencies": {
+          "@types/jest": "^29.5.14",
+          "@types/node": "^24.0.0",
+          "jest": "^29.7.0",
+          "jest-junit": "^16.0.0",
+          "rimraf": "^6.1.3",
+          "ts-jest": "^29.4.0",
+          "typescript": "^5.9.0"
+        },
+        "packageManager": null
       },
-      "programmingModel": {
-        "version": "3",
-        "status": "CONFIRMED",
-        "evidence": [
-          "@azure/functions dependency",
-          "function.json files"
-        ]
+      "platform": {
+        "node": {
+          "declared": ">=24 <25",
+          "evidenceStatus": "CONFIRMED"
+        },
+        "functionsRuntime": {
+          "value": null,
+          "evidenceStatus": "UNKNOWN"
+        },
+        "programmingModel": {
+          "value": "v4",
+          "evidenceStatus": "CONFIRMED"
+        }
       },
-      "typescript": {
-        "version": "4.0.0",
-        "status": "CONFIRMED",
-        "evidence": [
-          "package.json"
-        ]
-      },
-      "durableFunctions": {
+      "durable": {
         "detected": true,
-        "status": "CONFIRMED"
+        "packageVersion": "~3.5.0",
+        "evidenceStatus": "CONFIRMED"
       },
+      "dependencies": [
+        {
+          "name": "@azure/cosmos",
+          "version": "^4.10.0",
+          "scope": "RUNTIME",
+          "azurePackage": true
+        },
+        {
+          "name": "@azure/functions",
+          "version": "~4.16.2",
+          "scope": "RUNTIME",
+          "azurePackage": true
+        },
+        {
+          "name": "@azure/service-bus",
+          "version": "^7.9.5",
+          "scope": "RUNTIME",
+          "azurePackage": true
+        },
+        {
+          "name": "@azure/storage-blob",
+          "version": "^12.33.0",
+          "scope": "RUNTIME",
+          "azurePackage": true
+        },
+        {
+          "name": "@types/jest",
+          "version": "^29.5.14",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        },
+        {
+          "name": "@types/node",
+          "version": "^24.0.0",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        },
+        {
+          "name": "durable-functions",
+          "version": "~3.5.0",
+          "scope": "RUNTIME",
+          "azurePackage": true
+        },
+        {
+          "name": "exceljs",
+          "version": "^4.4.0",
+          "scope": "RUNTIME",
+          "azurePackage": false
+        },
+        {
+          "name": "jest",
+          "version": "^29.7.0",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        },
+        {
+          "name": "jest-junit",
+          "version": "^16.0.0",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        },
+        {
+          "name": "rimraf",
+          "version": "^6.1.3",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        },
+        {
+          "name": "ts-jest",
+          "version": "^29.4.0",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        },
+        {
+          "name": "typescript",
+          "version": "^5.9.0",
+          "scope": "DEVELOPMENT",
+          "azurePackage": false
+        }
+      ],
       "functions": [
         {
+          "name": "CompleteReport",
+          "source": "V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/complete-report.function.ts",
+          "trigger": {
+            "type": "serviceBusTrigger",
+            "registrationMethod": "serviceBusQueue"
+          },
+          "durableRole": null
+        },
+        {
+          "name": "OutboxDispatcher",
+          "source": "V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/outbox-dispatcher.function.ts",
+          "trigger": {
+            "type": "cosmosDBTrigger",
+            "registrationMethod": "cosmosDB"
+          },
+          "durableRole": null
+        },
+        {
+          "name": "OutboxRetry",
+          "source": "V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/outbox-retry.function.ts",
+          "trigger": {
+            "type": "timerTrigger",
+            "registrationMethod": "timer"
+          },
+          "durableRole": null
+        },
+        {
           "name": "RequestReport",
-          "path": "RequestReport",
-          "trigger": "httpTrigger",
-          "bindings": [],
-          "durableRole": null,
-          "status": "CONFIRMED"
+          "source": "V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/request-report.function.ts",
+          "trigger": {
+            "type": "httpTrigger",
+            "registrationMethod": "http"
+          },
+          "durableRole": null
+        },
+        {
+          "name": "StartGenerateReport",
+          "source": "V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/start-generate-report.function.ts",
+          "trigger": {
+            "type": "serviceBusTrigger",
+            "registrationMethod": "serviceBusQueue"
+          },
+          "durableRole": null
+        },
+        {
+          "name": "CompleteGeneration",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/complete-generation.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
+        },
+        {
+          "name": "GenerateExcel",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/generate-excel.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
+        },
+        {
+          "name": "GetCustomers",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/get-customers.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
+        },
+        {
+          "name": "GetOrders",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/get-orders.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
+        },
+        {
+          "name": "GetPayments",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/get-payments.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
+        },
+        {
+          "name": "MarkReportFailed",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/mark-report-failed.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
+        },
+        {
+          "name": "MarkReportProcessing",
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/activities/mark-report-processing.function.ts",
+          "trigger": {
+            "type": "activityTrigger",
+            "registrationMethod": "activity"
+          },
+          "durableRole": "ACTIVITY"
         },
         {
           "name": "ReportOrchestrator",
-          "path": "ReportOrchestrator",
-          "trigger": "orchestrationTrigger",
-          "bindings": [],
-          "durableRole": "orchestrator",
-          "status": "CONFIRMED"
+          "source": "DURABLE_V4_REGISTRATION",
+          "programmingModel": "v4",
+          "evidenceStatus": "CONFIRMED",
+          "file": "src/functions/report-orchestrator.function.ts",
+          "trigger": {
+            "type": "orchestrationTrigger",
+            "registrationMethod": "orchestration"
+          },
+          "durableRole": "ORCHESTRATOR"
         }
       ],
-      "environment": {
-        "requiredKeys": [
-          {
-            "name": "COSMOS_DATABASE",
-            "usedBy": [
-              "RequestReport"
-            ]
-          },
-          {
-            "name": "SERVICE_BUS_CONNECTION",
-            "usedBy": [
-              "CompleteReport"
-            ]
-          }
+      "configurationKeys": [
+        {
+          "key": "COSMOS_CUSTOMERS_CONTAINER",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts",
+            "src/shared/infrastructure/azure/cosmos/cosmos.client.spec.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "COSMOS_DATABASE",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "COSMOS_ENDPOINT",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "COSMOS_KEY",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "COSMOS_ORDERS_CONTAINER",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts",
+            "src/shared/infrastructure/azure/cosmos/cosmos.client.spec.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "COSMOS_PAYMENTS_CONTAINER",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts",
+            "src/shared/infrastructure/azure/cosmos/cosmos.client.spec.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "COSMOS_REPORTS_CONTAINER",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/cosmos.config.spec.ts",
+            "src/shared/infrastructure/azure/config/cosmos.config.ts",
+            "src/shared/infrastructure/azure/cosmos/cosmos.client.spec.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "SERVICE_BUS_CONNECTION",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/service-bus.config.spec.ts",
+            "src/shared/infrastructure/azure/config/service-bus.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "SERVICE_BUS_REPORT_GENERATED_QUEUE",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/service-bus.config.spec.ts",
+            "src/shared/infrastructure/azure/config/service-bus.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "SERVICE_BUS_REPORT_REQUESTS_QUEUE",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/service-bus.config.spec.ts",
+            "src/shared/infrastructure/azure/config/service-bus.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "STORAGE_CONNECTION",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/blob-storage.config.spec.ts",
+            "src/shared/infrastructure/azure/config/blob-storage.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        },
+        {
+          "key": "STORAGE_REPORTS_CONTAINER",
+          "usedByFiles": [
+            "src/shared/infrastructure/azure/config/blob-storage.config.spec.ts",
+            "src/shared/infrastructure/azure/config/blob-storage.config.ts"
+          ],
+          "evidenceStatus": "CONFIRMED"
+        }
+      ],
+      "azureResourcePackageUsage": {
+        "@azure/cosmos": [
+          "src/CompleteReport/infrastructure/persistence/cosmos-report-completion.repository.spec.ts",
+          "src/CompleteReport/infrastructure/persistence/cosmos-report-completion.repository.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-customer-report.repository.spec.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-customer-report.repository.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-order-report.repository.spec.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-order-report.repository.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-payment-report.repository.spec.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-payment-report.repository.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-report-failure.repository.spec.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-report-failure.repository.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-report-generation.repository.spec.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-report-generation.repository.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-report-processing.repository.spec.ts",
+          "src/GenerateReport/infrastructure/persistence/cosmos-report-processing.repository.ts",
+          "src/OutboxDispatcher/infrastructure/cosmos-outbox.repository.ts",
+          "src/RequestReport/infrastructure/persistence/cosmos-report.repository.spec.ts",
+          "src/RequestReport/infrastructure/persistence/cosmos-report.repository.ts",
+          "src/shared/infrastructure/azure/cosmos/cosmos.client.ts"
+        ],
+        "@azure/service-bus": [
+          "src/GenerateReport/infrastructure/messaging/service-bus-report-generated-event.publisher.spec.ts",
+          "src/GenerateReport/infrastructure/messaging/service-bus-report-generated-event.publisher.ts",
+          "src/OutboxDispatcher/infrastructure/service-bus-outbox.publisher.ts",
+          "src/RequestReport/infrastructure/messaging/service-bus-report-event.publisher.spec.ts",
+          "src/RequestReport/infrastructure/messaging/service-bus-report-event.publisher.ts",
+          "src/shared/infrastructure/azure/service-bus/service-bus.client.ts"
+        ],
+        "@azure/storage-blob": [
+          "local-infra/check-report.js",
+          "local-infra/download-report.js",
+          "local-infra/init-storage.js",
+          "src/GenerateReport/infrastructure/storage/blob-report.storage.spec.ts",
+          "src/GenerateReport/infrastructure/storage/blob-report.storage.ts",
+          "src/shared/infrastructure/azure/blob-storage/blob-storage.client.ts"
         ]
       },
-      "relationships": [
+      "sharedResourceCandidates": [
         {
-          "from": "RequestReport",
-          "to": "ReportOrchestrator",
-          "type": "starts",
-          "status": "INFERRED",
+          "id": "CANDIDATE-AZURE-COSMOS",
+          "type": "COSMOS_DB",
+          "package": "@azure/cosmos",
+          "paths": [
+            "src/CompleteReport/infrastructure/persistence/cosmos-report-completion.repository.spec.ts",
+            "src/CompleteReport/infrastructure/persistence/cosmos-report-completion.repository.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-customer-report.repository.spec.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-customer-report.repository.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-order-report.repository.spec.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-order-report.repository.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-payment-report.repository.spec.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-payment-report.repository.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-report-failure.repository.spec.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-report-failure.repository.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-report-generation.repository.spec.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-report-generation.repository.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-report-processing.repository.spec.ts",
+            "src/GenerateReport/infrastructure/persistence/cosmos-report-processing.repository.ts",
+            "src/OutboxDispatcher/infrastructure/cosmos-outbox.repository.ts",
+            "src/RequestReport/infrastructure/persistence/cosmos-report.repository.spec.ts",
+            "src/RequestReport/infrastructure/persistence/cosmos-report.repository.ts",
+            "src/shared/infrastructure/azure/cosmos/cosmos.client.ts"
+          ],
+          "consumers": [],
+          "ownership": null,
+          "evidenceStatus": "INFERRED",
           "evidence": [
-            "source code invocation"
+            {
+              "type": "PACKAGE_USAGE",
+              "package": "@azure/cosmos",
+              "paths": [
+                "src/CompleteReport/infrastructure/persistence/cosmos-report-completion.repository.spec.ts",
+                "src/CompleteReport/infrastructure/persistence/cosmos-report-completion.repository.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-customer-report.repository.spec.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-customer-report.repository.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-order-report.repository.spec.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-order-report.repository.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-payment-report.repository.spec.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-payment-report.repository.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-report-failure.repository.spec.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-report-failure.repository.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-report-generation.repository.spec.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-report-generation.repository.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-report-processing.repository.spec.ts",
+                "src/GenerateReport/infrastructure/persistence/cosmos-report-processing.repository.ts",
+                "src/OutboxDispatcher/infrastructure/cosmos-outbox.repository.ts",
+                "src/RequestReport/infrastructure/persistence/cosmos-report.repository.spec.ts",
+                "src/RequestReport/infrastructure/persistence/cosmos-report.repository.ts",
+                "src/shared/infrastructure/azure/cosmos/cosmos.client.ts"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "CANDIDATE-AZURE-SERVICE-BUS",
+          "type": "SERVICE_BUS",
+          "package": "@azure/service-bus",
+          "paths": [
+            "src/GenerateReport/infrastructure/messaging/service-bus-report-generated-event.publisher.spec.ts",
+            "src/GenerateReport/infrastructure/messaging/service-bus-report-generated-event.publisher.ts",
+            "src/OutboxDispatcher/infrastructure/service-bus-outbox.publisher.ts",
+            "src/RequestReport/infrastructure/messaging/service-bus-report-event.publisher.spec.ts",
+            "src/RequestReport/infrastructure/messaging/service-bus-report-event.publisher.ts",
+            "src/shared/infrastructure/azure/service-bus/service-bus.client.ts"
+          ],
+          "consumers": [],
+          "ownership": null,
+          "evidenceStatus": "INFERRED",
+          "evidence": [
+            {
+              "type": "PACKAGE_USAGE",
+              "package": "@azure/service-bus",
+              "paths": [
+                "src/GenerateReport/infrastructure/messaging/service-bus-report-generated-event.publisher.spec.ts",
+                "src/GenerateReport/infrastructure/messaging/service-bus-report-generated-event.publisher.ts",
+                "src/OutboxDispatcher/infrastructure/service-bus-outbox.publisher.ts",
+                "src/RequestReport/infrastructure/messaging/service-bus-report-event.publisher.spec.ts",
+                "src/RequestReport/infrastructure/messaging/service-bus-report-event.publisher.ts",
+                "src/shared/infrastructure/azure/service-bus/service-bus.client.ts"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "CANDIDATE-AZURE-STORAGE-BLOB",
+          "type": "BLOB_STORAGE",
+          "package": "@azure/storage-blob",
+          "paths": [
+            "local-infra/check-report.js",
+            "local-infra/download-report.js",
+            "local-infra/init-storage.js",
+            "src/GenerateReport/infrastructure/storage/blob-report.storage.spec.ts",
+            "src/GenerateReport/infrastructure/storage/blob-report.storage.ts",
+            "src/shared/infrastructure/azure/blob-storage/blob-storage.client.ts"
+          ],
+          "consumers": [],
+          "ownership": null,
+          "evidenceStatus": "INFERRED",
+          "evidence": [
+            {
+              "type": "PACKAGE_USAGE",
+              "package": "@azure/storage-blob",
+              "paths": [
+                "local-infra/check-report.js",
+                "local-infra/download-report.js",
+                "local-infra/init-storage.js",
+                "src/GenerateReport/infrastructure/storage/blob-report.storage.spec.ts",
+                "src/GenerateReport/infrastructure/storage/blob-report.storage.ts",
+                "src/shared/infrastructure/azure/blob-storage/blob-storage.client.ts"
+              ]
+            }
           ]
         }
-      ],
-      "architecture": {
-        "observations": [
-          {
-            "type": "DURABLE_WORKFLOW",
-            "description": "Se detectó un flujo Durable compuesto por starter, orchestrator y activities.",
-            "status": "INFERRED"
-          }
-        ]
-      },
-      "unknowns": []
+      ]
     }
   ],
-  "evidence": {
-    "repository": [
-      "package.json",
-      "host.json",
-      "function.json",
-      "source code"
-    ],
-    "officialSources": [
-      {
-        "provider": "Microsoft",
-        "title": "Azure Functions Node.js developer guide",
-        "purpose": "Programming Model discovery"
-      }
-    ]
-  }
+  "sensitiveFilesDetected": [
+    {
+      "path": ".github/workflows/cd-dev.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": ".github/workflows/cd.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": ".github/workflows/reusable-build.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": ".github/workflows/reusable-deploy.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": ".github/workflows/reusable-validate.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": "devops/pipelines/cd-dev.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": "devops/pipelines/cd-prd.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": "devops/pipelines/cd-stg.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": "devops/pipelines/cd-uat.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": "devops/pipelines/ci.yml",
+      "category": "CI_CD",
+      "contentRead": false
+    },
+    {
+      "path": "local-infra/.env",
+      "category": "SENSITIVE_CONFIGURATION",
+      "contentRead": false
+    },
+    {
+      "path": "local-infra/.env.example",
+      "category": "SENSITIVE_CONFIGURATION",
+      "contentRead": false
+    },
+    {
+      "path": "local.settings.json",
+      "category": "SENSITIVE_CONFIGURATION",
+      "contentRead": false
+    }
+  ],
+  "warnings": []
 }
