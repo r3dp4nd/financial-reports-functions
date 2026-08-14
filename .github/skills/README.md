@@ -65,6 +65,12 @@ Los skills en `support/` ayudan al dev a acelerar creación/refactor/testabilida
 
 El plan decide qué skills de ejecución aplican. No ejecutar la cadena completa por costumbre.
 
+## Prompts maestros
+
+| Prompt | Uso |
+|--------|-----|
+| [`prompts/master-before-to-plan.md`](prompts/master-before-to-plan.md) | Orquestar discovery, assessment, analysis por cada Function y planning, con metricas de consumo/modelo. |
+
 ## Cómo usar los skills
 
 Los skills se ejecutan manualmente desde GitHub Copilot Chat. Cada etapa consume la evidencia producida por las
