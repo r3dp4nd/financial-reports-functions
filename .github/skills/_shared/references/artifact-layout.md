@@ -26,8 +26,15 @@ Las nuevas ejecuciones deben escribir en el layout semántico. Las skills pueden
 │   └── resources/shared-resources.json|md
 ├── 40-execution/
 │   ├── app/preparation.json|md
+│   ├── dev-tasks/<ActionId>.md
+│   ├── suggestions/<ActionId>.md
+│   ├── checks/<Scope>.json|md
+│   ├── reviews/<Scope>.json|md
 │   ├── functions/<FunctionName>/preparation.json|md
 │   ├── functions/<FunctionName>/programming-model-v4.json|md
+│   ├── functions/<FunctionName>/scaffold.json|md
+│   ├── functions/<FunctionName>/test-generation.json|md
+│   ├── slices/<SliceName>/test-generation.json|md
 │   └── workflows/<WorkflowName>/durable-v4.json|md
 ├── 50-verification/
 │   └── verification.json|md
@@ -41,6 +48,7 @@ Las nuevas ejecuciones deben escribir en el layout semántico. Las skills pueden
 - `20-analysis`: análisis profundo solo de Functions/slices priorizados.
 - `30-plan`: contrato/eval de ejecución. Es la fuente de Action IDs.
 - `40-execution`: resultados de ejecutar Action IDs aprobados.
+- support artifacts dentro de `40-execution` son opcionales y deben estar ligados a solicitud explícita o Action ID.
 - `50-verification`: cierre AFTER contra BEFORE/PLAN/EXECUTION.
 - `90-lessons`: aprendizaje del toolkit, separado de artifacts operativos.
 

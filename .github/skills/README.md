@@ -48,9 +48,20 @@ No usar `latest` como sustituto del baseline aprobado.
 
 50 VERIFY
   verify-function-app
+
+SUPPORT
+  explain-migration-action          (explica Action ID sin modificar)
+  generate-dev-task-pack            (paquete de trabajo para dev)
+  suggest-code-change               (diff sugerido sin aplicar)
+  run-migration-checks              (checks aprobados/safe)
+  review-manual-migration           (review contra plan)
+  scaffold-function-capability       (scaffold nuevo o Action ID aprobado)
+  generate-tests-for-function-slice  (solo solicitud explícita o Action ID aprobado)
 ```
 
 `review-skill-performance` mejora el toolkit y no forma parte del flujo obligatorio de migración.
+
+Los skills en `support/` ayudan al dev a acelerar creación/refactor/testabilidad. No reemplazan `plan-function-migration` ni ejecutan migración completa.
 
 El plan decide qué skills de ejecución aplican. No ejecutar la cadena completa por costumbre.
 
@@ -80,6 +91,13 @@ caso.
 | `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable. | `40-execution/functions/<name>/programming-model-v4.*` |
 | `migrate-durable-functions-v4` | Workflow Durable con migración aprobada.                  | Planes de sus participantes.  | `40-execution/workflows/<name>/durable-v4.*`  |
 | `verify-function-app`          | Cuando todas las acciones aplicables terminaron.          | Plan + artifacts de ejecución. | `50-verification/verification.json\|md`      |
+| `support/explain-migration-action` | Explicar un Action ID para dev humano.              | Action ID + plan.             | Respuesta explicativa.                        |
+| `support/generate-dev-task-pack` | Crear paquete de trabajo manual.                       | Action ID(s) + plan.          | `40-execution/dev-tasks/*.md`                 |
+| `support/suggest-code-change`  | Sugerir diff sin aplicarlo.                              | Action ID + archivos.         | Respuesta o `40-execution/suggestions/*.md`   |
+| `support/run-migration-checks` | Ejecutar checks aprobados/safe.                          | Plan/scope + tooling.         | `40-execution/checks/*`                       |
+| `support/review-manual-migration` | Revisar cambios humanos contra plan.                  | Diff + Action IDs.            | `40-execution/reviews/*`                      |
+| `support/scaffold-function-capability` | Crear scaffold de capability + Function.           | Solicitud explícita o Action ID. | Código scaffold + `scaffold.*` opcional     |
+| `support/generate-tests-for-function-slice` | Generar/proponer tests para ruta/slice.       | Ruta + solicitud explícita o Action ID. | Specs + `test-generation.*` opcional |
 | `review-skill-performance`     | Para revisar lessons, blockers y efectividad del toolkit. | Lessons + evals + evidencia.   | Findings y propuestas de mejora.              |
 
 ### Ejemplos en Copilot Chat
@@ -93,6 +111,13 @@ Ejecuta prepare-function-app siguiendo únicamente el plan aprobado.
 Ejecuta prepare-function para ProcessOrders.
 Ejecuta migrate-programming-model-v4 para ProcessOrders.
 Ejecuta migrate-durable-functions-v4 para el workflow GenerateFinancialReport.
+Ejecuta support/explain-migration-action para FN-003.
+Ejecuta support/generate-dev-task-pack para FN-003 y FN-004.
+Ejecuta support/suggest-code-change para FN-003 sin aplicar cambios.
+Ejecuta support/run-migration-checks para FN-003.
+Ejecuta support/review-manual-migration para FN-003 usando el diff actual.
+Ejecuta support/scaffold-function-capability para crear capability RequestReport con Function HTTP RequestReport.
+Ejecuta support/generate-tests-for-function-slice para src/RequestReport/handler.ts.
 Ejecuta verify-function-app contra el plan aprobado.
 Ejecuta review-skill-performance sobre las lessons de esta migración.
 ```
@@ -108,6 +133,9 @@ Ejecuta review-skill-performance sobre las lessons de esta migración.
 * `verify-function-app` ejecuta el build global después de completar todas las Functions aplicables.
 * ningún skill debe ampliar el scope más allá del plan aprobado.
 * `plan-function-migration` separa migración técnica de refactor/testabilidad y puede sugerir executor `HUMAN`, `AI_AGENT` o `EITHER`.
+* support skills pueden modificar código solo cuando su descripción lo permite y existe solicitud explícita o Action ID aprobado.
+* generar tests está prohibido en migración por defecto, pero permitido en `support/generate-tests-for-function-slice` cuando el usuario lo pide explícitamente o el plan lo aprueba.
+* `support/suggest-code-change` y `support/review-manual-migration` nunca aplican correcciones; solo proponen o revisan.
 
 ## Estados
 
@@ -218,8 +246,15 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 │   └── resources/shared-resources.json|md
 ├── 40-execution/
 │   ├── app/preparation.json|md
+│   ├── dev-tasks/<ActionId>.md
+│   ├── suggestions/<ActionId>.md
+│   ├── checks/<Scope>.json|md
+│   ├── reviews/<Scope>.json|md
 │   ├── functions/<FunctionName>/preparation.json|md
 │   ├── functions/<FunctionName>/programming-model-v4.json|md
+│   ├── functions/<FunctionName>/scaffold.json|md
+│   ├── functions/<FunctionName>/test-generation.json|md
+│   ├── slices/<SliceName>/test-generation.json|md
 │   └── workflows/<WorkflowName>/durable-v4.json|md
 ├── 50-verification/
 │   └── verification.json|md
