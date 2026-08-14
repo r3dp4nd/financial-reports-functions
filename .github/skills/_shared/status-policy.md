@@ -89,6 +89,55 @@ Ejemplos:
 
 `¿Necesitamos hacer algo sobre esta dimensión?`
 
+## Execution status
+
+Campo:
+
+`executionStatus`
+
+Valores:
+
+- `COMPLETED`
+- `FAILED`
+- `NOT_EXECUTED`
+- `NOT_APPLICABLE`
+- `BLOCKED`
+- `REQUIRES_REVIEW`
+
+### COMPLETED
+
+La acción fue ejecutada y alcanzó el resultado esperado.
+
+### FAILED
+
+La acción fue ejecutada pero no alcanzó el resultado esperado.
+
+### NOT_EXECUTED
+
+La acción aplicaba pero no fue ejecutada.
+
+Debe registrar el motivo.
+
+### NOT_APPLICABLE
+
+La acción no aplica al contexto finalmente observado.
+
+Debe existir evidencia que justifique por qué dejó de aplicar.
+
+### BLOCKED
+
+Existe un impedimento conocido que impide ejecutar o completar la acción.
+
+### REQUIRES_REVIEW
+
+Ejecutar o continuar la acción requiere una decisión humana.
+
+`executionStatus` responde:
+
+`¿Qué ocurrió al intentar ejecutar esta acción?`
+
+No utilizar `PASS` o `FAIL` como sustitutos de `executionStatus`.
+
 ## Revisión humana
 
 Usar:
@@ -231,6 +280,9 @@ La comprobación no aplica.
 
 El resultado necesita interpretación o decisión humana.
 
+Un gate obligatorio con estado `NOT_EXECUTED` impide emitir `VERIFIED` hasta determinar si corresponde `BLOCKED` o
+`REQUIRES_REVIEW`.
+
 ## Final verification
 
 Estados:
@@ -250,11 +302,28 @@ Todos los gates obligatorios fueron satisfechos y queda deuda técnica no bloque
 
 ### BLOCKED
 
-Existe al menos un blocker que impide cerrar la migración.
+Existe al menos un blocker confirmado que impide cerrar la migración.
 
 ### REQUIRES_REVIEW
 
-No puede emitirse una conclusión final sin decisión humana.
+No existe un blocker técnico confirmado, pero no puede emitirse una conclusión final sin decisión humana.
+
+## Agregación final
+
+Derivar el estado final únicamente a partir de gates obligatorios, decisiones humanas pendientes y deuda documentada.
+
+Reglas:
+
+- un gate obligatorio fallido o un blocker técnico confirmado produce `BLOCKED`;
+- si no existe blocker pero una decisión humana impide cerrar, usar `REQUIRES_REVIEW`;
+- si todos los gates obligatorios están satisfechos y existe deuda no bloqueante, usar `VERIFIED_WITH_DEBT`;
+- si todos los gates obligatorios están satisfechos y no existe deuda relevante, usar `VERIFIED`.
+
+Las acciones con `requiredForMigration: false`, deuda no bloqueante y optimizaciones fuera de alcance no impiden
+`VERIFIED`.
+
+Cuando existan simultáneamente blockers técnicos y decisiones humanas pendientes, el estado principal permanece
+`BLOCKED` y las revisiones pendientes deben seguir registradas.
 
 ## UNKNOWN vs REQUIRES_VALIDATION
 
@@ -310,13 +379,21 @@ Usar `PARTIAL` cuando existe trabajo independiente seguro.
 
 Usar `BLOCKED` cuando no puede continuar el trabajo necesario.
 
+## FAILED vs BLOCKED
+
+`FAILED` describe el resultado de una acción ejecutada.
+
+`BLOCKED` describe un impedimento que evita completar el trabajo necesario.
+
+Una acción `FAILED` puede provocar que el estado principal del artefacto sea `BLOCKED`.
+
 ## BLOCKED vs REQUIRES_REVIEW
 
 Usar `BLOCKED` cuando el impedimento técnico es conocido.
 
 Ejemplo:
 
-`tests = FAIL`
+`gate obligatorio de pruebas = FAIL`
 
 Usar `REQUIRES_REVIEW` cuando el siguiente paso depende de una decisión humana.
 
@@ -326,4 +403,6 @@ No convertir incertidumbre en éxito.
 
 No convertir deuda no bloqueante en bloqueo.
 
-No utilizar la misma propiedad para evidencia, acción y ejecución.
+No convertir un check opcional fallido en blocker obligatorio.
+
+No utilizar la misma propiedad para evidencia, acción, ejecución y verificación.

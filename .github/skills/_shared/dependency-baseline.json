@@ -1,6 +1,7 @@
 {
-  "schemaVersion": "3",
+  "schemaVersion": "4",
   "baselineId": "node24-azure-functions-v4",
+  "baselineRevision": 1,
   "target": {
     "node": "24",
     "azureFunctionsRuntime": "v4",
@@ -14,10 +15,9 @@
       "durable-functions"
     ],
     "unknownPackageStrategy": "OFFICIAL_RESEARCH",
-    "approvedSourcesOnly": true,
-    "automaticUpgrade": false
+    "approvedSourcesOnly": true
   },
-  "azurePackages": {
+  "managedPackages": {
     "@azure/functions": {
       "targetVersion": "4.16.2",
       "strategy": "PINNED",
@@ -25,8 +25,7 @@
       "requiredFor": [
         "PROGRAMMING_MODEL_V4"
       ],
-      "impactAnalysisRequired": true,
-      "recommendationStatus": "APPROVED"
+      "impactAnalysisRequired": true
     },
     "durable-functions": {
       "targetVersion": "3.5.0",
@@ -35,22 +34,19 @@
       "requiredFor": [
         "DURABLE_PROGRAMMING_MODEL_V4"
       ],
-      "impactAnalysisRequired": true,
-      "recommendationStatus": "APPROVED"
+      "impactAnalysisRequired": true
     },
     "@azure/cosmos": {
       "targetVersion": "4.10.0",
       "strategy": "PINNED",
       "category": "AZURE_SDK",
-      "impactAnalysisRequired": true,
-      "recommendationStatus": "APPROVED"
+      "impactAnalysisRequired": true
     },
     "@azure/service-bus": {
       "targetVersion": "7.9.5",
       "strategy": "PINNED",
       "category": "AZURE_SDK",
-      "impactAnalysisRequired": true,
-      "recommendationStatus": "APPROVED"
+      "impactAnalysisRequired": true
     },
     "@types/node": {
       "targetVersion": "24.9.2",
@@ -59,11 +55,9 @@
       "requiredFor": [
         "NODE_24"
       ],
-      "impactAnalysisRequired": false,
-      "recommendationStatus": "APPROVED"
+      "impactAnalysisRequired": true
     }
   },
-  "learnedPackages": {},
   "rules": {
     "automaticUpgrade": false,
     "useLatest": false,
@@ -71,7 +65,6 @@
     "requireAssessmentBeforeUpgrade": true,
     "requireImpactAnalysisWhenMarked": true,
     "requireHumanApprovalForNewTarget": true,
-    "learnOnlyAfterSuccessfulVerification": true,
-    "learnOnlyAfterHumanApproval": true
+    "requireHumanApprovalForBaselineChange": true
   }
 }
