@@ -1,6 +1,12 @@
 # Reglas de discovery
 
-Cargar esta referencia cuando el inventario determinista no sea suficiente para clasificar una señal.
+Este archivo es un índice corto. Cargar el archivo específico según la duda concreta que tengas, en vez de cargar todo.
+
+| Necesito... | Cargar |
+|---|---|
+| Usar Graphify / decidir qué modo de consulta usar | `references/graphify-usage.md` |
+| Documentar Arquitectura observable / generar diagramas (incluyendo repos legacy sin separación clara) | `references/architecture-diagrams.md` |
+| Clasificar Programming Model, Runtime, Durable, Configuración o shared resource candidates ambiguos | `references/ambiguous-signals.md` |
 
 ## Progressive disclosure
 
@@ -13,47 +19,6 @@ security exclusions
 ```
 
 No construir call graphs completos.
-
-## Graphify / project graph
-
-Usar Graphify o un indexador de grafo solo cuando esté disponible y pueda respetar las exclusiones de seguridad.
-
-El grafo ayuda a acelerar:
-
-- relaciones adapter → handler/use case → repository/publisher/storage;
-- fan-in/fan-out por Function, workflow, capability o shared resource;
-- slices naturales: Durable workflow, Outbox, shared clients, capability;
-- candidatos de criticidad inicial por conectividad, trigger externo, side effects o persistencia;
-- señales de testabilidad: SDK/config global instanciado en composition root, lógica mezclada con runtime, I/O directo, tiempo/random directo.
-
-Reglas:
-
-- `inventory.js` sigue siendo la fuente primaria de hechos estructurados;
-- el grafo es evidencia auxiliar y sus conclusiones deben quedar `INFERRED` salvo que estén confirmadas por source seguro;
-- no persistir secretos, valores de configuración, CI/CD leído ni rutas excluidas;
-- no volcar un call graph completo en `current-state.md`;
-- registrar solo subgrafos/slices útiles para migración o analysis.
-
-### Cómo consultar (elegir modo por tipo de señal)
-
-Antes de una consulta nueva, verificar primero si el resumen de grafo ya disponible en contexto (god nodes, communities, corpus check) resuelve la pregunta sin costo adicional.
-
-| Señal a acelerar | Modo recomendado | Ejemplo genérico |
-|---|---|---|
-| Relación adapter → handler → use-case → repository de una capability/Function específica | `explain` sobre el nodo de esa capability/handler | `graphify_query(explain, "<NombreDeCapabilityOHandler>")` |
-| Fan-in/fan-out de un shared resource (cuántas capabilities/Functions usan un cliente o módulo compartido) | `explain` sobre el nodo del módulo compartido | `graphify_query(explain, "<NombreDelModuloCompartido>")` |
-| Conexión/dependencia entre dos nodos conocidos (ej. Function origen y Function/orchestrator destino) | `path` con origen y destino explícitos | `graphify_query(path, "<NombreNodoOrigen>", "<NombreNodoDestino>")` |
-| Pregunta exploratoria amplia sin nodo conocido de antemano | `query`, aceptando que puede requerir un refinamiento adicional | `graphify_query(query, "<pregunta exploratoria sobre relaciones/arquitectura observable>")` |
-| Confirmar organización/arquitectura global | preferir el resumen de grafo ya presente en contexto antes de cualquier query nueva | usar directamente el resumen existente (god nodes, communities) |
-
-Los nombres de nodo (capability, handler, módulo compartido) deben tomarse de la evidencia real de `inventory.js` o del propio grafo del repositorio bajo análisis; nunca fijar en esta referencia nombres de un repositorio concreto.
-
-Límite sugerido: no más de 2-3 queries de Graphify por ejecución de discovery. Si se necesitan más, es señal de que el inventario determinista o el source directo deberían resolver la pregunta en su lugar.
-
-Artifacts opcionales:
-
-- `.migration/00-before/graph/project-graph.json` para facts estructurados seguros;
-- `.migration/00-before/graph/project-graph.md` para resumen humano de slices/relaciones.
 
 ## Profundidad esperada
 
@@ -73,6 +38,8 @@ Capturar cuando exista evidencia directa:
 - comandos de validación existentes (`build`, `typecheck`, `test`, `start`) sin ejecutarlos salvo que el workflow lo pida;
 - diagrama Mermaid compacto de arquitectura actual cuando las relaciones principales sean suficientes.
 
+Revelar la **ausencia** de estructura, tests o separación de responsabilidades es tan valioso como documentar una estructura existente. Un repositorio legacy o con mala arquitectura no es un fallo de discovery: es evidencia crítica que debe capturarse con el mismo nivel de detalle que un repositorio bien organizado. Ver `references/architecture-diagrams.md` para cómo diagramar ese caso.
+
 No capturar en discovery:
 
 - lógica de negocio paso a paso;
@@ -84,107 +51,3 @@ No capturar en discovery:
 - listas masivas de imports que no expliquen arquitectura, recursos o relaciones.
 
 Regla de tamaño: preferir tablas y bullets compactos. Si una dimensión necesita demasiado detalle, documentar el resumen y dejar el detalle para `analyze-function`.
-
-## Múltiples Function Apps
-
-Mantener separadas sus:
-
-- rutas raíz;
-- `host.json` y package metadata segura;
-- Functions;
-- dependencias;
-- Programming Model;
-- Runtime;
-- shared resources.
-
-No fusionar apps por estar en el mismo repositorio.
-
-## Programming Model
-
-Ejemplos de evidencia:
-
-- `function.json` observable → señal v3;
-- registrations como `app.http`, `app.timer`, etc. → señal v4;
-- ambas familias → `MIXED`;
-- package major por sí solo puede apoyar una inferencia, no siempre confirma el modelo real.
-
-Registrar `UNKNOWN` cuando no exista evidencia suficiente.
-
-## Runtime
-
-Usar `host.json` y metadata segura observable. No leer configuración protegida para inferir runtime.
-
-## Durable
-
-Detectar señales como:
-
-- orchestration trigger;
-- activity trigger;
-- entity trigger;
-- imports/registrations Durable.
-
-Discovery registra rol y relaciones observables; el análisis profundo del workflow pertenece a etapas posteriores.
-
-Si el workflow contiene nombres literales de activities/sub-orchestrators, registrarlos como relaciones observables. Si la relación depende de variables dinámicas o convenciones de naming, marcarla `INFERRED` o dejarla en unknowns.
-
-## Configuración
-
-Registrar únicamente nombres de claves referenciadas, nunca valores.
-
-Ejemplo:
-
-```text
-COSMOS_CONNECTION
-SERVICE_BUS_CONNECTION
-```
-
-## Arquitectura observable
-
-Describir sin puntuar:
-
-- entrypoints;
-- ubicación de lógica funcional;
-- adapters o composition roots existentes;
-- módulos/capabilities observables;
-- infraestructura compartida observable;
-- acoplamiento directo al runtime cuando sea evidente.
-
-No comparar todavía contra arquitectura target.
-
-Cuando sea útil, incluir un diagrama Mermaid `flowchart` con nodos principales: triggers, Functions, orchestrator/activities, capabilities, shared resources y external resources candidatos. Usar enlaces sólidos solo para relaciones `CONFIRMED`; usar enlaces punteados para relaciones `INFERRED`. Este diagrama documenta el **flujo entre Functions** (quién dispara a quién), no la organización interna de una capability.
-
-### Diagrama de capas (organización interna)
-
-Además del diagrama de flujo, cuando exista evidencia suficiente de la estructura interna de al menos una capability representativa (adapter → handler → application → domain → infrastructure), incluir un segundo diagrama Mermaid `flowchart` compacto que muestre esa composición por capas para 1-2 capabilities representativas, no todas. Este diagrama documenta **cómo está organizado el código dentro de una capability**, complementando (no reemplazando) el diagrama de flujo entre Functions.
-
-Ejemplo de estructura del diagrama de capas (usar nombres reales del repositorio, no genéricos):
-
-```mermaid
-flowchart TB
-    subgraph Capability["<NombreDeCapability>"]
-        Adapter["Adaptador Azure Functions<br/>(trigger + registro)"] --> Handler["Controlador<br/>(handler.ts)"]
-        Handler --> UseCase["Caso de uso<br/>(application/)"]
-        UseCase --> Domain["Reglas de dominio<br/>(domain/)"]
-        UseCase --> Infra["Infraestructura<br/>(infrastructure/ — SDK/cliente)"]
-    end
-```
-
-### Idioma del artifact
-
-`current-state.md` está dirigido a lectores humanos, no solo al toolkit. Usar español simple y claro en los labels y prosa, explicando el término técnico en inglés entre paréntesis cuando se use por primera vez (ej. "Puntos de entrada de Azure (adapters)", "Controlador (handler)"). Mantener sin traducir los nombres literales de archivos, carpetas, packages y estados de evidencia (`CONFIRMED`/`INFERRED`/`UNKNOWN`), agregando una leyenda breve al inicio del documento que explique esos estados en español.
-
-## Shared resource candidates
-
-Una señal candidata requiere más que el mismo SDK. Buscar identidad/reuse observable, por ejemplo:
-
-- mismo módulo de cliente/repository importado por varias Functions;
-- misma implementación concreta compartida;
-- mismo recurso/configuration key usado por varios consumidores.
-
-En discovery siguen siendo candidatos, no ownership definitivo.
-
-## Evidence status
-
-Aplicar `../_shared/evidence-policy.md`.
-
-No convertir una convención de naming en hecho confirmado sin evidencia adicional.

@@ -48,9 +48,11 @@ Criterio explícito: si `.migration/00-before/inventory.json` no existe, ejecuta
 8. Documentar estado actual, arquitectura observable, relaciones útiles para migración y candidatos a shared resources.
 9. Crear los artifacts BEFORE.
 
-Para criterios de detección cargar solo cuando haga falta:
+Para criterios de detección, cargar solo el archivo específico que resuelva la duda concreta (ver índice en `references/discovery-rules.md`):
 
-- `references/discovery-rules.md`
+- `references/graphify-usage.md` — uso de Graphify y elección de modo de consulta;
+- `references/architecture-diagrams.md` — cómo documentar arquitectura observable y generar diagramas, incluyendo repositorios legacy o sin separación clara;
+- `references/ambiguous-signals.md` — Programming Model, Runtime, Durable, Configuración o shared resource candidates ambiguos.
 
 Para el contrato de salida:
 
