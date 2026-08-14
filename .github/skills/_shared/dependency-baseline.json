@@ -62,8 +62,10 @@
     "automaticUpgrade": false,
     "useLatest": false,
     "preserveUnknownDependencies": true,
+    "introduceManagedPackageOnlyWhenRequired": true,
     "requireAssessmentBeforeUpgrade": true,
     "requireImpactAnalysisWhenMarked": true,
+    "requireApprovedTargetForExecution": true,
     "requireHumanApprovalForNewTarget": true,
     "requireHumanApprovalForBaselineChange": true
   }

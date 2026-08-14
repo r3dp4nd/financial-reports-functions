@@ -7,6 +7,10 @@ Definir los principios arquitectónicos que deben respetar los cambios estructur
 Cuando una separación estructural sea necesaria, debe procurar que futuras migraciones de runtime, SDK o Programming
 Model afecten principalmente adapters y configuración, preservando la mayor parte del comportamiento funcional.
 
+Esta policy orienta decisiones estructurales.
+
+No constituye por sí sola autorización para modificar código.
+
 ## Migración y modernización
 
 La migración técnica no exige transformar toda la Function App hacia una arquitectura ideal.
@@ -22,6 +26,11 @@ Aplicar cambios estructurales únicamente cuando sean necesarios para:
 Las mejoras arquitectónicas no requeridas para completar la migración deben permanecer fuera del alcance y registrarse,
 cuando aporten valor, como deuda técnica u oportunidad posterior.
 
+```text
+migration
+≠ modernization
+```
+
 ## Organización
 
 Organizar el ownership del comportamiento por capability cuando corresponda.
@@ -36,25 +45,32 @@ Para código nuevo o separaciones requeridas durante la migración, puede utiliz
 para adapters o composition roots específicos de Azure Functions, y una ubicación propiedad de la capability para la
 implementación funcional.
 
+Esta referencia no define un path obligatorio.
+
 Una capability representa ownership funcional y no obliga por sí sola a mover archivos.
 
 ## Dirección de dependencias
 
-La lógica funcional debe evitar dependencia directa del runtime Azure Functions cuando aislarla aporte compatibilidad,
-testabilidad o claridad de responsabilidad.
+La lógica funcional debe evitar dependencia directa del runtime Azure Functions cuando aislarla aporte:
 
-Dirección conceptual:
+- compatibilidad;
+- testabilidad;
+- claridad de responsabilidad;
+- cumplimiento de una acción aprobada.
 
-`Azure Runtime`
+Dirección conceptual cuando sea aplicable:
 
-→ `Azure adapter / composition root`
+```text
+Azure Runtime
+→ Azure adapter / composition root
+→ capability/application behavior
+→ domain/contracts cuando existan y aporten un límite real
+```
 
-→ `capability/application behavior`
+No todas las Functions requieren todas estas capas.
 
-→ `domain/contracts`
-
-Las implementaciones de infraestructura satisfacen los contratos requeridos por la capability cuando dichos contratos
-aporten un boundary real.
+Las implementaciones de infraestructura satisfacen contratos internos únicamente cuando dichos contratos aporten un
+boundary real.
 
 ## Adapters Azure
 
@@ -69,7 +85,14 @@ como:
 
 No introducir nueva lógica funcional en el adapter.
 
-La lógica existente se extrae únicamente cuando el plan la identifique como necesaria para migración o testabilidad.
+La lógica funcional existente puede permanecer cuando extraerla no sea necesario para la migración.
+
+Extraerla únicamente cuando el plan identifique la separación como necesaria para:
+
+- compatibilidad;
+- preservación de comportamiento;
+- testabilidad;
+- aislamiento requerido.
 
 ## Capabilities
 
@@ -84,7 +107,14 @@ Ejemplos:
 
 No crear una capability únicamente por nombre de Function si varias Functions pertenecen al mismo proceso funcional.
 
-Una capability no implica automáticamente una carpeta o estructura física nueva.
+Una capability no implica automáticamente:
+
+- una carpeta;
+- una layer;
+- un módulo;
+- una interface.
+
+El ownership lógico puede existir sin reorganización física.
 
 ## Materialización incremental
 
@@ -97,23 +127,27 @@ Crear únicamente carpetas y abstracciones que tengan responsabilidad real.
 
 Ejemplo simple ilustrativo:
 
-    src/
-    ├── functions/
-    │   └── request-report.function.ts
-    └── RequestReport/
-        ├── request-report.service.ts
-        └── tests/
+```text
+src/
+├── functions/
+│   └── request-report.function.ts
+└── RequestReport/
+    ├── request-report.service.ts
+    └── tests/
+```
 
 Ejemplo con dominio e infraestructura:
 
-    src/
-    ├── functions/
-    │   └── request-report.function.ts
-    └── RequestReport/
-        ├── application/
-        ├── domain/
-        ├── infrastructure/
-        └── tests/
+```text
+src/
+├── functions/
+│   └── request-report.function.ts
+└── RequestReport/
+    ├── application/
+    ├── domain/
+    ├── infrastructure/
+    └── tests/
+```
 
 Los ejemplos no definen una estructura obligatoria.
 
@@ -134,9 +168,13 @@ Ejemplos:
 - `MessagePublisher`
 - `ReportStorage`
 
-No exigir sufijos como `*.port.ts`.
+No exigir sufijos como:
+
+`*.port.ts`
 
 No introducir contratos únicamente para satisfacer una estructura arquitectónica.
+
+Una función pura o dependencia interna simple no necesita una interface únicamente por consistencia.
 
 ## Infraestructura
 
@@ -150,11 +188,23 @@ Dependencias externas como:
 - HTTP;
 - otros SDKs;
 
-deben aislarse de la lógica funcional cuando sea necesario para compatibilidad, testabilidad, ownership o una acción
-estructural aprobada.
+pueden aislarse de la lógica funcional cuando sea necesario para:
+
+- compatibilidad;
+- testabilidad;
+- ownership;
+- adaptación de API;
+- una acción estructural aprobada.
 
 La implementación concreta puede permanecer bajo la capability propietaria o en un recurso compartido cuando exista
 reuse real.
+
+La existencia de una dependencia externa no obliga por sí sola a crear:
+
+- repository;
+- gateway;
+- provider;
+- interface.
 
 ## Recursos compartidos
 
@@ -164,23 +214,33 @@ o workflows y cuya modificación puede afectar a más de un consumidor.
 Ejemplos:
 
 - repositorio Cosmos compartido;
-- cliente MongoDB;
-- acceso SQL;
-- Service Bus client;
-- storage client;
-- configuración común;
-- HTTP client;
+- cliente MongoDB compartido;
+- acceso SQL compartido;
+- Service Bus client compartido;
+- storage client compartido;
+- configuración común realmente reutilizada;
+- HTTP client compartido;
 - mapper o servicio realmente compartido.
 
 El uso del mismo SDK o tecnología no demuestra por sí solo que dos consumidores compartan el mismo recurso.
 
+```text
+same SDK
+≠ same resource
+```
+
 No mover algo a `shared` únicamente porque aparezca dos veces.
 
-Primero identificar ownership funcional y evidencia de reuse real.
+Primero identificar:
+
+- identidad del recurso;
+- ownership funcional;
+- consumidores;
+- evidencia de reuse real.
 
 ## Ownership
 
-Cada recurso compartido confirmado debe tener un ownership explícito.
+Cada recurso compartido confirmado debe tener un ownership explícito cuando sea necesario para su modificación.
 
 Scopes permitidos inicialmente:
 
@@ -193,21 +253,36 @@ La planificación debe definir una única acción propietaria para modificar el 
 
 Las Functions consumidoras deben declarar dependencia hacia esa acción cuando corresponda.
 
+```text
+shared resource
+→ one owner action
+→ N consumers
+```
+
+Las adaptaciones locales de consumidores pueden utilizar acciones `FN-*` separadas cuando sean realmente necesarias.
+
 ## Shared
 
-Crear `src/shared/` únicamente cuando exista un recurso transversal real sin ownership más natural dentro de una
-capability.
+Crear:
+
+`src/shared/`
+
+únicamente cuando exista un recurso transversal real sin ownership más natural dentro de una capability o workflow.
 
 Evitar convertir `shared` en una carpeta genérica para código sin ubicación clara.
 
-No crear `src/shared/` únicamente porque la policy lo mencione.
+No crear:
+
+`src/shared/`
+
+únicamente porque la policy lo mencione.
 
 ## Testabilidad
 
-El comportamiento funcional debe poder probarse sin requerir el Azure Functions Host ni conexiones reales cuando
+El comportamiento funcional debe poder probarse sin requerir Azure Functions Host ni conexiones externas reales cuando
 corresponda a pruebas unitarias.
 
-Aislar cuando sea necesario:
+Aislar únicamente cuando sea necesario:
 
 - SDK clients;
 - configuración;
@@ -218,54 +293,169 @@ Aislar cuando sea necesario:
 
 Aplicar únicamente los seams necesarios para proteger el comportamiento comprometido por la migración.
 
-Mejorar testabilidad no implica generar pruebas desde cualquier etapa; la generación y ejecución de pruebas pertenece a
-la responsabilidad definida por el flujo.
+```text
+testability
+≠ maximum abstraction
+```
+
+Mejorar testabilidad no implica generar pruebas desde cualquier etapa.
+
+La preparación estructural pertenece a:
+
+`prepare-function`
+
+La generación de protección mediante pruebas pertenece a:
+
+`generate-function-tests`
+
+La ejecución final de gates pertenece también a las etapas definidas por el flujo.
 
 ## Necesidad estructural
 
-Todo cambio estructural propuesto durante la migración debe distinguir entre:
+Durante analysis puede identificarse:
 
-- `requiredForMigration: true`;
-- `requiredForMigration: false`.
+- `structuralNeeds`;
+- `migrationNeeds`;
+- testability needs.
 
-`requiredForMigration: true` indica que el cambio es necesario para completar o verificar de forma segura la migración
-técnica.
+Analysis no decide por sí solo qué cambio estructural será obligatorio.
 
-`requiredForMigration: false` identifica modernización, deuda u optimización posterior y no forma parte de la ejecución
-obligatoria de la migración.
+Planning convierte las necesidades aprobadas en acciones y determina:
+
+```text
+requiredForMigration = true
+```
+
+o:
+
+```text
+requiredForMigration = false
+```
+
+### requiredForMigration = true
+
+Indica que la acción estructural es necesaria para completar o verificar de forma segura la migración técnica.
+
+Puede estar motivada por:
+
+- compatibilidad;
+- preservación de comportamiento;
+- testabilidad requerida;
+- dependency adaptation;
+- coherencia técnica del scope.
+
+### requiredForMigration = false
+
+Identifica una mejora no necesaria para cerrar la migración.
+
+Puede corresponder a:
+
+- technical debt;
+- modernización;
+- optimización.
+
+No forma parte del camino obligatorio de execution.
+
+```text
+analysis
+→ structural need
+
+planning
+→ structural action
+→ requiredForMigration
+```
 
 ## Código legacy
 
 No refactorizar un servicio o módulo completo únicamente porque el slice seleccionado dependa de él.
 
-Analizar primero la responsabilidad realmente utilizada y sus consumidores.
+Analizar primero:
 
-El tamaño del archivo o servicio es una señal, no evidencia suficiente para clasificarlo como monolito.
+- responsabilidad realmente utilizada;
+- consumers;
+- dependency surface;
+- impacto sobre migration.
 
-Cuando desacoplar completamente una implementación legacy exceda el scope efectivo, puede introducirse un boundary
-temporal como `Provider` o `Adapter` si:
+El tamaño del archivo o servicio es una señal.
 
-- permite aislar el slice necesario;
-- preserva el comportamiento observable;
-- mejora la testabilidad o compatibilidad requerida;
-- evita expandir innecesariamente el scope.
+No constituye por sí solo evidencia suficiente para clasificarlo como monolito.
 
-La modernización completa del componente legacy puede quedar como trabajo posterior.
+Cuando desacoplar completamente una implementación legacy exceda el effectiveScope, puede utilizarse un boundary
+temporal como:
+
+- `Provider`;
+- `Adapter`;
+- `Facade`;
+
+cuando:
+
+- exista una acción aprobada que lo requiera;
+- permita aislar el slice necesario;
+- preserve comportamiento observable;
+- habilite testabilidad o compatibilidad requerida;
+- evite expandir innecesariamente el scope.
+
+Ejemplo conceptual:
+
+```text
+RequestReportUseCase
+→ LegacyReportProvider
+→ MegaService
+```
+
+El boundary temporal no convierte automáticamente al componente legacy en deuda bloqueante.
+
+La modernización completa puede permanecer como trabajo posterior.
 
 ## Future-proofing
 
-Cuando se realice una separación estructural, procurar reducir el impacto de futuras migraciones.
+Cuando se realice una separación estructural necesaria, procurar reducir el impacto de futuras migraciones.
 
-Idealmente, un cambio futuro de Programming Model o runtime debería concentrarse principalmente en:
+Idealmente, un cambio futuro de Programming Model, runtime o SDK debería concentrarse principalmente en:
 
-- adapters de Azure Functions;
-- dependencias;
+- adapters Azure Functions;
+- dependency integration;
 - configuración;
 - composition roots.
 
 La lógica funcional y sus pruebas deberían permanecer estables salvo cambios reales de comportamiento.
 
-Este principio orienta las decisiones estructurales; no exige modernización adicional para cerrar una migración técnica.
+Este principio orienta decisiones estructurales.
+
+No constituye:
+
+- requisito adicional de migración;
+- architecture score;
+- verification gate;
+- autorización para modernizar.
+
+## Verification
+
+`verify-function-app` utiliza esta policy únicamente para evaluar cambios estructurales definidos por planning como:
+
+```text
+requiredForMigration = true
+```
+
+Verification comprueba:
+
+- que la acción fue ejecutada;
+- que el resultado requerido existe;
+- que el cambio no fue revertido posteriormente.
+
+No verifica:
+
+- arquitectura ideal;
+- clean architecture;
+- número de carpetas;
+- cantidad de interfaces;
+- future-proofing general;
+- conformidad con los ejemplos de esta policy.
+
+```text
+structuralCompliance
+≠ architecture quality score
+```
 
 ## Cambios manuales o mediante IA
 
@@ -277,14 +467,38 @@ Una acción de migración debe poder realizarse:
 - mediante otro agente;
 - manualmente por un desarrollador.
 
-Los planes deben describir intención técnica y criterios de resultado, no depender de quién ejecuta el cambio.
+Los planes deben describir:
 
-## Principio
+- intención técnica;
+- scope;
+- resultado esperado;
+- criterios verificables.
+
+No deben depender de razonamiento privado de quien ejecuta el cambio.
+
+## Principios
 
 Preservar lo que funciona.
 
 Separar solo lo necesario.
 
-Complejidad accidental prohibida.
+No introducir complejidad accidental.
 
-Crear únicamente lo necesario para mantener límites claros, testabilidad y facilidad de evolución.
+Crear únicamente lo necesario para mantener:
+
+- límites claros;
+- testabilidad requerida;
+- compatibilidad;
+- facilidad razonable de evolución.
+
+```text
+migration
+→ minimal necessary structural change
+```
+
+No:
+
+```text
+migration
+→ architecture rewrite
+```
