@@ -32,6 +32,12 @@ Separar cuando corresponda:
 - V3 confirmado → requiere análisis/migración cuando el target sea v4;
 - MIXED/UNKNOWN → requiere validación o análisis antes de ejecutar cambios.
 
+## Azure Functions Runtime
+
+- `FUNCTIONS_EXTENSION_VERSION` o metadata equivalente de entorno seguro puede confirmar runtime;
+- `host.json` `extensionBundle.version` `[4.*, 5.0.0)` permite inferir runtime v4, pero no confirmarlo;
+- runtime inferido por extension bundle debe quedar `INFERRED` y `REQUIRES_VALIDATION`.
+
 ## Durable
 
 Durable presente puede ampliar el effective scope porque starter, orchestrator, activities, entities y sub-orchestrators pueden formar una unidad coherente.

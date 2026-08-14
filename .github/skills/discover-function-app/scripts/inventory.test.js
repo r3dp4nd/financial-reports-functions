@@ -277,6 +277,38 @@ test('detecta Programming Model v4', function () {
   }
 });
 
+test('infiere Azure Functions Runtime v4 desde extensionBundle v4', function () {
+  const root = createRepository();
+
+  try {
+    writeJson(root, 'host.json', {
+      version: '2.0',
+      extensionBundle: {
+        id: 'Microsoft.Azure.Functions.ExtensionBundle',
+        version: '[4.*, 5.0.0)'
+      }
+    });
+
+    writeJson(root, 'package.json', {
+      dependencies: {
+        '@azure/functions': '^4.16.2'
+      }
+    });
+
+    const result = executeInventory(root);
+
+    const app = result.functionApps[0];
+
+    assert.strictEqual(app.host.extensionBundle.version, '[4.*, 5.0.0)');
+
+    assert.strictEqual(app.platform.functionsRuntime.value, 'v4');
+
+    assert.strictEqual(app.platform.functionsRuntime.evidenceStatus, 'INFERRED');
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('detecta estado mixed', function () {
   const root = createRepository();
 

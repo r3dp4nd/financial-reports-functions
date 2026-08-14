@@ -311,8 +311,16 @@ function hostMetadata(appRoot, warnings) {
 
   const hostJson = safeReadJson(hostPath, warnings);
 
+  const extensionBundle = hostJson && hostJson.extensionBundle && typeof hostJson.extensionBundle === 'object' ? {
+    id: typeof hostJson.extensionBundle.id === 'string' ? hostJson.extensionBundle.id : null,
+    version: typeof hostJson.extensionBundle.version === 'string' ? hostJson.extensionBundle.version : null,
+    evidenceStatus: 'CONFIRMED'
+  } : null;
+
   return {
-    path: normalizeRelative(hostPath), version: hostJson && hostJson.version ? hostJson.version : null
+    path: normalizeRelative(hostPath),
+    version: hostJson && hostJson.version ? hostJson.version : null,
+    extensionBundle: extensionBundle
   };
 }
 
@@ -627,6 +635,40 @@ function determineProgrammingModel(legacyFunctions, v4Registrations, packageInfo
   };
 }
 
+function determineFunctionsRuntime(hostInfo) {
+  const extensionBundle = hostInfo && hostInfo.extensionBundle;
+
+  if (!extensionBundle || typeof extensionBundle.version !== 'string') {
+    return {
+      value: null, evidenceStatus: 'UNKNOWN'
+    };
+  }
+
+  if (/^\s*\[\s*4\.\*/.test(extensionBundle.version)) {
+    return {
+      value: 'v4',
+      evidenceStatus: 'INFERRED',
+      evidence: [{
+        type: 'HOST_EXTENSION_BUNDLE',
+        path: hostInfo.path,
+        id: extensionBundle.id,
+        version: extensionBundle.version
+      }]
+    };
+  }
+
+  return {
+    value: null,
+    evidenceStatus: 'UNKNOWN',
+    evidence: [{
+      type: 'HOST_EXTENSION_BUNDLE',
+      path: hostInfo.path,
+      id: extensionBundle.id,
+      version: extensionBundle.version
+    }]
+  };
+}
+
 function determineDurable(packageInfo, legacyFunctions, durableRegistrations) {
   const packageVersion = packageInfo.dependencies['durable-functions'] || packageInfo.devDependencies['durable-functions'] || null;
 
@@ -767,9 +809,7 @@ function buildFunctionApp(candidate, files, warnings) {
         evidenceStatus: packageInfo.engines && packageInfo.engines.node ? 'CONFIRMED' : 'UNKNOWN'
       },
 
-      functionsRuntime: {
-        value: null, evidenceStatus: 'UNKNOWN'
-      },
+      functionsRuntime: determineFunctionsRuntime(hostInfo),
 
       programmingModel: programmingModel
     },
