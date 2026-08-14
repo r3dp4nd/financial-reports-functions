@@ -17,6 +17,8 @@ Owner de:
 
 Usar `../_shared/templates/migration-plan.template.md` para Markdown.
 
+Ruta nueva: `.migration/30-plan/migration-plan.json|md`.
+
 ## Plan por Function
 
 Owner de:
@@ -28,6 +30,8 @@ Owner de:
 - criterios verificables locales.
 
 Usar `../_shared/templates/function-migration-plan.template.md`.
+
+Ruta nueva: `.migration/30-plan/functions/<FunctionName>/migration-plan.json|md`.
 
 ## Plan por slice
 
@@ -42,11 +46,15 @@ Owner de:
 - executor sugerido;
 - criterios verificables compartidos.
 
+Ruta nueva: `.migration/30-plan/slices/<SliceName>/migration-plan.json|md`.
+
 ## Shared resources
 
 Usar `../_shared/templates/shared-resources.template.md` cuando aplique.
 
 No duplicar la acción propietaria dentro de cada Function; referenciarla.
+
+Ruta nueva: `.migration/30-plan/resources/shared-resources.json|md`.
 
 ## Evaluation contract
 

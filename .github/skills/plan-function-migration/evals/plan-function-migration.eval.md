@@ -67,4 +67,8 @@ Entrada: analysis registra status codes, retries, idempotencia, mensajes o efect
 Esperado: las acciones incluyen preserve/failure criteria; cualquier cambio funcional no aprobado bloquea el plan o requiere decisión humana.
 
 ### 18. Salidas
-Esperado: plan global, planes por Function y shared-resources artifact solo si aplica.
+Esperado: plan global, planes por Function/slice y shared-resources artifact bajo `.migration/30-plan/` solo si aplica.
+
+### 19. Layout semántico
+Entrada: analyses existen en layout nuevo y algunos artifacts legacy quedan del flujo anterior.
+Esperado: plan consume lo necesario y escribe Action IDs solo en `.migration/30-plan/`; no crea nuevos paths legacy.

@@ -4,6 +4,8 @@
 
 Owner del gap global frente al target.
 
+Ruta nueva: `.migration/10-assessment/assessment.json`.
+
 Campos esperados cuando apliquen:
 
 - `schemaVersion`;
@@ -35,3 +37,5 @@ Usar `../_shared/templates/assessment.template.md` como vista humana compacta.
 Debe abrir con decision/gates y dejar el detalle estructurado para `assessment.json`.
 
 No modificar BEFORE.
+
+Ruta nueva: `.migration/10-assessment/assessment.md`.

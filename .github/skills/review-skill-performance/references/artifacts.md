@@ -1,6 +1,6 @@
 # Artifacts de review
 
-Crear bajo una ruta dedicada de mejora del toolkit o `.migration/lessons/` según la integración elegida, manteniendo separación de los artifacts operativos de migración.
+Crear bajo una ruta dedicada de mejora del toolkit o `.migration/90-lessons/` según la integración elegida, manteniendo separación de los artifacts operativos de migración.
 
 ## assessment.json
 

@@ -47,4 +47,8 @@ Entrada: preparación global detecta estructura/config que "podría limpiarse".
 Esperado: no tocarla salvo Action ID; registrar deuda/deviation si impacta el target.
 
 ### 13. Salida
-Esperado: preparation JSON/MD con actionResults y executionStatus.
+Esperado: preparation JSON/MD en `.migration/40-execution/app/` con actionResults y executionStatus.
+
+### 14. Layout semántico
+Entrada: plan global está en `.migration/30-plan/`.
+Esperado: ejecución global escribe resultados en `.migration/40-execution/app/`; no modifica plan ni crea `.migration/repository/preparation.*`.

@@ -22,14 +22,15 @@ Aplicar:
 Consultar:
 
 - `../_shared/architecture-policy.md` para evaluar estructura del slice;
+- `../_shared/references/artifact-layout.md` para leer/escribir artifacts;
 - `../_shared/dependency-baseline.json` solo si assessment no materializó un target necesario.
 
 ## Precondiciones
 
 Deben existir:
 
-- `.migration/repository/inventory.json`
-- `.migration/repository/assessment.json`
+- `.migration/00-before/inventory.json` o legacy `.migration/repository/inventory.json`
+- `.migration/10-assessment/assessment.json` o legacy `.migration/repository/assessment.json`
 
 Analizar una Function o slice por ejecución.
 
@@ -64,10 +65,10 @@ Cargar según necesidad:
 
 ## Salidas
 
-- `.migration/functions/<FunctionName>/analysis.json`
-- `.migration/functions/<FunctionName>/analysis.md`
-- `.migration/slices/<SliceName>/analysis.json|md` cuando el scope natural no sea una única Function
-- `.migration/catalog/functions/<FunctionName>.md` cuando aún no exista un BEFORE válido.
+- `.migration/20-analysis/functions/<FunctionName>/analysis.json`
+- `.migration/20-analysis/functions/<FunctionName>/analysis.md`
+- `.migration/20-analysis/slices/<SliceName>/analysis.json|md` cuando el scope natural no sea una única Function
+- `.migration/00-before/functions/<FunctionName>.md` cuando aún no exista un BEFORE válido.
 
 ## Cierre
 

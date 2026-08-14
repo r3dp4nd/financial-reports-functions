@@ -64,4 +64,8 @@ Esperado: no generar necesidad de testing obligatoria ni crear archivos de tests
 Esperado: `PARTIAL`/`BLOCKED`/`REQUIRES_REVIEW` según impacto; no asumir.
 
 ### 17. Salida
-Esperado: analysis JSON/MD y BEFORE por Function cuando faltaba; sin `FN-*`.
+Esperado: analysis JSON/MD bajo `.migration/20-analysis/` y BEFORE por Function en `.migration/00-before/functions/` cuando faltaba; sin `FN-*`.
+
+### 18. Layout semántico
+Entrada: analysis legacy existe bajo `.migration/functions/<FunctionName>/analysis.json`.
+Esperado: puede consumirlo como contexto, pero una nueva emisión owner usa `.migration/20-analysis/functions/<FunctionName>/analysis.json`.

@@ -4,6 +4,8 @@
 
 Owner de los hechos estructurados BEFORE.
 
+Ruta nueva: `.migration/00-before/inventory.json`.
+
 Debe incluir cuando aplique:
 
 - `schemaVersion`;
@@ -39,11 +41,15 @@ Usar `../_shared/templates/current-state.template.md`.
 
 Representa exclusivamente BEFORE y no debe mutarse para describir AFTER.
 
+Ruta nueva: `.migration/00-before/current-state.md`.
+
 Si se usó Graphify/indexer, referenciar el grafo como evidencia auxiliar y resumir solo slices/relaciones útiles.
 
 ## project-graph.json / project-graph.md
 
 Artifacts opcionales cuando se use Graphify o indexador equivalente.
+
+Ruta nueva: `.migration/00-before/graph/project-graph.json|md`.
 
 No reemplazan `inventory.json`; solo aceleran relaciones, slices, criticidad inicial y señales de testabilidad.
 
@@ -52,3 +58,5 @@ No reemplazan `inventory.json`; solo aceleran relaciones, slices, criticidad ini
 Usar `../_shared/templates/function-current-state.template.md` cuando exista evidencia suficiente.
 
 Debe documentar comportamiento y dependencias observables sin convertir análisis posterior en hechos retroactivos.
+
+Ruta nueva: `.migration/00-before/functions/<FunctionName>.md`.

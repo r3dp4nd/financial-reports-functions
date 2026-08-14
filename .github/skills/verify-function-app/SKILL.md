@@ -17,6 +17,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/status-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/references/artifact-layout.md`
 
 ## Entradas
 
@@ -57,8 +58,8 @@ Cargar:
 
 ## Salidas
 
-- `.migration/verification/verification.json`
-- `.migration/verification/verification.md`
+- `.migration/50-verification/verification.json`
+- `.migration/50-verification/verification.md`
 
 ## Cierre
 

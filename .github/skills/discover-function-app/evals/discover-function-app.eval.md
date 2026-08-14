@@ -47,7 +47,7 @@ Entrada: package sugiere v4 pero no hay registration observable.
 Esperado: `INFERRED`/`UNKNOWN`, nunca `CONFIRMED` solo por package major.
 
 ### 11. Artifacts
-Esperado: `inventory.json` + `catalog/current-state.md`; sin recomendaciones ni plan.
+Esperado: `.migration/00-before/inventory.json` + `.migration/00-before/current-state.md`; sin recomendaciones ni plan.
 
 ### 12. Profundidad útil para migración
 Entrada: adapters que componen handlers/use cases/repositories/publishers/storage adapters mediante imports directos.
@@ -75,3 +75,7 @@ Esperado: registrar señales iniciales compactas por Function/slice; no diseñar
 
 ### 18. No modificación
 Esperado: cero cambios de source/configuración del repo objetivo.
+
+### 19. Layout semántico
+Entrada: existen artifacts legacy bajo `.migration/repository` o `.migration/catalog`.
+Esperado: puede leerlos para continuidad, pero una nueva ejecución escribe en `.migration/00-before/`.

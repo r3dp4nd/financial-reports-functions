@@ -76,5 +76,5 @@ Solo nombres de claves; nunca valores.
 
 ## Navegación
 
-- Inventory: `.migration/repository/inventory.json`
-- Functions: `.migration/catalog/functions/`
+- Inventory: `.migration/00-before/inventory.json`
+- Functions: `.migration/00-before/functions/`

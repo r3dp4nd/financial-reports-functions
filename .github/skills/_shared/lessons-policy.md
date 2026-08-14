@@ -18,7 +18,7 @@ No duplicar logs ni repetir artifacts de ejecución.
 
 ## Artifacts
 
-Guardar en `.migration/lessons/`:
+Guardar en `.migration/90-lessons/`:
 
 - Markdown breve para revisión humana;
 - JSON equivalente para consumo agéntico.

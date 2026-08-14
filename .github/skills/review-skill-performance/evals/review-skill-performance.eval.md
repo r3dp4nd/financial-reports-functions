@@ -42,3 +42,7 @@ Esperado: `NEEDS_MORE_EVIDENCE`.
 
 ### 12. Autoaplicación
 Esperado: nunca modificar skill/script/eval/template/baseline desde review.
+
+### 13. Lessons layout
+Entrada: lessons o findings de performance del toolkit.
+Esperado: proponer/usar `.migration/90-lessons/` para artifacts operativos nuevos; no mezclar con BEFORE/PLAN/EXECUTION.

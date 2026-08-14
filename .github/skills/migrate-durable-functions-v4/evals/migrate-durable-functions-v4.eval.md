@@ -45,4 +45,8 @@ Entrada: workflow puede reducir activities o cambiar retries/failure path durant
 Esperado: rechazar salvo Action ID explícito; preservar topology y semántica observable.
 
 ### 13. Salida
-Esperado: artifact único/coherente del workflow con participants y actionResults.
+Esperado: `.migration/40-execution/workflows/<WorkflowName>/durable-v4.json|md` único/coherente con participants y actionResults.
+
+### 14. Layout semántico
+Entrada: workflow involucra varias Functions.
+Esperado: no duplicar artifacts Durable por Function; usar owner en `.migration/40-execution/workflows/`.

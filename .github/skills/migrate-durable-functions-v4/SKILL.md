@@ -17,6 +17,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/status-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/references/artifact-layout.md`
 
 ## Precondiciones
 
@@ -54,7 +55,7 @@ Cargar:
 
 ## Salidas
 
-Crear el artifact Durable definido por planning para el workflow y los participantes. Usar una única evidencia propietaria del workflow cuando varios entrypoints compartan la misma migración.
+Crear `.migration/40-execution/workflows/<WorkflowName>/durable-v4.json|md` para el workflow y sus participantes. Usar una única evidencia propietaria del workflow cuando varios entrypoints compartan la misma migración.
 
 ## Cierre
 

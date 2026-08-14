@@ -57,3 +57,7 @@ Esperado: `FAIL`/`BLOCKED` o `REQUIRES_REVIEW`; no aceptar como mejora.
 
 ### 16. No corrección
 Esperado: verification no modifica source/config/tests/baseline.
+
+### 17. Layout semántico
+Entrada: execution artifacts están bajo `.migration/40-execution/`.
+Esperado: verification escribe solo `.migration/50-verification/verification.json|md` y puede leer legacy como contexto si el plan lo referencia.

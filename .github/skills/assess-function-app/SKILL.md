@@ -7,9 +7,9 @@ description: Evalúa una Azure Function App ya descubierta. Úsalo para determin
 
 ## Objetivo
 
-Determinar qué dimensiones globales ya cumplen el target, cuáles requieren cambio y cuáles requieren validación o revisión, y emitir una decisión clara para el siguiente paso del flujo.
+Determinar qué dimensiones globales ya cumplen el target, cuáles requieren cambio y cuáles requieren validación o revisión, y emitir un triage compacto para decidir el siguiente paso del flujo.
 
-Assessment no es un segundo inventario. Debe convertir discovery en gates, prioridades y condiciones para analysis/planning.
+Assessment no es un segundo inventario ni una lista larga de observaciones. Debe convertir discovery en gates, prioridades y condiciones para analysis/planning.
 
 ## Políticas
 
@@ -22,12 +22,14 @@ Aplicar:
 
 Consultar `../_shared/architecture-policy.md` solo para evaluar gaps estructurales que afecten la migración.
 
+Consultar `../_shared/references/artifact-layout.md` para leer/escribir artifacts. Aceptar paths legacy si ya existen.
+
 ## Precondiciones
 
 Deben existir:
 
-- `.migration/repository/inventory.json`
-- `.migration/catalog/current-state.md`
+- `.migration/00-before/inventory.json` o legacy `.migration/repository/inventory.json`
+- `.migration/00-before/current-state.md` o legacy `.migration/catalog/current-state.md`
 
 ## Workflow
 
@@ -48,8 +50,8 @@ Cargar cuando sea necesario:
 
 ## Salidas
 
-- `.migration/repository/assessment.json`
-- `.migration/repository/assessment.md`
+- `.migration/10-assessment/assessment.json`
+- `.migration/10-assessment/assessment.md`
 
 Lessons opcionales según `../_shared/lessons-policy.md`.
 

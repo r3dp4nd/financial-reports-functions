@@ -4,6 +4,11 @@
 
 Owner de la interpretación técnica de una Function o slice.
 
+Ruta nueva:
+
+- Function: `.migration/20-analysis/functions/<FunctionName>/analysis.json`;
+- slice: `.migration/20-analysis/slices/<SliceName>/analysis.json`.
+
 Incluir cuando aplique:
 
 - `function` o `slice`;
@@ -40,8 +45,12 @@ No incluir actions definitivas ni orden de ejecución.
 
 Usar `../_shared/templates/function-analysis.template.md`.
 
+Rutas nuevas equivalentes a `analysis.json`.
+
 ## Catálogo BEFORE
 
 Usar `../_shared/templates/function-current-state.template.md`.
 
 No sobrescribirlo con AFTER.
+
+Ruta nueva: `.migration/00-before/functions/<FunctionName>.md`.

@@ -19,6 +19,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/status-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/references/artifact-layout.md`
 - `../_shared/dependency-baseline.json`
 
 ## Precondiciones
@@ -47,12 +48,12 @@ Cargar según necesidad:
 
 ## Salidas
 
-- `.migration/plans/migration-plan.json`
-- `.migration/plans/migration-plan.md`
-- `.migration/functions/<FunctionName>/migration-plan.json`
-- `.migration/functions/<FunctionName>/migration-plan.md`
-- `.migration/slices/<SliceName>/migration-plan.json|md` cuando el scope natural no sea una única Function
-- `.migration/resources/shared-resources.json|md` cuando existan shared resources confirmados.
+- `.migration/30-plan/migration-plan.json`
+- `.migration/30-plan/migration-plan.md`
+- `.migration/30-plan/functions/<FunctionName>/migration-plan.json`
+- `.migration/30-plan/functions/<FunctionName>/migration-plan.md`
+- `.migration/30-plan/slices/<SliceName>/migration-plan.json|md` cuando el scope natural no sea una única Function
+- `.migration/30-plan/resources/shared-resources.json|md` cuando existan shared resources confirmados.
 
 ## Cierre
 

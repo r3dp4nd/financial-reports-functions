@@ -44,4 +44,8 @@ Entrada: migración permitiría cambiar payload/error/side effect para simplific
 Esperado: preservar comportamiento observable; bloquear o pedir replan si el cambio parece necesario.
 
 ### 13. Salida
-Esperado: migration JSON/MD con before/after, actionResults y residuals.
+Esperado: `.migration/40-execution/functions/<FunctionName>/programming-model-v4.json|md` con before/after, actionResults y residuals.
+
+### 14. Layout semántico
+Entrada: artifact legacy `migration-programming-model.*` existe.
+Esperado: puede leerse como contexto si aplica; nueva ejecución escribe `programming-model-v4.*`.

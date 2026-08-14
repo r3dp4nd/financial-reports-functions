@@ -50,4 +50,8 @@ Entrada: preparación estructural permitiría simplificar respuesta/error/retry.
 Esperado: no cambiar comportamiento observable; registrar deviation/replan si el cambio parece necesario.
 
 ### 14. Salida
-Esperado: status `READY_FOR_MIGRATION` solo con prerequisites locales satisfechas.
+Esperado: status `READY_FOR_MIGRATION` en `.migration/40-execution/functions/<FunctionName>/preparation.json|md` solo con prerequisites locales satisfechas.
+
+### 15. Layout semántico
+Entrada: plan local está en `.migration/30-plan/functions/<FunctionName>/`.
+Esperado: preparation local escribe únicamente bajo `.migration/40-execution/functions/<FunctionName>/`.

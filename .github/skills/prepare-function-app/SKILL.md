@@ -17,6 +17,7 @@ Aplicar:
 - `../_shared/security-policy.md`
 - `../_shared/status-policy.md`
 - `../_shared/architecture-policy.md`
+- `../_shared/references/artifact-layout.md`
 
 ## Precondiciones
 
@@ -47,8 +48,8 @@ Cargar:
 
 ## Salidas
 
-- `.migration/repository/preparation.json`
-- `.migration/repository/preparation.md`
+- `.migration/40-execution/app/preparation.json`
+- `.migration/40-execution/app/preparation.md`
 
 ## Cierre
 

@@ -2,6 +2,8 @@
 
 ## verification.json
 
+Ruta nueva: `.migration/50-verification/verification.json`.
+
 Incluir:
 
 - `schemaVersion`;
@@ -27,3 +29,5 @@ Incluir:
 Usar `../_shared/templates/verification.template.md`.
 
 No modificar artifacts previos para obtener un cierre positivo.
+
+Ruta nueva: `.migration/50-verification/verification.md`.

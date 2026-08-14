@@ -1,5 +1,10 @@
 # Artifact de Programming Model migration
 
+Ruta nueva:
+
+- `.migration/40-execution/functions/<FunctionName>/programming-model-v4.json`
+- `.migration/40-execution/functions/<FunctionName>/programming-model-v4.md`
+
 Registrar:
 
 - function;

@@ -36,8 +36,8 @@ Reglas:
 
 Artifacts opcionales:
 
-- `.migration/graph/project-graph.json` para facts estructurados seguros;
-- `.migration/graph/project-graph.md` para resumen humano de slices/relaciones.
+- `.migration/00-before/graph/project-graph.json` para facts estructurados seguros;
+- `.migration/00-before/graph/project-graph.md` para resumen humano de slices/relaciones.
 
 ## Profundidad esperada
 

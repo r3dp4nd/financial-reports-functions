@@ -23,6 +23,8 @@ No ejecutar `rg`, `find`, `ls` recursivo, scripts de inventario ni abrir archivo
 
 Consultar `../_shared/architecture-policy.md` solo como vocabulario para describir estructura observable.
 
+Consultar `../_shared/references/artifact-layout.md` para escribir artifacts en el layout semántico.
+
 ## Entrada
 
 - raíz del repositorio objetivo.
@@ -63,15 +65,15 @@ No duplicar con razonamiento hechos que el script ya produce.
 
 Obligatorias:
 
-- `.migration/repository/inventory.json`
-- `.migration/catalog/current-state.md`
+- `.migration/00-before/inventory.json`
+- `.migration/00-before/current-state.md`
 
 Opcional cuando Graphify/indexer esté disponible:
 
-- `.migration/graph/project-graph.json`
-- `.migration/graph/project-graph.md`
+- `.migration/00-before/graph/project-graph.json`
+- `.migration/00-before/graph/project-graph.md`
 
-Por Function, crear `.migration/catalog/functions/<FunctionName>.md` solo cuando la inspección necesaria para BEFORE ya sea suficiente; de lo contrario `analyze-function` lo completa antes de cualquier modificación.
+Por Function, crear `.migration/00-before/functions/<FunctionName>.md` solo cuando la inspección necesaria para BEFORE ya sea suficiente; de lo contrario `analyze-function` lo completa antes de cualquier modificación.
 
 Lessons son opcionales y siguen `../_shared/lessons-policy.md`.
 

@@ -28,18 +28,31 @@ No usar `latest` como sustituto del baseline aprobado.
 ## Flujo
 
 ```text
-discover-function-app              (Graphify/indexer opcional dentro de discovery)
-→ assess-function-app
-→ analyze-function                  (por Function o slice cuando aplique)
-→ plan-function-migration
-→ prepare-function-app
-→ prepare-function                  (por Function cuando aplique)
-→ migrate-programming-model-v4      (solo si aplica)
-→ migrate-durable-functions-v4      (solo si aplica)
-→ verify-function-app
+00 BEFORE
+  discover-function-app             (Graphify/indexer opcional dentro de discovery)
+
+10 TRIAGE
+  assess-function-app               (gate compacto; prioriza analysis)
+
+20 ANALYSIS
+  analyze-function                   (solo Functions/slices priorizados)
+
+30 PLAN
+  plan-function-migration            (contrato/eval y router de ejecución)
+
+40 EXECUTION
+  prepare-function-app               (solo GLOBAL/SR-ACTION aprobadas)
+  prepare-function                   (solo FN/SLICE estructural aprobado)
+  migrate-programming-model-v4       (solo si el plan lo exige)
+  migrate-durable-functions-v4       (solo si Durable aplica)
+
+50 VERIFY
+  verify-function-app
 ```
 
 `review-skill-performance` mejora el toolkit y no forma parte del flujo obligatorio de migración.
+
+El plan decide qué skills de ejecución aplican. No ejecutar la cadena completa por costumbre.
 
 ## Cómo usar los skills
 
@@ -58,15 +71,15 @@ caso.
 
 | Skill                          | Cuándo usarlo                                             | Entrada principal              | Resultado principal                           |
 |--------------------------------|-----------------------------------------------------------|--------------------------------|-----------------------------------------------|
-| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio; Graphify opcional. | `inventory.json` + `current-state.md`         |
-| `assess-function-app`          | Después del discovery para medir gaps contra el target.   | Inventory + current state.     | `assessment.json\|md`                         |
-| `analyze-function`             | Cuando una Function o slice necesita análisis específico. | Inventory + assessment.        | `functions/<name>/analysis.*` o `slices/<name>/analysis.*` |
-| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.   | Contrato/eval de ejecución por lanes, owner y Action IDs. |
-| `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                   | `repository/preparation.json\|md`             |
-| `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.           | `functions/<name>/preparation.json\|md`       |
-| `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable.  | `migration-programming-model.json\|md`        |
-| `migrate-durable-functions-v4` | Workflow Durable con migración aprobada.                  | Planes de sus participantes.   | Evidencia de migración Durable.               |
-| `verify-function-app`          | Cuando todas las acciones aplicables terminaron.          | Plan + artifacts de ejecución. | `verification.json\|md`                       |
+| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio; Graphify opcional. | `00-before/inventory.json` + `current-state.md` |
+| `assess-function-app`          | Después del discovery para triage global contra target.   | BEFORE.                       | `10-assessment/assessment.json\|md`           |
+| `analyze-function`             | Cuando una Function o slice necesita análisis específico. | BEFORE + assessment.          | `20-analysis/functions|slices/.../analysis.*` |
+| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.  | `30-plan/migration-plan.*` + Action IDs       |
+| `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                  | `40-execution/app/preparation.json\|md`       |
+| `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.          | `40-execution/functions/<name>/preparation.*` |
+| `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable. | `40-execution/functions/<name>/programming-model-v4.*` |
+| `migrate-durable-functions-v4` | Workflow Durable con migración aprobada.                  | Planes de sus participantes.  | `40-execution/workflows/<name>/durable-v4.*`  |
+| `verify-function-app`          | Cuando todas las acciones aplicables terminaron.          | Plan + artifacts de ejecución. | `50-verification/verification.json\|md`      |
 | `review-skill-performance`     | Para revisar lessons, blockers y efectividad del toolkit. | Lessons + evals + evidencia.   | Findings y propuestas de mejora.              |
 
 ### Ejemplos en Copilot Chat
@@ -87,6 +100,8 @@ Ejecuta review-skill-performance sobre las lessons de esta migración.
 ### Reglas de ejecución
 
 * `analyze-function` se ejecuta por Function o slice natural; `prepare-function` se ejecuta por Function solo cuando corresponda.
+* `assess-function-app` debe funcionar como triage compacto: prioriza, bloquea o habilita; no repite discovery.
+* `plan-function-migration` es el router: determina qué skills de ejecución aplican por Action ID.
 * `migrate-programming-model-v4` debe devolver `NOT_APPLICABLE` si la Function ya está en v4.
 * `migrate-durable-functions-v4` trata el workflow como una unidad coherente.
 * `prepare-function-app` ejecuta cambios globales una sola vez.
@@ -130,6 +145,7 @@ _shared/
 ├── dependency-baseline.json
 └── references/
     ├── architecture-examples.md
+    ├── artifact-layout.md
     ├── evidence-model.md
     ├── official-sources.md
     ├── security-patterns.md
@@ -182,33 +198,34 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 
 ```text
 .migration/
-├── graph/
-│   └── project-graph.json|md       (opcional si se usó Graphify/indexer)
-├── repository/
+├── 00-before/
 │   ├── inventory.json
-│   ├── assessment.json
-│   └── preparation.json
-├── catalog/
 │   ├── current-state.md
+│   ├── graph/project-graph.json|md
 │   └── functions/<FunctionName>.md
-├── functions/<FunctionName>/
-│   ├── analysis.json|md
+├── 10-assessment/
+│   └── assessment.json|md
+├── 20-analysis/
+│   ├── functions/<FunctionName>/analysis.json|md
+│   └── slices/<SliceName>/analysis.json|md
+├── 30-plan/
 │   ├── migration-plan.json|md
-│   ├── preparation.json|md
-│   └── migration*.json|md
-├── slices/<SliceName>/
-│   ├── analysis.json|md
-│   └── migration-plan.json|md
-├── plans/
-│   └── migration-plan.json|md
-├── resources/
-│   └── shared-resources.json|md
-├── verification/
+│   ├── functions/<FunctionName>/migration-plan.json|md
+│   ├── slices/<SliceName>/migration-plan.json|md
+│   └── resources/shared-resources.json|md
+├── 40-execution/
+│   ├── app/preparation.json|md
+│   ├── functions/<FunctionName>/preparation.json|md
+│   ├── functions/<FunctionName>/programming-model-v4.json|md
+│   └── workflows/<WorkflowName>/durable-v4.json|md
+├── 50-verification/
 │   └── verification.json|md
-└── lessons/
+└── 90-lessons/
 ```
 
 Crear solo artifacts aplicables. No generar archivos vacíos para satisfacer una estructura ideal.
+
+Consultar `_shared/references/artifact-layout.md` para compatibilidad de lectura con paths legacy.
 
 ## Regla de trabajo
 

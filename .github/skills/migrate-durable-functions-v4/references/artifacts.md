@@ -1,5 +1,7 @@
 # Artifacts Durable
 
+Ruta nueva: `.migration/40-execution/workflows/<WorkflowName>/durable-v4.json|md`.
+
 El artifact propietario del workflow debe incluir cuando aplique:
 
 - workflow ID/name;
