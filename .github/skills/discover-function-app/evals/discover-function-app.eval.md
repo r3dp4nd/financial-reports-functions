@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Validar discovery seguro, determinista y no interpretativo.
+Validar discovery seguro, determinista y suficientemente rico como punto de partida de migración, sin convertirse en análisis profundo.
 
 ## Casos
 
@@ -36,7 +36,7 @@ Esperado: registrar nombre de clave, nunca valor.
 
 ### 8. Durable
 Entrada: orchestrator/activity observable.
-Esperado: roles/relaciones registradas sin analizar topology completa.
+Esperado: roles y relaciones literales registradas con evidence status; no analizar topología completa.
 
 ### 9. Shared candidate
 Entrada: mismo repository/client importado por varias Functions.
@@ -49,5 +49,17 @@ Esperado: `INFERRED`/`UNKNOWN`, nunca `CONFIRMED` solo por package major.
 ### 11. Artifacts
 Esperado: `inventory.json` + `catalog/current-state.md`; sin recomendaciones ni plan.
 
-### 12. No modificación
+### 12. Profundidad útil para migración
+Entrada: adapters que componen handlers/use cases/repositories/publishers/storage adapters mediante imports directos.
+Esperado: `current-state.md` resume composition roots, capabilities, infraestructura, comandos de validación existentes y relaciones relevantes; no lista imports masivos ni lógica paso a paso.
+
+### 13. Diagrama observable
+Entrada: relaciones principales suficientes entre triggers, Functions, Durable activities y shared resources.
+Esperado: `current-state.md` incluye un Mermaid `flowchart` compacto; enlaces sólidos para relaciones `CONFIRMED`, punteados para `INFERRED`; no inventa relaciones por naming.
+
+### 14. Límite de discovery
+Entrada: source con llamadas internas complejas o nombres dinámicos.
+Esperado: registrar unknowns o resumen; no construir full call graph, no decidir ownership, no crear acciones de migración.
+
+### 15. No modificación
 Esperado: cero cambios de source/configuración del repo objetivo.

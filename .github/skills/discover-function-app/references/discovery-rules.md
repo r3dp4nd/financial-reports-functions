@@ -13,6 +13,33 @@ security exclusions
 
 No construir call graphs completos.
 
+## Profundidad esperada
+
+Discovery debe maximizar información segura y útil como punto de partida de migración, pero mantenerla compacta.
+
+Capturar cuando exista evidencia directa:
+
+- metadatos de plataforma: `host.json`, `extensionBundle`, Node, Programming Model, Durable y packages;
+- metadatos de triggers/bindings: tipo, nombre de Function, archivo, route/methods/schedule/topic/queue/container cuando sean literales o nombres de settings;
+- composition roots: qué adapters registran Functions y qué handlers/use cases/repositories/publishers/storage adapters componen;
+- capabilities y módulos por ruta/import directo;
+- nombres de configuration keys y archivos consumidores;
+- recursos compartidos candidatos con paths/consumidores observables;
+- relaciones entre Functions solo cuando aparezcan en registros, imports, clientes Durable, nombres de activities/orchestrators invocados como literales, o producers/consumers explícitos;
+- comandos de validación existentes (`build`, `typecheck`, `test`, `start`) sin ejecutarlos salvo que el workflow lo pida;
+- diagrama Mermaid compacto de arquitectura actual cuando las relaciones principales sean suficientes.
+
+No capturar en discovery:
+
+- lógica de negocio paso a paso;
+- full call graph;
+- valores de configuración;
+- inferencias de ownership definitivo;
+- compatibilidad target o acciones de migración;
+- listas masivas de imports que no expliquen arquitectura, recursos o relaciones.
+
+Regla de tamaño: preferir tablas y bullets compactos. Si una dimensión necesita demasiado detalle, documentar el resumen y dejar el detalle para `analyze-function`.
+
 ## Múltiples Function Apps
 
 Mantener separadas sus:
@@ -53,6 +80,8 @@ Detectar señales como:
 
 Discovery registra rol y relaciones observables; el análisis profundo del workflow pertenece a etapas posteriores.
 
+Si el workflow contiene nombres literales de activities/sub-orchestrators, registrarlos como relaciones observables. Si la relación depende de variables dinámicas o convenciones de naming, marcarla `INFERRED` o dejarla en unknowns.
+
 ## Configuración
 
 Registrar únicamente nombres de claves referenciadas, nunca valores.
@@ -76,6 +105,8 @@ Describir sin puntuar:
 - acoplamiento directo al runtime cuando sea evidente.
 
 No comparar todavía contra arquitectura target.
+
+Cuando sea útil, incluir un diagrama Mermaid `flowchart` con nodos principales: triggers, Functions, orchestrator/activities, capabilities, shared resources y external resources candidatos. Usar enlaces sólidos solo para relaciones `CONFIRMED`; usar enlaces punteados para relaciones `INFERRED`.
 
 ## Shared resource candidates
 

@@ -7,7 +7,9 @@ description: Descubre de forma segura Azure Function Apps Node.js dentro de un r
 
 ## Objetivo
 
-Crear la fotografía BEFORE del repositorio sin modificar código ni decidir todavía qué debe migrarse.
+Crear la fotografía BEFORE más útil posible para iniciar migración, sin modificar código ni decidir todavía qué debe migrarse.
+
+La profundidad esperada es: suficiente información segura para que `assess-function-app`, `analyze-function` y planning no tengan que redescubrir lo básico; no un análisis exhaustivo de comportamiento ni un call graph completo.
 
 ## Políticas obligatorias
 
@@ -33,8 +35,8 @@ Artifacts previos en `.migration/` pueden usarse únicamente para detectar una e
 2. Aplicar exclusiones de seguridad.
 3. Ejecutar `scripts/inventory.js <repository-root>`.
 4. Usar su salida como fuente primaria de hechos deterministas.
-5. Inspeccionar source adicional solo para resolver gaps concretos.
-6. Documentar estado actual y candidatos a shared resources.
+5. Inspeccionar source adicional solo para enriquecer gaps concretos y relaciones directamente observables.
+6. Documentar estado actual, arquitectura observable, relaciones útiles para migración y candidatos a shared resources.
 7. Crear los artifacts BEFORE.
 
 Para criterios de detección cargar solo cuando haga falta:
@@ -74,6 +76,7 @@ Terminar cuando:
 - las Function Apps y Functions observables fueron inventariadas;
 - Programming Model, Runtime, Durable y dependencias quedaron documentados con evidence status;
 - configuration keys se registraron sin valores;
+- relaciones observables relevantes para migración quedaron registradas con evidence status;
 - shared resource candidates y unknowns quedaron explícitos;
 - los artifacts BEFORE fueron creados.
 

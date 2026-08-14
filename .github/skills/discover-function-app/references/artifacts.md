@@ -15,6 +15,7 @@ Debe incluir cuando aplique:
 - configuration keys;
 - relationships observables;
 - architecture observations;
+- compact Mermaid diagram when relationships are sufficient;
 - patterns relevantes;
 - shared resource candidates;
 - protected files detected;

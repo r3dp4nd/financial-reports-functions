@@ -30,6 +30,17 @@
 - infraestructura:
 - acoplamientos relevantes:
 
+## Relaciones observables
+
+| Origen | Relación | Destino | Estado de evidencia | Evidencia |
+|---|---|---|---|---|
+
+## Diagrama observable
+
+```mermaid
+flowchart LR
+```
+
 ## Dependencias relevantes
 
 | Package | Versión observable | Consumidores | Evidencia |
