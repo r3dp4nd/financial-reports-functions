@@ -49,7 +49,9 @@ Verification no corrige ni redefine targets.
 7. Validar Functions, Programming Model y Durable.
 8. Validar estructura requerida y shared resources.
 9. Ejecutar `func start` local solo si es seguro/viable y no requiere secretos reales.
-10. Comparar contratos, efectos, topology y comportamiento preservado contra BEFORE/PLAN.
+10. Comparar contratos, efectos, topology y comportamiento preservado contra BEFORE/PLAN. Leer explícitamente la
+    sección "Contrato a preservar" (Entrada exacta/Salida exacta/Efectos secundarios/Errores observables/Invariantes)
+    de cada `analysis.json|md` del effective scope y compararla campo por campo contra AFTER, sin reinterpretar.
 11. Comparar inventario/estructura AFTER contra BEFORE/PLAN, reusando las relaciones ya persistidas en
     `analysis.json`, `programming-model-v4.json` y `durable-v4.json` para detectar residuales legacy; consultar
     Graphify únicamente cuando esa evidencia de ejecución no alcance para confirmar un residual sospechado.

@@ -35,8 +35,13 @@ Deben existir:
 - `.migration/00-before/inventory.json` o legacy `.migration/repository/inventory.json`
 - `.migration/10-assessment/assessment.json` o legacy `.migration/repository/assessment.json`
 
-Opcional cuando exista: `.migration/00-before/graph/project-graph.json|md`. Si está disponible, consultarlo antes de
-leer código fuente adicional para resolver relaciones del slice.
+Reusar cuando existan (no re-derivar desde `inventory.json` crudo lo que estos artifacts ya curaron):
+
+- `.migration/00-before/current-state.md` — arquitectura observable, diagramas y relaciones ya documentadas a nivel repo;
+- `.migration/00-before/functions/<FunctionName>.md` — catálogo BEFORE de la Function, incluyendo el fragmento de
+  código relevante ya extraído; usarlo como punto de partida del análisis en vez de releer el archivo completo desde cero;
+- `.migration/00-before/graph/project-graph.json|md` — si está disponible, consultarlo antes de leer código fuente
+  adicional para resolver relaciones del slice.
 
 Analizar una Function o slice por ejecución.
 

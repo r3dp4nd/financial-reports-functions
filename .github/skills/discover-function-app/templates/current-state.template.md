@@ -19,20 +19,27 @@ Los estados de evidencia usados en las tablas significan:
 
 ## Estructura de directorios
 
-> Generada de forma determinista por `scripts/inventory.js` (campo `directoryTree`), reflejando literalmente los archivos y carpetas observados en la Function App, excluyendo archivos protegidos y directorios ignorados (`node_modules`, `dist`, etc.). No editar a mano ni resumir.
+> Generada de forma determinista por `scripts/inventory.js` (campo `directoryTree`), reflejando literalmente los archivos y carpetas observados en la Function App, excluyendo archivos protegidos y directorios ignorados (`node_modules`, `dist`, `.graphify`, etc.). No editar a mano ni resumir.
 
 ```text
 ```
 
 ## Plataforma actual
 
-| Dimensión | Estado observado | Evidencia |
-|---|---|---|
-| Node.js | | |
-| Azure Functions Runtime | | |
-| Programming Model | | |
-| Durable Functions | | |
-| CI/CD provider(s) | | |
+> La fila "Azure Functions Runtime" y "Programming Model" deben citar el requisito mínimo oficial exacto
+> (`v4.25+` para runtime, `@azure/functions v4.0.0+` en `dependencies` para modelo), no solo "v4" genérico.
+> Ver `_shared/references/official-sources.md`.
+
+| Dimensión | Estado observado | Requisito mínimo oficial | Evidencia |
+|---|---|---|---|
+| Node.js | | `v18+` (piso oficial del Programming Model v4) | |
+| Azure Functions Runtime | | `v4.25+` | |
+| Programming Model | | `@azure/functions v4.0.0+`, en `dependencies` | |
+| Durable Functions | | paquete `durable-functions`: `2.x`→PM v3, `3.x`→PM v4 | |
+| CI/CD provider(s) | | — | |
+
+- Si Runtime detectado es v2/v3: citar riesgo de EOL (30/sep/2026 para Linux Consumption v3) según `_shared/references/official-sources.md`.
+- Si `@azure/functions` está declarado en `devDependencies` en vez de `dependencies`: registrar como hallazgo, no solo como versión.
 
 ## Functions
 
@@ -55,9 +62,17 @@ flowchart TB
 
 ## Grafo auxiliar
 
+> Cuando Graphify/indexer fue usado, esta sección debe dejar trazabilidad de qué relaciones/slices se aceleraron con
+> el grafo, para que `analyze-function` pueda reusarlas sin repetir la consulta (ver
+> `_shared/references/graphify-usage.md` y `_shared/context-cache-policy.md`).
+
 - Graphify/indexer usado:
-- Artifact:
-- Uso en discovery:
+- Artifact: `.migration/00-before/graph/project-graph.json|md`
+
+### Slices/relaciones aceleradas por el grafo
+
+| Slice o relación | Nodos clave | Modo de consulta usado | Verificado contra source | Evidence status |
+|---|---|---|---|---|
 
 ## Relaciones observables
 
@@ -72,8 +87,11 @@ flowchart LR
 
 ## Dependencias relevantes (paquetes de software usados)
 
-| Package | Versión observable | Consumidores | Evidencia |
-|---|---|---|---|
+> Columnas `usageDetected`/`usageScopeNote` provienen directamente de `inventory.json` (calculadas de forma
+> determinista buscando el nombre del paquete en imports/requires del código fuente) — no descartarlas.
+
+| Package | Versión observable | Consumidores | usageDetected | Evidencia |
+|---|---|---|---|---|
 
 ## Herramientas de calidad y pruebas (tooling de validación)
 
@@ -92,10 +110,19 @@ flowchart LR
 
 ## Configuración requerida
 
-Solo nombres de claves; nunca valores.
+Solo nombres de claves; nunca valores. La columna `sources` proviene de `inventory.json.configurationKeys[].sources`
+(`SOURCE_CODE`/`FUNCTION_JSON_BINDING`/`V4_REGISTRATION_OPTION`) — una clave puede tener múltiples orígenes.
 
-| Clave | Consumidor | Evidencia |
-|---|---|---|
+| Clave | Consumidor | Sources | Evidencia |
+|---|---|---|---|
+
+## Proveedores CI/CD detectados
+
+> Generado de forma determinista por `scripts/inventory.js` (campo `ciCdProviders`), agregando los providers
+> encontrados en `sensitiveFilesDetected`.
+
+| Provider |
+|---|
 
 ## Archivos protegidos detectados
 

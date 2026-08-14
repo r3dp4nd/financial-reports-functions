@@ -2,9 +2,9 @@
 
 ## Referencias
 
-- Inventory:
-- Assessment:
-- Baseline:
+- Inventory: `.migration/00-before/inventory.json`
+- Assessment: `.migration/10-assessment/assessment.json`
+- Baseline: `_shared/dependency-baseline.json`
 
 ## Estado y scope
 
@@ -22,8 +22,12 @@
 
 ## Target técnico
 
-| Dimensión | Target aprobado |
-|---|---|
+| Dimensión | Actual | Target aprobado | Requisito mínimo oficial |
+|---|---|---|---|
+| Node.js | | | `v18+` (piso oficial v4); target del proyecto según `_shared/dependency-baseline.json` |
+| Azure Functions Runtime | | | `v4.25+` — versión `v4` genérica no es suficiente |
+| Programming Model | | | `@azure/functions` `v4.0.0+`, **en `dependencies`**, no `devDependencies` |
+| Durable Functions | | | paquete `durable-functions` `3.x` para Programming Model v4 (ver mapeo en `_shared/references/official-sources.md`) |
 
 ## Workstreams
 
@@ -32,8 +36,19 @@
 
 ## Acciones globales
 
-| Action ID | Lane | Cambio | Executor sugerido | requiredForMigration | Preserve behavior | Prohibited changes | dependsOn | Criterio verificable |
-|---|---|---|---|---|---|---|---|---|
+> Esta es la única fuente de verdad para instalación/actualización de herramientas y ownership de recursos
+> compartidos. Cada acción debe incluir comandos exactos — no repetirlos en cada plan de Function, solo referenciar
+> el Action ID.
+
+### <GLOBAL Action ID>
+
+- Lane / Cambio / Executor sugerido / requiredForMigration / Preserve behavior / Prohibited changes / dependsOn:
+- Comandos exactos de instalación/desinstalación:
+
+```bash
+```
+
+- Criterio verificable:
 
 ## Recursos compartidos
 
@@ -42,7 +57,7 @@
 
 ## Functions
 
-| Function/Slice | Plan | Lane principal | Executor sugerido | Programming Model action | Durable | Estado |
+| Function/Slice | Plan | Lane principal | Executor sugerido | Programming Model action | Durable action | Estado |
 |---|---|---|---|---|---|---|
 
 ## Orden

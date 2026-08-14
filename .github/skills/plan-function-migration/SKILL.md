@@ -33,6 +33,11 @@ Aplicar:
 
 Deben existir inventory, assessment y los analyses requeridos para el effective scope.
 
+El `executionGuide.beforeAfter.code.before` de cada acción debe citarse desde el catálogo BEFORE de la Function
+(`.migration/00-before/functions/<FunctionName>.md`, sección "Fragmento de código relevante") cuando ese catálogo
+exista, en vez de releer el source crudo sin declarar la fuente. Si el catálogo no cubre el fragmento necesario,
+leer el archivo real y registrarlo como tal.
+
 ## Workflow
 
 1. Resolver `requestedScope` y `effectiveScope`.

@@ -23,7 +23,12 @@ Aplicar:
 
 Deben existir plan global, plan de Function y preparation aplicable.
 
-La dependencia `@azure/functions` debe usar el target aprobado por planning/baseline.
+Consultar `.migration/20-analysis/functions/<FunctionName>/analysis.json|md` (o slice equivalente) cuando el
+`executionGuide` del plan quede incompleto: contiene el contrato a preservar, `relationships` y `legacyCoupling`
+con más detalle que el plan resumido, y es la fuente de verdad más rica disponible para resolver ambigüedades.
+
+La dependencia `@azure/functions` debe usar el target aprobado por planning/baseline y quedar declarada en
+`dependencies` (no `devDependencies`) — ver `../_shared/references/official-sources.md`.
 
 ## Aplicabilidad
 

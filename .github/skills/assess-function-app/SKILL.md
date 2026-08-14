@@ -35,6 +35,9 @@ Deben existir:
 - `.migration/00-before/inventory.json` o legacy `.migration/repository/inventory.json`
 - `.migration/00-before/current-state.md` o legacy `.migration/catalog/current-state.md`
 
+Opcional cuando exista: `.migration/00-before/graph/project-graph.json|md`. Si discovery ya identificó relaciones o
+slices vía Graphify, reusarlas al evaluar gaps estructurales y shared resources en vez de re-derivarlas.
+
 ## Workflow
 
 1. Consumir inventory y BEFORE.
