@@ -65,8 +65,8 @@ Debe documentar comportamiento y dependencias observables sin convertir análisi
 
 Si `inventory.json` reportó `initialSignals` para esta Function, transcribirlos literalmente en la sección correspondiente del catálogo, sin suavizar ni reinterpretar el hallazgo.
 
-**Regla de trazabilidad para narrativas**: las secciones "Narrativa funcional" y "Narrativa técnica" deben ser una traducción a prosa de hechos ya citados literalmente en otra sección del mismo documento (Comportamiento, Efectos y errores, Fragmento de código relevante). Nunca introducir en la narrativa un hecho que no esté respaldado por un bloque de código citado en ese mismo documento. Si el propósito de negocio no es 100% claro desde el código, la narrativa funcional debe decirlo explícitamente en vez de asumirlo.
-
 **Regla de trazabilidad para "Servicios externos consumidos" y "Diagrama de dependencias de la Function"**: cada fila de la tabla y cada nodo del diagrama deben corresponder a un dato ya presente en `inventory.json` (`azureResourcePackageUsage`, `sharedResourceCandidates`, `configurationKeys`) o en las secciones "Dependencias"/"Configuración" del mismo documento — nunca un servicio o nodo inventado sin respaldo.
+
+Este catálogo BEFORE **no** incluye narrativa interpretativa (secciones "Narrativa funcional"/"Narrativa técnica"); esa interpretación de comportamiento pertenece a `analyze-function` y vive en `function-analysis.template.md`, no aquí — `discover-function-app` produce fotografía factual, no análisis.
 
 Ruta nueva: `.migration/00-before/functions/<FunctionName>.md`.

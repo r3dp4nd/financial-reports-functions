@@ -69,3 +69,7 @@ Esperado: analysis JSON/MD bajo `.migration/20-analysis/` y BEFORE por Function 
 ### 18. Layout semántico
 Entrada: analysis legacy existe bajo `.migration/functions/<FunctionName>/analysis.json`.
 Esperado: puede consumirlo como contexto, pero una nueva emisión owner usa `.migration/20-analysis/functions/<FunctionName>/analysis.json`.
+
+### 19. Narrativa trazable a evidencia ya documentada
+Entrada: analysis con "Contrato a preservar"/"Compatibilidad"/"Dependencias" ya completados con evidencia.
+Esperado: "Narrativa funcional"/"Narrativa técnica" son prosa que traduce hechos ya documentados en ese mismo analysis o en el BEFORE referenciado, sin introducir afirmaciones no respaldadas; si el propósito de negocio no es claro desde la evidencia disponible, la narrativa funcional lo declara explícitamente en vez de asumirlo.

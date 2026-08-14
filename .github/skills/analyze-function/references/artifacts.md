@@ -15,6 +15,7 @@ Incluir cuando aplique:
 - `capability`;
 - `status`;
 - `analyzedSlice`;
+- `narrative` (`functional` y `technical`, siguiendo la regla de trazabilidad: deben derivarse de hechos ya documentados en `behavior`/`dependencyImpact`/evidencia de este mismo analysis o del BEFORE referenciado, nunca introducir un hecho nuevo no respaldado);
 - `criticality`;
 - `testability`;
 - `behavior`;

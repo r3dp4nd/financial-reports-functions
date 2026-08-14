@@ -27,6 +27,18 @@
 - Testability blockers:
 - Testability enablers:
 
+## Narrativa
+
+> Traducción a prosa de hechos ya documentados en este mismo análisis (Contrato a preservar, Compatibilidad, Dependencias). Nunca introducir aquí un hecho que no esté respaldado por evidencia ya registrada en otra sección de este documento o en el BEFORE/`inventory.json` referenciados arriba.
+
+### Narrativa funcional (para onboarding no-técnico)
+
+> Qué problema de negocio resuelve esta Function/slice, en 2-4 frases, sin jerga técnica. Si el propósito de negocio no es 100% claro desde la evidencia disponible, decirlo explícitamente en vez de asumirlo.
+
+### Narrativa técnica (para onboarding técnico)
+
+> Cómo lo hace, en 3-6 frases de prosa fluida (paginación, batching, reintentos, validaciones, etc.), siempre trazable a la sección "Contrato a preservar" de abajo o al catálogo BEFORE de la Function.
+
 ## Contrato a preservar
 
 - Entrada:

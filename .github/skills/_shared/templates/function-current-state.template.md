@@ -10,18 +10,6 @@
 - Programming Model:
 - Durable role:
 
-## Narrativa
-
-> Traducción a prosa de hechos ya citados literalmente en las secciones de abajo (Comportamiento, Efectos y errores, Fragmento de código). Nunca introducir aquí un hecho que no esté respaldado por un bloque de código citado en otra sección de este mismo documento.
-
-### Narrativa funcional (para onboarding no-técnico)
-
-> Qué problema de negocio resuelve esta Function, en 2-4 frases, sin jerga técnica. Si el propósito de negocio no es 100% claro desde el código, decirlo explícitamente en vez de asumirlo.
-
-### Narrativa técnica (para onboarding técnico)
-
-> Cómo lo hace, en 3-6 frases de prosa fluida (paginación, batching, reintentos, validaciones, etc.), siempre trazable a la sección "Comportamiento"/"Fragmento de código relevante" de abajo.
-
 ## Firma exacta del handler
 
 ```ts

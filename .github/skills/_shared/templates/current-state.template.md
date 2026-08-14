@@ -17,14 +17,6 @@ Los estados de evidencia usados en las tablas significan:
 - Function App(s):
 - Fecha/evidencia:
 
-## Narrativa general
-
-> Explicación en lenguaje simple, para cualquier persona (no solo devs), de qué hace este repositorio y para qué sirve. Debe derivarse de hechos ya documentados en este mismo documento (Functions, triggers, flujo Durable, capabilities) — si el propósito de negocio no es 100% claro desde el código, decirlo explícitamente (`INFERRED`/incierto) en vez de inventarlo.
-
-- **¿Qué hace este sistema?**
-- **¿Para quién/qué proceso de negocio es relevante?**
-- **¿Cuál es el flujo principal?** (resumen de 2-4 frases, trazable al diagrama de la sección "Diagrama observable")
-
 ## Estructura de directorios
 
 > Generada de forma determinista por `scripts/inventory.js` (campo `directoryTree`), reflejando literalmente los archivos y carpetas observados en la Function App, excluyendo archivos protegidos y directorios ignorados (`node_modules`, `dist`, etc.). No editar a mano ni resumir.
