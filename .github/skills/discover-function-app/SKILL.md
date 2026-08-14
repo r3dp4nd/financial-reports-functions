@@ -25,7 +25,8 @@ No ejecutar `rg`, `find`, `ls` recursivo, scripts de inventario ni abrir archivo
 Consultar:
 
 - `../_shared/architecture-policy.md` solo como vocabulario para describir estructura observable;
-- `../_shared/references/validation-tooling.md` para identificar tooling de validación observable sin decidir cambios.
+- `../_shared/references/validation-tooling.md` para identificar tooling de validación observable sin decidir cambios;
+- `../_shared/context-cache-policy.md` antes de releer un archivo grande o repetir una consulta de Graphify ya resuelta en la misma ejecución.
 
 Consultar `../_shared/references/artifact-layout.md` para escribir artifacts en el layout semántico.
 

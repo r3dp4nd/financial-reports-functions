@@ -8,6 +8,9 @@ Las nuevas ejecuciones deben escribir en el layout semántico. Las skills pueden
 
 ```text
 .migration/
+├── _cache/
+│   ├── index.json
+│   └── entries/<slug>.json
 ├── 00-before/
 │   ├── inventory.json
 │   ├── current-state.md
@@ -43,6 +46,9 @@ Las nuevas ejecuciones deben escribir en el layout semántico. Las skills pueden
 
 ## Fases
 
+- `_cache`: cache de contexto regenerable (extractos de archivos, consultas de Graphify ya resueltas). No es
+  evidencia oficial de ninguna fase; ver [`../context-cache-policy.md`](../context-cache-policy.md). Puede borrarse
+  por completo sin pérdida de evidencia.
 - `00-before`: hechos BEFORE y fotografía actual. No contiene decisiones de target ni acciones.
 - `10-assessment`: triage global contra target aprobado. No contiene Action IDs.
 - `20-analysis`: análisis profundo solo de Functions/slices priorizados.

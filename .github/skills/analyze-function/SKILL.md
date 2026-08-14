@@ -25,6 +25,7 @@ Consultar:
 - `../_shared/architecture-policy.md` para evaluar estructura del slice;
 - `../_shared/references/artifact-layout.md` para leer/escribir artifacts;
 - `../_shared/references/graphify-usage.md` cuando exista grafo disponible y se necesite resolver relaciones/slice sin leer código a ciegas;
+- `../_shared/context-cache-policy.md` antes de releer un archivo que discovery u otra ejecución de analysis ya pudo haber cacheado;
 - `../_shared/dependency-baseline.json` solo si assessment no materializó un target necesario.
 
 ## Precondiciones

@@ -22,6 +22,11 @@ ejemplo nuevo commit) y la evidencia previa ya no es confiable.
 
 Esta regla evita que cada skill pague el costo de una consulta que otro skill ya resolvió y dejó documentada.
 
+Además de los artifacts de fase listados arriba, revisar primero `.migration/_cache/index.json` — ver
+[`../context-cache-policy.md`](../context-cache-policy.md) — antes de repetir una consulta de Graphify: es más
+granular y más rápido de indexar que releer un artifact de fase completo, y cachea también consultas puntuales que
+no necesariamente llegaron a citarse en un artifact de fase.
+
 ## Cuándo usarlo
 
 Usar Graphify o un indexador de grafo solo cuando esté disponible y pueda respetar las exclusiones de seguridad.

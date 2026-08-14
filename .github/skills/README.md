@@ -178,6 +178,7 @@ _shared/
 ├── architecture-policy.md
 ├── language-policy.md
 ├── lessons-policy.md
+├── context-cache-policy.md
 ├── dependency-baseline.json
 ├── templates/
 │   └── function-current-state.template.md
@@ -201,6 +202,13 @@ o `support/run-migration-checks/templates/check-run.template.md`), no en `_share
 evidencia ya persistida en `.migration/` antes de repetir una consulta a Graphify. Lo cargan `discover-function-app`,
 `analyze-function`, `plan-function-migration`, `migrate-durable-functions-v4` y `verify-function-app` — cada uno solo
 cuando la evidencia ya persistida por una etapa anterior no cubre la relación que necesita.
+
+`context-cache-policy.md` define `.migration/_cache/` (`index.json` + `entries/<slug>.json`): un formato compacto e
+indexado para releer un hecho ya extraído de un archivo o una consulta de Graphify ya resuelta, en lugar de repetir
+la lectura/consulta. Es una optimización de rendimiento regenerable, no una fuente de evidencia oficial — la
+evidencia oficial sigue viviendo en los artifacts de fase. La cargan `discover-function-app` y `analyze-function`,
+los skills que más leen source, antes de releer un archivo grande o repetir una consulta ya cacheada en la misma
+ejecución.
 
 La política de seguridad aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, secretos y
 CI/CD no se leen directamente.
@@ -252,6 +260,9 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 
 ```text
 .migration/
+├── _cache/
+│   ├── index.json
+│   └── entries/<slug>.json
 ├── 00-before/
 │   ├── inventory.json
 │   ├── current-state.md
