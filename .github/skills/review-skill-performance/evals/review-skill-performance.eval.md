@@ -2,11 +2,25 @@
 
 ## Objetivo
 
-Validar que el capability aprenda de evidencia real sin:
+Validar que `review-skill-performance` analice evidencia real de ejecución para detectar problemas, patrones y
+oportunidades de mejora sin:
 
 - autoeditar el toolkit;
-- promover conocimiento sin aprobación;
-- convertir experiencias aisladas en reglas universales.
+- modificar artifacts históricos de migración;
+- modificar dependency baseline;
+- convertir experiencias aisladas en reglas universales;
+- inventar findings;
+- aplicar automáticamente propuestas.
+
+El capability debe separar:
+
+```text
+evidence
+→ finding
+→ proposal
+→ human review
+→ controlled change
+```
 
 ## Caso 1 — Hallazgo aislado
 
@@ -24,13 +38,17 @@ Recommendation puede ser:
 
 `MONITOR`
 
-No crear regla global automáticamente.
+o:
+
+`NEEDS_MORE_EVIDENCE`
+
+No crear una regla global automáticamente.
 
 ## Caso 2 — Fallo repetido
 
 ### Entrada
 
-Varias ejecuciones muestran el mismo false negative.
+Varias ejecuciones independientes muestran el mismo false negative.
 
 ### Esperado
 
@@ -38,41 +56,68 @@ Recurrence:
 
 `REPEATED`
 
-Debe evaluar cambio y eval correspondiente.
+Debe evaluar:
+
+- causa común;
+- impacto;
+- cambio proporcional;
+- eval correspondiente.
+
+No asumir automáticamente:
+
+`SYSTEMIC`
 
 ## Caso 3 — Problema sistémico de status
 
 ### Entrada
 
-Varios skills usan:
+Varios skills utilizan:
 
-`status: CONFIRMED`
+```text
+status = CONFIRMED
+```
 
-para evidencia.
+para representar evidencia.
 
 ### Esperado
 
-Finding sistémico.
+Finding con:
 
-Debe referenciar `status-policy.md`.
+`recurrence = SYSTEMIC`
+
+cuando la evidencia demuestre que el problema cruza contratos o skills.
+
+Debe referenciar:
+
+`status-policy.md`
+
+No modificar la policy desde review.
 
 ## Caso 4 — ID antiguo
 
 ### Entrada
 
-Skill genera:
+Un artifact de execution genera:
 
 `REQ-REQUEST-001`
+
+cuando el contrato vigente exige Action IDs de planning.
 
 ### Esperado
 
 Detectar inconsistencia.
 
-Recomendar:
+Puede recomendar migrar el contrato hacia:
 
 `FN-REQUESTREPORT-*`
 
-para nuevas acciones.
+cuando corresponda.
+
+No modificar automáticamente:
+
+- artifact histórico;
+- plan;
+- skill.
 
 ## Caso 5 — PASS usado como evidence
 
@@ -88,6 +133,13 @@ para nuevas acciones.
 
 Finding contractual.
 
+Debe distinguir:
+
+```text
+evidenceStatus
+≠ verification check status
+```
+
 ## Caso 6 — UNKNOWN vs validation
 
 ### Entrada
@@ -98,7 +150,9 @@ actionStatus = UNKNOWN
 
 ### Esperado
 
-Recomendar separación:
+Detectar mezcla semántica.
+
+Recomendar según contrato:
 
 ```text
 evidenceStatus = UNKNOWN
@@ -109,107 +163,179 @@ actionStatus = REQUIRES_VALIDATION
 
 ### Entrada
 
-Discovery genera refactors.
+`discover-function-app` genera refactors o migration actions.
 
 ### Esperado
 
-Finding.
+Finding de responsibility leakage.
+
+Debe identificar el owner correcto sin ejecutar el cambio.
 
 ## Caso 8 — Shared action duplicada
 
 ### Entrada
 
-Dos Functions modifican independientemente el mismo shared resource.
+Dos Functions ejecutan independientemente la misma transformación requerida sobre un shared resource.
 
 ### Esperado
 
-Finding de alto impacto.
+Finding de impacto apropiado.
+
+Debe evaluar:
+
+- ownership;
+- Action IDs;
+- consumer adaptations;
+- posibilidad de una única `SR-ACTION-*`.
+
+No consolidar automáticamente los artifacts históricos.
 
 ## Caso 9 — Falsa consolidación
 
 ### Entrada
 
-Dos recursos Cosmos distintos fueron fusionados.
+Dos recursos Cosmos distintos fueron fusionados únicamente porque utilizan:
+
+`@azure/cosmos`
 
 ### Esperado
 
+Finding:
+
 `FALSE_POSITIVE`
+
+Debe explicar qué evidencia contradice la identidad compartida.
 
 ## Caso 10 — Arquitectura accidental
 
 ### Entrada
 
-Preparation crea capas vacías.
+Preparation crea:
+
+- capas vacías;
+- interfaces sin responsabilidad real;
+- estructura no requerida por planning.
 
 ### Esperado
 
-`OVERGENERALIZATION`
+Puede producir:
 
-o:
+- `OVERGENERALIZATION`;
+- `OVERCONSTRAINT`;
+- `SIMPLIFICATION`;
 
-`SIMPLIFICATION`
+según la causa.
+
+No evaluar contra una arquitectura ideal.
 
 ## Caso 11 — Verification corrige
 
 ### Entrada
 
-Verification modifica código.
+`verify-function-app` modifica código después de encontrar un fallo.
 
 ### Esperado
 
-Responsibility leakage.
+Finding de responsibility leakage.
+
+Puede ser:
+
+`HIGH`
+
+o `CRITICAL`
+
+según el efecto observado.
+
+No conservar el cambio como aceptable únicamente porque después los gates pasen.
 
 ## Caso 12 — Missing eval
 
 ### Entrada
 
-Un fallo real no tenía cobertura.
+Un fallo real ocurrió y ningún eval existente protegía ese comportamiento contractual.
 
 ### Esperado
 
+Finding:
+
 `MISSING_EVAL`
+
+La propuesta debe indicar:
+
+- comportamiento que faltaba proteger;
+- eval afectado;
+- evidencia del fallo.
+
+No agregar un eval únicamente por simetría.
 
 ## Caso 13 — Script gap
 
 ### Entrada
 
-Un chequeo determinista se repite manualmente.
+Un chequeo:
+
+- determinista;
+- repetido;
+- estable;
+- sin necesidad de razonamiento complejo;
+
+se ejecuta manualmente en varias migraciones.
 
 ### Esperado
 
-Puede recomendar:
+Puede generar:
 
 `SCRIPT_GAP`
+
+Debe evaluar primero si un script existente puede evolucionar.
+
+No implementar el script.
 
 ## Caso 14 — Excess context
 
 ### Entrada
 
-Un skill carga todos los analyses para procesar una sola Function.
+Un skill procesa una sola Function pero carga:
+
+- todos los analyses;
+- todos los plans;
+- todos los source files;
+
+sin necesidad.
 
 ### Esperado
 
+Finding:
+
 `EXCESS_CONTEXT`
+
+Debe recomendar progressive disclosure o selección de contexto cuando exista beneficio demostrable.
 
 ## Caso 15 — Cambio sobredimensionado
 
 ### Entrada
 
-Una observación menor propone nuevo workflow, policy y skill.
+Una observación menor propone simultáneamente:
+
+- nuevo workflow;
+- nueva policy;
+- nuevo skill;
+- nuevos artifacts.
 
 ### Esperado
 
-`REJECT`
+Recommendation puede ser:
 
-o:
+- `REJECT`;
+- `NEEDS_MORE_EVIDENCE`.
 
-`NEEDS_MORE_EVIDENCE`
+Debe preferir evolución mínima del contrato existente.
 
-## Caso 16 — VERIFIED con FAIL
+## Caso 16 — VERIFIED con mandatory FAIL
 
 ### Entrada
 
-Verification:
+Verification contiene:
 
 ```json
 {
@@ -220,207 +346,333 @@ Verification:
 }
 ```
 
+y build era obligatorio.
+
 ### Esperado
 
-Inconsistencia crítica.
+Finding de alta o crítica severidad.
+
+Debe detectar contradicción con:
+
+`status-policy.md`
+
+No modificar verification histórico.
 
 ## Caso 17 — Cambio mínimo justificado
 
 ### Entrada
 
-Problema repetido solucionable con una regla pequeña.
+Un problema repetido puede corregirse mediante una regla pequeña en un contrato existente.
 
 ### Esperado
+
+Recommendation:
 
 `RECOMMEND`
 
-Preferir cambio mínimo.
+cuando la evidencia sea suficiente.
 
-# Dependency learning
+Debe preferir el cambio mínimo sobre crear:
 
-## Caso 18 — Nueva recomendación sin migración
+- nuevo skill;
+- nueva policy;
+- nuevo workflow.
+
+# Dependency baseline review
+
+## Caso 18 — Candidate target investigado pero no utilizado
 
 ### Entrada
 
-Assessment investigó `uuid` y propuso una versión.
+Assessment investigó:
 
-No fue ejecutada.
+`uuid`
+
+y obtuvo:
+
+`candidateTarget = X`
+
+La versión nunca fue utilizada en una migración.
 
 ### Esperado
 
-Recommendation status máximo:
+Review puede conservar la evidencia de investigación.
 
-`PROPOSED`
+No debe proponer automáticamente incorporar:
 
-No candidato a `VALIDATED`.
+`X`
 
-## Caso 19 — Migración exitosa una vez
+a `managedPackages`.
+
+Recommendation puede ser:
+
+`NEEDS_MORE_EVIDENCE`
+
+## Caso 19 — Migración exitosa aislada
 
 ### Entrada
 
-Una dependencia third-party:
+Una dependencia:
 
-- fue propuesta;
 - fue realmente utilizada;
-- build PASS;
-- tests PASS;
-- verification VERIFIED.
+- build requerido pasó;
+- tests requeridos pasaron;
+- verification terminó satisfactoriamente.
+
+Solo existe una migración independiente.
 
 ### Esperado
 
-Puede proponerse:
+Puede evaluarse como evidencia para una posible propuesta.
 
-`VALIDATED`
+No debe convertirse automáticamente en:
 
-No:
+`BASELINE_CHANGE`
 
-`REPEATED`
+aprobado.
 
-## Caso 20 — Dos Functions, misma App
+Recurrence:
+
+`ISOLATED`
+
+La migración exitosa sigue siendo evidencia, no regla.
+
+## Caso 20 — Dos Functions no son dos migraciones independientes
 
 ### Entrada
 
-La dependencia funciona en dos Functions de una misma Function App.
+La misma dependency version funciona en dos Functions dentro de la misma Function App.
 
 ### Esperado
 
-Continúa contando como:
+No contar esto artificialmente como dos validaciones independientes.
 
-`1 successful migration`
+La evidencia pertenece a una misma migración/contexto.
 
-No `REPEATED`.
-
-## Caso 21 — Dos repos independientes
+## Caso 21 — Dos migraciones independientes
 
 ### Entrada
 
-La misma dependencia y target fueron verificadas en dos migraciones independientes.
+La misma dependency version fue utilizada exitosamente en dos repositorios o Function Apps independientes bajo el mismo
+target técnico relevante.
 
 ### Esperado
 
-Puede proponerse:
+La recurrencia puede fortalecerse.
 
-`REPEATED`
+Puede justificar evaluar una propuesta:
 
-## Caso 22 — Approved requiere humano
+`BASELINE_CHANGE`
+
+si existe valor real para la campaña.
+
+No implica aprobación automática.
+
+## Caso 22 — Package no gestionado con valor recurrente
 
 ### Entrada
 
-Dependencia está `VALIDATED` o `REPEATED`.
+Un package no está en:
+
+`managedPackages`
+
+y varias migraciones requieren investigar repetidamente el mismo target.
+
+Existe evidencia suficiente y reutilizable.
 
 ### Esperado
 
-El capability puede proponer:
+Puede recomendar una propuesta:
 
-```text
-proposedRecommendationStatus = APPROVED
-```
+`BASELINE_CHANGE`
 
-pero no modificar baseline.
+para incorporar el package a:
 
-## Caso 23 — Azure unmapped exitoso
+`managedPackages`
+
+Debe incluir:
+
+- package;
+- proposed target;
+- category;
+- target environment;
+- evidence;
+- limitations;
+- risk;
+- rationale.
+
+No modificar baseline.
+
+## Caso 23 — Package third-party aislado sin valor de campaña
 
 ### Entrada
 
-`@azure/keyvault-secrets` fue investigado con fuentes oficiales y migrado con éxito.
+`uuid` funcionó correctamente en una migración.
+
+No existe evidencia de que deba ser gobernado globalmente por la campaña.
 
 ### Esperado
 
-Puede proponer incorporación a:
+No proponer automáticamente incorporarlo a:
 
-`azurePackages`
+`managedPackages`
 
-Debe incluir evidencia.
+solo porque funcionó.
 
-## Caso 24 — Azure package investigado con fuente no oficial
+Recommendation puede ser:
+
+`MONITOR`
+
+o:
+
+`NEEDS_MORE_EVIDENCE`.
+
+## Caso 24 — Azure package investigado oficialmente
 
 ### Entrada
 
-La recomendación se basó únicamente en blog/foro.
+`@azure/keyvault-secrets` no está en `managedPackages`.
+
+Fue necesario para la campaña y existe evidencia oficial suficiente sobre un target candidato.
 
 ### Esperado
 
-No promover a Azure baseline.
+Puede evaluar:
+
+`BASELINE_CHANGE`
+
+No debe:
+
+- modificar baseline;
+- convertir candidate target en approved target;
+- asumir aprobación humana.
+
+## Caso 25 — Azure package sin evidencia oficial suficiente
+
+### Entrada
+
+La única evidencia sobre el target de un Azure package proviene de:
+
+- blog;
+- foro;
+- comentario informal.
+
+### Esperado
+
+No recomendar incorporación como target aprobado.
 
 Recommendation:
 
 `NEEDS_MORE_EVIDENCE`
 
-## Caso 25 — Third-party exitoso
+cuando sea relevante.
+
+## Caso 26 — Managed package existente contradicho
 
 ### Entrada
 
-`uuid` fue validado con Node 24.
+`managedPackages` contiene target:
+
+`X`
+
+Nueva evidencia reproducible demuestra incompatibilidad relevante.
 
 ### Esperado
 
-Puede proponer incorporación a:
-
-`learnedPackages`
-
-No a:
-
-`azurePackages`
-
-## Caso 26 — Dependencia con regresión
-
-### Entrada
-
-Una versión previamente aprendida falla en un nuevo repo por incompatibilidad relevante.
-
-### Esperado
-
-No ignorar contradicción.
+Finding de prioridad proporcional al impacto.
 
 Puede proponer:
 
-- degradar;
-- revisar;
-- retirar recommendation.
+`BASELINE_CHANGE`
 
-## Caso 27 — Cambio de Node target
+para:
+
+- cambiar target;
+- revisar metadata;
+- retirar temporalmente el package gestionado;
+- requerir nueva investigación.
+
+No modificar baseline.
+
+## Caso 27 — Evidencia oficial contradice baseline
 
 ### Entrada
 
-Knowledge fue validado para Node 24.
-
-Nueva campaña apunta a Node diferente.
+Nueva documentación oficial confiable contradice un target aprobado actualmente.
 
 ### Esperado
 
-No asumir automáticamente que la experiencia sigue válida.
+No preservar el target solo por historial.
 
-Recommendation puede requerir nueva validación.
+Debe registrar:
 
-## Caso 28 — Cambio de Azure target
+- contradicción;
+- evidencia;
+- impacto;
+- riesgo.
+
+Puede recomendar:
+
+`BASELINE_CHANGE`
+
+## Caso 28 — Cambio de Node target
 
 ### Entrada
 
-Knowledge fue validado con Runtime v4/PM v4.
+Un package fue validado anteriormente para:
 
-La campaña futura cambia target relevante.
+`Node.js 24`
+
+Una futura campaña utiliza otro Node target.
+
+### Esperado
+
+No asumir automáticamente que el target histórico continúa siendo válido.
+
+Recommendation puede ser:
+
+`NEEDS_MORE_EVIDENCE`
+
+## Caso 29 — Cambio de Azure Functions target
+
+### Entrada
+
+Una experiencia fue validada para:
+
+- Runtime v4;
+- Programming Model v4.
+
+La campaña futura cambia una dimensión relevante.
 
 ### Esperado
 
 Reevaluar aplicabilidad.
 
-## Caso 29 — Sin evidencia reproducible
+No reutilizar el target únicamente por éxito histórico.
+
+## Caso 30 — Sin evidencia reproducible
 
 ### Entrada
 
-Usuario recuerda que “funcionó antes” pero no existen artefactos verificables.
+Existe únicamente memoria humana:
+
+`funcionó antes`
+
+pero no artifacts o evidencia reproducible.
 
 ### Esperado
 
-No promover.
+No proponer cambio de baseline como confirmado.
+
+Recommendation:
 
 `NEEDS_MORE_EVIDENCE`
 
-## Caso 30 — Successful migration con debt
+## Caso 31 — VERIFIED_WITH_DEBT no relacionado
 
 ### Entrada
 
-Verification:
+Verification termina:
 
 `VERIFIED_WITH_DEBT`
 
@@ -428,65 +680,575 @@ La deuda no está relacionada con la dependencia evaluada.
 
 ### Esperado
 
-La dependencia puede seguir siendo candidata.
+La ejecución puede seguir aportando evidencia relevante sobre la dependencia.
 
 Debe registrarse la limitación.
 
-## Caso 31 — Successful migration con dependency debt
+No transformar automáticamente esa evidencia en cambio de baseline.
+
+## Caso 32 — VERIFIED_WITH_DEBT relacionado con dependency
 
 ### Entrada
 
-La deuda está directamente relacionada con la nueva dependency version.
+Verification termina:
+
+`VERIFIED_WITH_DEBT`
+
+y la deuda está directamente relacionada con la dependency version evaluada.
 
 ### Esperado
 
-No promover automáticamente.
+No recomendar automáticamente incorporarla como target gestionado.
 
-Analizar riesgo.
+Debe analizar:
 
-## Caso 32 — Baseline mutation
+- riesgo;
+- limitaciones;
+- impacto;
+- necesidad de nueva evidencia.
+
+Recommendation puede ser:
+
+`MONITOR`
+
+o:
+
+`NEEDS_MORE_EVIDENCE`.
+
+## Caso 33 — BLOCKED por dependencia
 
 ### Entrada
 
-El review concluye que una recomendación debe aprobarse.
+La migración terminó:
+
+`BLOCKED`
+
+debido a incompatibilidad asociada directamente con una dependency version propuesta.
 
 ### Esperado
 
-Generar propuesta.
+Registrar evidencia negativa.
 
-No escribir directamente:
+No ignorarla porque existan migraciones anteriores exitosas.
+
+Puede producir una propuesta de revisión del baseline existente.
+
+## Caso 34 — BASELINE_CHANGE no es cambio aplicado
+
+### Entrada
+
+Review concluye que existe evidencia suficiente para recomendar modificar un target.
+
+### Esperado
+
+Puede crear una propuesta:
+
+```json
+{
+  "type": "BASELINE_CHANGE",
+  "package": "@azure/example",
+  "proposedTarget": "x.y.z",
+  "recommendation": "RECOMMEND"
+}
+```
+
+No modificar:
 
 `dependency-baseline.json`
 
-## Caso 33 — Knowledge contradiction
+## Caso 35 — managedPackages es el único destino gobernado
 
 ### Entrada
 
-Una recommendation APPROVED contradice nueva evidencia oficial.
+Se propone gestionar una nueva dependencia de campaña.
 
 ### Esperado
 
-Finding de alta prioridad.
+La propuesta debe referirse a:
 
-Proponer revisión/deprecación.
+`managedPackages`
 
-No mantener conocimiento solo por historial.
+No utilizar:
+
+- `learnedPackages`;
+- `azurePackages`.
+
+La categoría del package puede expresar si pertenece a:
+
+- PLATFORM;
+- DURABLE;
+- AZURE_SDK;
+- DEVELOPMENT;
+
+u otra categoría aprobada por el contrato vigente.
+
+## Caso 36 — Sin recommendationStatus
+
+### Entrada
+
+Review evalúa evidencia acumulada de una dependencia.
+
+### Esperado
+
+No producir:
+
+- `PROPOSED`;
+- `VALIDATED`;
+- `REPEATED`;
+- `APPROVED`;
+
+como lifecycle persistente de dependencia.
+
+Usar la evidencia, recurrencia y `recommendation` de la review.
+
+## Caso 37 — Aprobación humana no implica implementación
+
+### Entrada
+
+Una propuesta `BASELINE_CHANGE` recibe aprobación humana.
+
+### Esperado
+
+Review no debe marcar automáticamente el baseline como modificado.
+
+Debe mantenerse la distinción:
+
+```text
+proposal approved
+≠
+change implemented
+```
+
+## Caso 38 — Baseline revision
+
+### Entrada
+
+Una propuesta de baseline fue aprobada pero aún no aplicada.
+
+### Esperado
+
+`review-skill-performance` no incrementa:
+
+`baselineRevision`
+
+El incremento ocurre únicamente cuando el cambio controlado es aplicado al baseline.
+
+## Caso 39 — Cambio de baseline requiere validación posterior
+
+### Entrada
+
+Se propone modificar:
+
+`managedPackages`
+
+### Esperado
+
+La propuesta debe identificar cuando corresponda:
+
+- affected files;
+- required evals;
+- validation needed.
+
+Review no ejecuta esas modificaciones.
+
+## Caso 40 — No baseline mutation
+
+### Entrada
+
+Review produce:
+
+`BASELINE_CHANGE`
+
+### Esperado
+
+El archivo:
+
+`dependency-baseline.json`
+
+permanece sin modificaciones.
+
+No:
+
+- agregar package;
+- cambiar target;
+- cambiar category;
+- incrementar revision.
+
+# Gobierno de propuestas
+
+## Caso 41 — Propuesta con evidence trazable
+
+### Entrada
+
+Se genera una propuesta de mejora.
+
+### Esperado
+
+Debe incluir cuando corresponda:
+
+- skill;
+- problem;
+- evidence;
+- findingType;
+- recurrence;
+- impact;
+- proposedChange;
+- affectedFiles;
+- requiredEval;
+- changeCost;
+- risk;
+- priority;
+- recommendation.
+
+No es obligatorio inventar campos que no apliquen.
+
+## Caso 42 — Recommendation RECOMMEND
+
+### Entrada
+
+Existe:
+
+- evidencia suficiente;
+- recurrencia relevante;
+- impacto significativo;
+- cambio proporcional.
+
+### Esperado
+
+Puede utilizar:
+
+`RECOMMEND`
+
+Esto significa:
+
+`recomendado para revisión/implementación controlada`
+
+No:
+
+`ya aplicado`
+
+## Caso 43 — Recommendation MONITOR
+
+### Entrada
+
+El problema existe pero todavía no justifica modificar el toolkit.
+
+### Esperado
+
+Usar:
+
+`MONITOR`
+
+cuando corresponda.
+
+No crear trabajo obligatorio.
+
+## Caso 44 — NEEDS_MORE_EVIDENCE
+
+### Entrada
+
+Existe una hipótesis razonable pero evidencia insuficiente.
+
+### Esperado
+
+Usar:
+
+`NEEDS_MORE_EVIDENCE`
+
+No convertir la hipótesis en regla.
+
+## Caso 45 — REJECT
+
+### Entrada
+
+Una propuesta:
+
+- no aporta suficiente valor;
+- duplica contratos;
+- introduce complejidad mayor que el problema.
+
+### Esperado
+
+Puede utilizar:
+
+`REJECT`
+
+Debe conservar la razón.
+
+## Caso 46 — Prioridad proporcional
+
+### Entrada
+
+Finding de impacto bajo y recurrencia aislada.
+
+### Esperado
+
+No asignar automáticamente:
+
+`P0`
+
+porque el cambio sea sencillo.
+
+La prioridad debe considerar:
+
+- impacto;
+- recurrencia;
+- riesgo;
+- costo de no corregir.
+
+## Caso 47 — Finding sin soporte
+
+### Entrada
+
+El reviewer sospecha que un skill podría fallar, pero no existe evidencia real.
+
+### Esperado
+
+No registrar la sospecha como finding confirmado.
+
+Puede quedar:
+
+- unknown;
+- hypothesis;
+- NEEDS_MORE_EVIDENCE;
+
+según el contrato.
+
+## Caso 48 — No duplicar lesson y finding
+
+### Entrada
+
+Un finding ya está completamente representado en:
+
+`.skill-improvement/assessment.json`
+
+### Esperado
+
+No crear una lesson adicional únicamente para repetirlo.
+
+Lessons solo cuando exista conocimiento reutilizable distinto.
+
+## Caso 49 — assessment.json
+
+### Entrada
+
+Review concluye.
+
+### Esperado
+
+Crear:
+
+`.skill-improvement/assessment.json`
+
+con cuando corresponda:
+
+- scope;
+- executionsReviewed;
+- findings;
+- patterns;
+- statusInconsistencies;
+- idInconsistencies;
+- responsibilityFindings;
+- structuralFindings;
+- sharedResourceFindings;
+- baselineChangeCandidates;
+- unknowns;
+- evidence.
+
+No incluir cambios ya aplicados si review no los ejecutó.
+
+## Caso 50 — improvement-plan.json
+
+### Entrada
+
+Existen findings que justifican propuestas.
+
+### Esperado
+
+Crear:
+
+`.skill-improvement/improvement-plan.json`
+
+con propuestas priorizadas.
+
+Puede contener:
+
+`BASELINE_CHANGE`
+
+No modifica los archivos objetivo.
+
+## Caso 51 — Markdown no duplica evidencia completa
+
+### Entrada
+
+Se crean:
+
+- `assessment.md`;
+- `improvement-plan.md`.
+
+### Esperado
+
+Los Markdown deben resumir:
+
+- findings;
+- evidencia relevante;
+- prioridades;
+- propuestas.
+
+Los JSON permanecen como owners estructurados.
+
+No duplicar todo el detalle de evidencia.
+
+## Caso 52 — No proposals es resultado válido
+
+### Entrada
+
+La evidencia revisada no demuestra ningún problema que justifique cambio.
+
+### Esperado
+
+Review puede cerrar sin propuestas.
+
+No inventar mejoras para justificar la ejecución del capability.
+
+## Caso 53 — No modificar artifacts históricos
+
+### Entrada
+
+Review descubre que un artifact de una migración anterior contiene un error contractual.
+
+### Esperado
+
+No editar el artifact histórico para corregirlo.
+
+Registrar el finding y proponer el cambio correspondiente en el toolkit.
+
+## Caso 54 — No modificar evals automáticamente
+
+### Entrada
+
+Review encuentra:
+
+`MISSING_EVAL`
+
+### Esperado
+
+Puede proponer el eval faltante.
+
+No editar automáticamente el archivo de evals.
+
+## Caso 55 — No modificar skill automáticamente
+
+### Entrada
+
+Review encuentra responsibility leakage.
+
+### Esperado
+
+Puede proponer un cambio de:
+
+`SKILL.md`
+
+No aplicar ese cambio.
+
+## Caso 56 — Executor neutral
+
+### Entrada
+
+Un developer revisa:
+
+`.skill-improvement/`
+
+sin acceso al razonamiento privado del agente.
+
+### Esperado
+
+Debe poder determinar:
+
+```text
+qué ocurrió
+→ qué evidencia lo soporta
+→ qué patrón se observó
+→ qué cambio se propone
+→ por qué
+→ qué riesgo tiene
+```
+
+No depender de reasoning oculto.
 
 ## Criterio general
 
-El capability debe seguir:
+`review-skill-performance` debe seguir:
 
 ```text
-experiencia
-→ evidencia
-→ propuesta
-→ aprobación humana
-→ conocimiento reusable
+execution evidence
+→ finding
+→ recurrence
+→ impact
+→ proportional proposal
+→ human review
+```
+
+Para cambios del baseline:
+
+```text
+migration evidence
+→ baseline change candidate
+→ BASELINE_CHANGE proposal
+→ human review
+→ controlled application
+→ baselineRevision + 1
+→ validation/evals
 ```
 
 Nunca:
 
 ```text
-experiencia
-→ modificación automática del estándar
+successful migration
+→ automatic baseline mutation
+```
+
+Nunca:
+
+```text
+finding
+→ automatic toolkit edit
+```
+
+Invariantes:
+
+```text
+ISOLATED
+≠ universal rule
+```
+
+```text
+REPEATED
+≠ automatically SYSTEMIC
+```
+
+```text
+proposal
+≠ approved change
+```
+
+```text
+approved proposal
+≠ implemented change
+```
+
+```text
+managedPackages
+≠ every package used successfully
+```
+
+```text
+candidateTarget
+≠ approved target
+```
+
+```text
+review-skill-performance
+→ proposes
+→ does not apply
 ```

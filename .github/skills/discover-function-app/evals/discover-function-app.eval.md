@@ -10,7 +10,7 @@ Validar que discovery produzca un inventario seguro y determinista del estado ac
 - planificar migraciones;
 - convertir señales débiles en hechos confirmados.
 
-## Caso 1 — Function App legacy
+## Caso 1 — Function App Programming Model v3
 
 ### Entrada
 
@@ -32,7 +32,7 @@ y:
 
 Programming Model:
 
-`legacy`
+`V3`
 
 con:
 
@@ -80,7 +80,7 @@ Existe:
 
 ### Esperado
 
-Registrar:
+Registrar únicamente metadata segura como:
 
 - path;
 - categoría;
@@ -133,7 +133,7 @@ Existe:
 
 Registrar existencia sin lectura.
 
-## Caso 7 — Programming Model v4
+## Caso 7 — Programming Model v4 confirmado
 
 ### Entrada
 
@@ -145,7 +145,7 @@ Source contiene:
 
 Programming Model:
 
-`v4`
+`V4`
 
 con:
 
@@ -165,15 +165,19 @@ No existen registrations detectables.
 
 Programming Model:
 
-`v4`
+`V4`
 
 con:
 
 `evidenceStatus = INFERRED`
 
-No utilizar `CONFIRMED`.
+No utilizar:
 
-## Caso 9 — Mixed
+`CONFIRMED`
+
+únicamente por package major.
+
+## Caso 9 — Programming Model mixto
 
 ### Entrada
 
@@ -186,13 +190,15 @@ Existen simultáneamente:
 
 Programming Model:
 
-`mixed`
+`MIXED`
 
 con:
 
 `evidenceStatus = CONFIRMED`
 
-## Caso 10 — Durable legacy
+No seleccionar silenciosamente `V3` o `V4`.
+
+## Caso 10 — Durable v3 observable
 
 ### Entrada
 
@@ -208,7 +214,7 @@ Registrar rol:
 
 y Durable detectado.
 
-## Caso 11 — Durable v4
+## Caso 11 — Durable v4 observable
 
 ### Entrada
 
@@ -224,6 +230,8 @@ y:
 
 Registrar participantes y roles detectables.
 
+No inferir relaciones que no tengan evidencia suficiente.
+
 ## Caso 12 — process.env
 
 ### Entrada
@@ -232,7 +240,7 @@ Source contiene:
 
 ```javascript
 process.env.COSMOS_DATABASE
-process.env['QUEUE_NAME']
+process.env["QUEUE_NAME"]
 ```
 
 ### Esperado
@@ -246,7 +254,7 @@ QUEUE_NAME
 
 Nunca valores.
 
-## Caso 13 — Todas las dependencias
+## Caso 13 — Dependencies y devDependencies
 
 ### Entrada
 
@@ -260,17 +268,21 @@ Nunca valores.
     "uuid": "^8.3.2",
     "pg": "^8.13.0",
     "some-company-sdk": "2.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.37",
+    "typescript": "^4.0.0"
   }
 }
 ```
 
 ### Esperado
 
-Todas deben aparecer en:
-
-`dependencies`
+Todas las dependencias deben permanecer inventariadas en su categoría correspondiente.
 
 Ninguna dependencia desconocida debe desaparecer.
+
+Discovery no decide cuáles deben actualizarse.
 
 ## Caso 14 — Azure SDK no mapeado
 
@@ -284,17 +296,13 @@ Existe:
 
 Dependency:
 
-```text
-azurePackage = true
-```
+`azurePackage = true`
 
 No generar automáticamente:
 
-```text
-KEY_VAULT
-```
+`KEY_VAULT`
 
-como recurso compartido confirmado o inferido si discovery no tiene detector determinista específico.
+como recurso compartido confirmado o inferido si discovery no posee un detector determinista específico.
 
 ## Caso 15 — Third-party no mapeado
 
@@ -308,9 +316,7 @@ Existe:
 
 Dependency:
 
-```text
-azurePackage = false
-```
+`azurePackage = false`
 
 Debe permanecer inventariada.
 
@@ -328,7 +334,7 @@ Dos archivos importan:
 
 No generar shared resource candidate únicamente por el nombre del package.
 
-La interpretación pertenece a analysis.
+La interpretación posterior requiere evidencia adicional.
 
 ## Caso 17 — Cosmos usado en varios archivos
 
@@ -342,9 +348,7 @@ Dos archivos importan:
 
 Puede generar candidato:
 
-```text
-evidenceStatus = INFERRED
-```
+`evidenceStatus = INFERRED`
 
 No:
 
@@ -368,7 +372,7 @@ No afirmar que ambos representan el mismo recurso.
 
 La consolidación definitiva pertenece a planning después de analysis.
 
-## Caso 19 — Arquitectura observable
+## Caso 19 — Estructura observable
 
 ### Entrada
 
@@ -376,41 +380,41 @@ Source presenta adapters y services separados.
 
 ### Esperado
 
-Registrar observaciones actuales.
+Registrar únicamente observaciones actuales sustentadas por evidencia.
 
-No declarar automáticamente:
+No convertirlas automáticamente en:
 
-`ALIGNED`
-
-porque esa evaluación pertenece a assessment.
+- target architecture;
+- required structural change;
+- migration action.
 
 ## Caso 20 — Patrón observable
 
 ### Entrada
 
-Existe una implementación claramente identificable como repository.
+Existe una implementación identificable como repository mediante evidencia suficiente.
 
 ### Esperado
 
-Puede registrar patrón observable con evidencia.
+Puede registrar el patrón observable.
 
-No inferir patrón solo por filename.
+No inferir un patrón únicamente por filename.
 
 ## Caso 21 — Source excesivamente grande
 
 ### Entrada
 
-Archivo source supera el límite del script.
+Un archivo source supera el límite definido por la tool.
 
 ### Esperado
 
-No bloquear discovery completo.
+No bloquear discovery completo cuando pueda continuar de forma segura.
 
 Registrar warning:
 
 `FILE_TOO_LARGE`
 
-y continuar cuando sea seguro.
+No cargar parcialmente contenido de forma que produzca una inferencia falsa.
 
 ## Caso 22 — package.json inválido
 
@@ -426,6 +430,8 @@ No inventar dependencias.
 
 El resultado puede quedar incompleto.
 
+La salida de la tool debe seguir respetando su contrato JSON.
+
 ## Caso 23 — stdout puro
 
 ### Entrada
@@ -440,6 +446,8 @@ stdout contiene exclusivamente JSON válido.
 
 Logs diagnósticos, si existen, deben ir a stderr.
 
+Los diagnósticos no deben incluir contenido protegido.
+
 ## Caso 24 — No recomendaciones
 
 ### Entrada
@@ -450,40 +458,185 @@ Se detecta:
 
 ### Esperado
 
-Discovery registra versión actual.
+Discovery registra la versión actual.
 
 No recomienda:
 
 `4.x`
 
-No consulta baseline.
+No consulta dependency baseline para decidir target.
 
-No genera actionStatus.
+No genera:
 
-## Caso 25 — No lectura de toolkit
+- `actionStatus`;
+- migration actions;
+- migration plan.
+
+## Caso 25 — Exclusiones del toolkit y artifacts generados
 
 ### Entrada
 
-Repositorio contiene:
+El repositorio contiene además del source:
 
-`.github/skills/**`
-
-además del source.
+```text
+.git/**
+.idea/**
+.vscode/**
+.migration/**
+.skill-improvement/**
+node_modules/**
+dist/**
+coverage/**
+test-results/**
+.github/skills/**
+```
 
 ### Esperado
 
-Los archivos del toolkit no se analizan como source de la Function App.
+Estas rutas no deben analizarse como source de la Function App.
+
+La existencia de `.github/skills/**` no debe producir:
+
+- Functions falsas;
+- dependencies falsas;
+- configuration keys falsas;
+- resources falsos.
+
+## Caso 26 — Exclusión previa a lectura
+
+### Entrada
+
+El repositorio contiene:
+
+- `.env`;
+- `local.settings.json`;
+- `.github/workflows/deploy.yml`;
+- `certificate.pfx`.
+
+### Esperado
+
+Los archivos protegidos deben detectarse y excluirse antes de cualquier lectura de contenido.
+
+Puede registrarse únicamente metadata segura como:
+
+- path;
+- category;
+- `contentRead = false`.
+
+No debe existir evidencia derivada del contenido de esos archivos.
+
+No incluir contenido sensible en:
+
+- inventory;
+- warnings;
+- stdout;
+- stderr.
+
+## Caso 27 — Symlink hacia contenido protegido
+
+### Entrada
+
+Existe dentro del scope de discovery un symlink que resuelve hacia contenido protegido o fuera del scope permitido.
+
+### Esperado
+
+Aplicar las reglas de seguridad también sobre la ruta resuelta cuando corresponda.
+
+No incorporar el contenido protegido al contexto ni al inventory.
+
+No utilizar el symlink para evadir las exclusiones por ruta.
+
+## Caso 28 — Catálogo BEFORE existente
+
+### Entrada
+
+Ya existe:
+
+`.migration/catalog/current-state.md`
+
+con un estado BEFORE válido.
+
+### Esperado
+
+No sobrescribir sus secciones históricas BEFORE con un nuevo estado observado posteriormente.
+
+Puede actualizarse únicamente metadata expresamente mutable por contrato.
+
+`inventory.json` puede volver a generarse independientemente cuando discovery deba ejecutarse otra vez.
+
+## Caso 29 — Runtime mínimo de la tool
+
+### Entrada
+
+`inventory.js` se ejecuta con Node.js 14 sobre un fixture válido.
+
+### Esperado
+
+La tool debe ejecutarse sin depender de:
+
+- `node:test`;
+- sintaxis exclusiva de versiones posteriores;
+- APIs no disponibles en Node.js 14.
+
+Debe producir stdout JSON válido según el contrato.
+
+La versión runtime de la tool no implica la versión runtime de la Function App.
+
+## Caso 30 — Lessons opcionales
+
+### Entrada
+
+Discovery termina correctamente sin producir ningún aprendizaje reutilizable.
+
+### Esperado
+
+La ausencia de:
+
+`.migration/lessons/discover-function-app/`
+
+no debe impedir completar discovery.
+
+No crear artifacts de lessons vacíos únicamente para satisfacer el cierre.
 
 ## Criterio general
 
 Discovery debe seguir:
 
-`inventariar ampliamente → interpretar mínimamente`
+```text
+inventariar ampliamente
+→ interpretar mínimamente
+```
 
-Desconocido:
+Invariantes:
 
-`≠ ignorado`
+```text
+desconocido
+≠ ignorado
+```
 
-Señal:
+```text
+señal
+≠ hecho confirmado
+```
 
-`≠ hecho confirmado`
+```text
+package version
+≠ migration recommendation
+```
+
+```text
+shared candidate
+≠ shared resource confirmado
+```
+
+```text
+discovery
+≠ assessment
+≠ analysis
+≠ planning
+```
+
+```text
+protected path detected
+→ content not read
+```

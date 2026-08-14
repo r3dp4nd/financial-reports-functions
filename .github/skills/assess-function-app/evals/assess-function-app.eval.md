@@ -2,16 +2,22 @@
 
 ## Objetivo
 
-Validar que assessment determine el gap global contra el target utilizando:
+Validar que assessment determine el gap global entre el estado actual de una Function App y el target técnico aprobado
+utilizando:
 
 - evidencia;
 - dependency baseline;
-- conocimiento aprendido;
-- investigación selectiva;
+- investigación selectiva cuando sea necesaria;
 
-sin modificar código ni convertir recomendaciones nuevas en conocimiento aprobado.
+sin:
 
-## Caso 1 — Node legacy
+- modificar código;
+- analizar impacto profundo por Function;
+- generar acciones;
+- construir migration plans;
+- convertir candidatos investigados en targets aprobados.
+
+## Caso 1 — Node requiere cambio
 
 ### Entrada
 
@@ -34,7 +40,9 @@ evidenceStatus = CONFIRMED
 actionStatus = REQUIRED
 ```
 
-## Caso 2 — Node target
+No afirmar todavía compatibilidad o incompatibilidad del source con Node.js 24.
+
+## Caso 2 — Node ya en target
 
 ### Entrada
 
@@ -48,13 +56,15 @@ Node declarado:
 actionStatus = NOT_REQUIRED
 ```
 
-si existe evidencia suficiente.
+cuando exista evidencia suficiente sobre la dimensión declarada.
+
+No utilizar la versión declarada como prueba de compatibilidad de todo el source.
 
 ## Caso 3 — Runtime desconocido
 
 ### Entrada
 
-No existe evidencia segura del Runtime efectivo.
+No existe evidencia segura del Azure Functions Runtime efectivo.
 
 ### Esperado
 
@@ -63,13 +73,17 @@ evidenceStatus = UNKNOWN
 actionStatus = REQUIRES_VALIDATION
 ```
 
-No leer CI/CD protegido.
+No leer CI/CD protegido para resolverlo.
+
+No confundir `host.json` con evidencia suficiente del Runtime efectivo desplegado.
 
 ## Caso 4 — Programming Model v4
 
 ### Entrada
 
-Inventory confirma v4.
+Inventory confirma:
+
+`V4`
 
 ### Esperado
 
@@ -78,23 +92,55 @@ evidenceStatus = CONFIRMED
 actionStatus = NOT_REQUIRED
 ```
 
-## Caso 5 — Programming Model legacy
+## Caso 5 — Programming Model v3
 
 ### Entrada
 
-Inventory confirma legacy.
+Inventory confirma:
+
+`V3`
 
 ### Esperado
 
 ```text
+evidenceStatus = CONFIRMED
 actionStatus = REQUIRED
 ```
 
-## Caso 6 — Durable ausente
+cuando el target exige Programming Model v4.
+
+## Caso 6 — Programming Model mixed
 
 ### Entrada
 
-No existe Durable.
+Inventory reporta:
+
+`MIXED`
+
+### Esperado
+
+Mantener explícitamente la condición mixta.
+
+No seleccionar silenciosamente:
+
+- `V3`;
+- `V4`.
+
+Puede utilizar:
+
+`REQUIRED`
+
+o:
+
+`REQUIRES_VALIDATION`
+
+según la evidencia disponible.
+
+## Caso 7 — Durable ausente
+
+### Entrada
+
+No existe Durable Functions en la Function App.
 
 ### Esperado
 
@@ -102,9 +148,11 @@ No existe Durable.
 evidenceStatus = NOT_APPLICABLE
 ```
 
-No generar migración Durable.
+No crear trabajo Durable.
 
-## Caso 7 — Azure baselined misma versión
+No generar migration plan Durable.
+
+## Caso 8 — Package baselined misma versión
 
 ### Entrada
 
@@ -114,7 +162,7 @@ Dependency:
 @azure/cosmos 4.10.0
 ```
 
-Baseline:
+`managedPackages` contiene target aprobado:
 
 ```text
 4.10.0
@@ -122,19 +170,19 @@ Baseline:
 
 ### Esperado
 
-Classification:
+```text
+classification = BASELINED
+targetVersion = 4.10.0
+actionStatus = NOT_REQUIRED
+recommendationSource = BASELINE
+```
 
-`AZURE_BASELINED`
+Registrar cuando corresponda:
 
-Target:
+- baselineId;
+- baselineRevision.
 
-`4.10.0`
-
-Action:
-
-`NOT_REQUIRED`
-
-## Caso 8 — Azure baselined versión anterior
+## Caso 9 — Package baselined requiere cambio
 
 ### Entrada
 
@@ -144,7 +192,7 @@ Dependency:
 @azure/cosmos ^3.10.5
 ```
 
-Baseline:
+`managedPackages` contiene target aprobado:
 
 ```text
 4.10.0
@@ -153,14 +201,43 @@ Baseline:
 ### Esperado
 
 ```text
-classification = AZURE_BASELINED
+classification = BASELINED
 targetVersion = 4.10.0
 actionStatus = REQUIRED
 impactAnalysisRequired = true
 recommendationSource = BASELINE
 ```
 
-## Caso 9 — Azure package no mapeado
+Debe preservar:
+
+- baselineId;
+- baselineRevision.
+
+No volver a investigar una versión alternativa sin evidencia de posible invalidación del baseline.
+
+## Caso 10 — Managed package no Azure
+
+### Entrada
+
+Inventory contiene:
+
+```text
+@types/node ^14.14.37
+```
+
+y `managedPackages` contiene un target aprobado para ese package.
+
+### Esperado
+
+Classification:
+
+`BASELINED`
+
+No clasificarlo como Azure únicamente porque forme parte del baseline.
+
+La clasificación `BASELINED` no depende de que el package pertenezca al ecosistema Azure.
+
+## Caso 11 — Azure package no mapeado
 
 ### Entrada
 
@@ -168,7 +245,7 @@ Inventory contiene:
 
 `@azure/keyvault-secrets`
 
-pero baseline no contiene el package.
+pero `managedPackages` no contiene ese package.
 
 ### Esperado
 
@@ -176,82 +253,62 @@ Classification:
 
 `AZURE_UNMAPPED`
 
-Debe investigar fuentes oficiales.
+Puede realizar investigación oficial selectiva cuando sea necesaria.
 
-Una nueva versión propuesta debe quedar:
+Si existe evidencia suficiente para proponer una opción:
 
 ```text
-recommendationStatus = PROPOSED
+candidateTarget = <researched-candidate>
 actionStatus = REQUIRES_VALIDATION
 ```
 
-No actualizar baseline.
+No utilizar:
 
-## Caso 10 — Azure unmapped sin evidencia suficiente
+`targetVersion`
+
+para representar un target todavía no aprobado.
+
+No modificar baseline.
+
+## Caso 12 — Azure unmapped sin evidencia suficiente
 
 ### Entrada
 
-No puede determinarse con seguridad una versión target.
+No puede determinarse con seguridad un candidate target.
 
 ### Esperado
 
 ```text
-targetVersion = null
+candidateTarget = null
 evidenceStatus = UNKNOWN
 actionStatus = REQUIRES_VALIDATION
 ```
 
 No inventar target.
 
-## Caso 11 — Learned package
+No seleccionar `latest`.
+
+## Caso 13 — Candidate target no es target aprobado
 
 ### Entrada
 
-`learnedPackages` contiene:
-
-`uuid`
-
-con target aprobado.
+Investigación oficial encuentra una versión técnicamente viable para un Azure package no gestionado.
 
 ### Esperado
 
-Classification:
+Puede registrarse:
 
-`LEARNED`
+`candidateTarget`
 
-Recommendation source:
+No debe registrarse como:
 
-`LEARNED_BASELINE`
+`targetVersion`
 
-No tratar la recomendación como upgrade automático.
+aprobado.
 
-## Caso 12 — Learned package ya compatible
+No debe incorporarse automáticamente a:
 
-### Entrada
-
-Repo actual ya utiliza el mismo target aprendido.
-
-### Esperado
-
-Puede resultar:
-
-`NOT_REQUIRED`
-
-si el uso actual es compatible.
-
-No generar cambio solo porque existe learned knowledge.
-
-## Caso 13 — Learned package con contexto diferente
-
-### Entrada
-
-Experiencia anterior fue exitosa, pero el repo actual usa APIs diferentes.
-
-### Esperado
-
-Mantener necesidad de validación.
-
-No asumir compatibilidad por experiencia histórica.
+`managedPackages`.
 
 ## Caso 14 — Third-party desconocido relevante
 
@@ -261,7 +318,7 @@ Dependency no Azure:
 
 `some-library`
 
-con evidencia de incompatibilidad con Node 24.
+con evidencia de posible incompatibilidad con Node.js 24.
 
 ### Esperado
 
@@ -269,22 +326,24 @@ Classification:
 
 `UNMAPPED`
 
-Investigar fuentes primarias.
+Puede investigar únicamente lo necesario para evaluar el riesgo de migración.
 
-Puede producir:
+Si encuentra una opción plausible:
 
 ```text
-recommendationStatus = PROPOSED
+candidateTarget = <candidate>
 actionStatus = REQUIRES_VALIDATION
 ```
+
+No convertir la investigación en target aprobado.
 
 ## Caso 15 — Third-party desconocido irrelevante
 
 ### Entrada
 
-Dependency no baseline.
+Dependency no baselined.
 
-No existe evidencia de incompatibilidad.
+No existe evidencia de incompatibilidad ni impacto sobre la migración.
 
 ### Esperado
 
@@ -294,19 +353,29 @@ No investigar por antigüedad.
 
 No generar upgrade.
 
-## Caso 16 — Librería abandonada
+No generar `candidateTarget` sin necesidad.
+
+## Caso 16 — Librería sin soporte relevante
 
 ### Entrada
 
-Existe evidencia suficiente de que la librería actual no soporta el target y está abandonada.
+Existe evidencia suficiente de que la librería actual no soporta el target técnico.
 
 ### Esperado
 
-Puede investigar reemplazo.
+Assessment puede investigar alternativas cuando sea necesario para determinar viabilidad.
 
-Debe registrar riesgo y evidencia.
+Debe registrar:
 
-No seleccionar alternativa solo por popularidad.
+- evidencia;
+- riesgo;
+- incertidumbres.
+
+No seleccionar una alternativa únicamente por:
+
+- popularidad;
+- novedad;
+- preferencia tecnológica.
 
 ## Caso 17 — Contradicción con baseline
 
@@ -314,71 +383,79 @@ No seleccionar alternativa solo por popularidad.
 
 Baseline contiene target X.
 
-Documentación oficial actual indica incompatibilidad con Node target.
+Evidencia oficial confiable indica que X puede ser incompatible con el target de campaña.
 
 ### Esperado
 
 No cambiar baseline automáticamente.
 
-Registrar contradicción.
+Registrar la contradicción.
 
-Resultado afectado:
+Registrar revisión humana cuando sea necesaria.
+
+El resultado afectado puede utilizar:
 
 `REQUIRES_REVIEW`
+
+No elegir silenciosamente otra versión.
 
 ## Caso 18 — Salto major
 
 ### Entrada
 
-Dependency pasa de major 3 a major 4.
+Una dependencia relevante pasa de major 3 a major 4 según target aprobado.
 
 ### Esperado
 
-`impactAnalysisRequired = true`
-
-cuando aplique.
-
-No afirmar compatibilidad del source.
-
-## Caso 19 — Arquitectura alineada
-
-### Entrada
-
-Arquitectura observable cumple límites requeridos.
-
-### Esperado
+Cuando el baseline lo marque:
 
 ```text
-classification = ALIGNED
+impactAnalysisRequired = true
 ```
 
-No crear acciones estructurales.
+Assessment no debe afirmar compatibilidad del source.
 
-## Caso 20 — Arquitectura parcialmente alineada
+El análisis de consumidores pertenece a:
+
+`analyze-function`
+
+## Caso 19 — Dependencia irrelevante preservada
 
 ### Entrada
 
-Parte del comportamiento está separado, parte sigue acoplado.
+`package.json` contiene una dependencia antigua que:
+
+- no está en baseline;
+- no presenta evidencia de incompatibilidad;
+- no participa en las dimensiones relevantes de migración.
 
 ### Esperado
 
-```text
-classification = PARTIALLY_ALIGNED
-```
+Preservar.
 
-## Caso 21 — Shared resource candidate
+No investigar.
+
+No generar una acción.
+
+## Caso 20 — TypeScript sin target aprobado
 
 ### Entrada
 
-Discovery reporta candidato Cosmos.
+Inventory contiene una versión actual de TypeScript.
+
+El baseline no define target aprobado para TypeScript.
 
 ### Esperado
 
-Assessment puede evaluar necesidad técnica.
+Assessment puede registrar:
 
-No consolidar ownership definitivo sin evidencia.
+- current version;
+- riesgos observables;
+- necesidad de validación.
 
-## Caso 22 — Testing ausente
+No inventar una versión target.
+
+## Caso 21 — Testing ausente
 
 ### Entrada
 
@@ -386,15 +463,43 @@ No existen tests.
 
 ### Esperado
 
-Registrar situación global.
+Registrar la situación global en testing assessment.
 
-No diseñar todavía tests específicos por Function.
+No:
+
+- diseñar tests específicos por Function;
+- generar tests;
+- afirmar automáticamente que la migración está bloqueada.
+
+La testabilidad detallada pertenece a análisis posterior.
+
+## Caso 22 — Testing global existente
+
+### Entrada
+
+Inventory muestra:
+
+- Jest;
+- test script;
+- tests existentes.
+
+### Esperado
+
+Assessment puede registrar capacidad global observable.
+
+No asumir:
+
+```text
+all Functions are testable
+```
+
+No ejecutar análisis de testabilidad por Function.
 
 ## Caso 23 — Evidence vs action
 
 ### Entrada
 
-Versión actual no confirmada.
+Una dimensión actual no puede confirmarse.
 
 ### Esperado
 
@@ -411,53 +516,187 @@ evidenceStatus = UNKNOWN
 actionStatus = REQUIRES_VALIDATION
 ```
 
-## Caso 24 — Recommendation status
+## Caso 24 — Structural observation
 
 ### Entrada
 
-Nueva recomendación investigada.
+Varias Functions construyen directamente el mismo tipo de cliente externo.
 
 ### Esperado
 
-Puede utilizar:
+Assessment puede registrar una observación estructural transversal relevante.
 
-`PROPOSED`
+No producir automáticamente:
 
-No:
+- `ALIGNED`;
+- `PARTIALLY_ALIGNED`;
+- `CHANGE_REQUIRED`;
+- target architecture;
+- structural action.
 
-`APPROVED`
+La necesidad concreta pertenece a analysis y planning.
 
-sin aprobación humana.
-
-## Caso 25 — No baseline mutation
+## Caso 25 — Estructura existente coherente
 
 ### Entrada
 
-Assessment encuentra un Azure SDK nuevo y determina una versión recomendable.
+La Function App presenta boundaries claros y estructura coherente.
+
+### Esperado
+
+Assessment puede registrar observaciones relevantes cuando aporten evidencia.
+
+No necesita emitir una clasificación arquitectónica global.
+
+No generar acciones estructurales por ausencia de problemas.
+
+## Caso 26 — Shared resource candidate
+
+### Entrada
+
+Discovery reporta un candidato Cosmos.
+
+### Esperado
+
+Assessment puede evaluar:
+
+- relevancia global;
+- evidencia disponible;
+- necesidad técnica general.
+
+No consolidar ownership definitivo sin evidencia.
+
+No crear:
+
+`SR-ACTION-*`
+
+La consolidación ejecutable pertenece a planning.
+
+## Caso 27 — Dos candidatos con misma tecnología
+
+### Entrada
+
+Discovery reporta dos candidatos basados en Cosmos DB.
+
+Existen señales de que representan recursos funcionales distintos.
+
+### Esperado
+
+Assessment no debe fusionarlos únicamente por compartir:
+
+`@azure/cosmos`
+
+Debe preservar la incertidumbre o separación observable.
+
+## Caso 28 — Functions requiring analysis
+
+### Entrada
+
+Assessment detecta:
+
+- `RequestReport` en Programming Model v3;
+- impacto potencial de una dependencia con `impactAnalysisRequired = true`.
+
+### Esperado
+
+Debe registrar la Function en:
+
+`functionsRequiringAnalysis`
+
+con motivos trazables.
+
+Ejemplo conceptual:
+
+```json
+{
+  "function": "RequestReport",
+  "reasons": [
+    "PROGRAMMING_MODEL_V3",
+    "DEPENDENCY_IMPACT"
+  ]
+}
+```
+
+No ejecutar el análisis profundo desde assessment.
+
+## Caso 29 — No generar Action IDs
+
+### Entrada
+
+Assessment confirma varios gaps globales y locales.
+
+### Esperado
+
+No generar:
+
+- `GLOBAL-*`;
+- `FN-*`;
+- `SR-ACTION-*`.
+
+Assessment describe:
+
+- gap;
+- necesidad;
+- acción requerida o validación a nivel de dimensión;
+
+pero planning es owner de los Action IDs ejecutables.
+
+## Caso 30 — No baseline mutation
+
+### Entrada
+
+Assessment encuentra un Azure SDK nuevo y determina un `candidateTarget`.
 
 ### Esperado
 
 `dependency-baseline.json` permanece sin modificaciones.
 
-## Caso 26 — Partial
+No incrementar:
+
+`baselineRevision`
+
+No agregar el package a:
+
+`managedPackages`.
+
+## Caso 31 — Baseline reference reproducible
+
+### Entrada
+
+Assessment utiliza un baseline aprobado.
+
+### Esperado
+
+`assessment.json` debe conservar referencia suficiente como:
+
+```text
+baselineId
+baselineRevision
+```
+
+No copiar innecesariamente el baseline completo.
+
+## Caso 32 — Partial
 
 ### Entrada
 
 Algunas dimensiones están resueltas y otras requieren validación.
 
+Existe suficiente evidencia para continuar analysis de trabajo independiente.
+
 ### Esperado
 
-Status global puede ser:
+Status global:
 
 `PARTIAL`
 
-si análisis independiente todavía puede continuar.
+No convertir toda incertidumbre en `BLOCKED`.
 
-## Caso 27 — Blocked
+## Caso 33 — Blocked
 
 ### Entrada
 
-Falta evidencia esencial que impide continuar de forma segura.
+Falta evidencia esencial sin la cual no puede continuarse de forma segura con el análisis requerido.
 
 ### Esperado
 
@@ -465,11 +704,17 @@ Status:
 
 `BLOCKED`
 
-## Caso 28 — Review
+Debe registrar qué información necesaria falta.
+
+## Caso 34 — Requires review
 
 ### Entrada
 
-Existe decisión humana necesaria sobre target de dependencia crítica.
+Existe una decisión humana necesaria que impide cerrar assessment de forma segura.
+
+Ejemplo:
+
+target aprobado de una dependencia crítica contradicho por evidencia oficial.
 
 ### Esperado
 
@@ -477,22 +722,103 @@ Status:
 
 `REQUIRES_REVIEW`
 
-cuando bloquea assessment global.
+No resolver silenciosamente la decisión.
+
+## Caso 35 — Ready for analysis
+
+### Entrada
+
+Existen gaps e incertidumbres menores, pero hay evidencia suficiente para comenzar de forma segura los analyses
+necesarios.
+
+### Esperado
+
+Status:
+
+`READY_FOR_ANALYSIS`
+
+Este estado no significa que todas las dimensiones estén completamente resueltas.
+
+## Caso 36 — Lessons opcionales
+
+### Entrada
+
+Assessment concluye normalmente sin producir aprendizaje reutilizable.
+
+### Esperado
+
+La ausencia de artifacts bajo:
+
+`.migration/lessons/assess-function-app/`
+
+no debe impedir cerrar assessment.
+
+No crear lessons vacías únicamente por contrato.
 
 ## Criterio general
 
 Assessment debe responder:
 
-`¿qué debe cambiar y con qué target respaldado?`
+```text
+¿cuál es el gap global respecto del target técnico aprobado?
+```
 
-No:
+y:
 
-`¿cómo implementamos el cambio?`
+```text
+¿qué requiere cambio, validación o análisis posterior?
+```
 
-Y:
+No debe responder todavía:
 
-`experiencia previa`
+```text
+¿cómo implementamos cada cambio?
+```
 
-debe mejorar la evidencia inicial,
+Invariantes:
 
-no convertirse en verdad automática.
+```text
+assessment
+≠ analyze-function
+≠ planning
+```
+
+```text
+baseline target
+≠ candidateTarget
+```
+
+```text
+candidateTarget
+≠ target aprobado
+```
+
+```text
+evidenceStatus
+≠ actionStatus
+```
+
+```text
+shared candidate
+≠ shared resource consolidado
+```
+
+```text
+structural observation
+≠ architecture target
+```
+
+```text
+impactAnalysisRequired
+→ analyze-function
+```
+
+```text
+migrationNeed / gap
+≠ Action ID
+```
+
+```text
+assessment
+→ nunca modifica dependency baseline
+```

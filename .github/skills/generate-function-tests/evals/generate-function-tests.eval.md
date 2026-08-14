@@ -848,21 +848,21 @@ No debe asumir que es Node.js 24 únicamente porque el target de campaña sea 24
 
 ### Given
 
-El plan requiere ejecutar la baseline con Node.js 24.
+El plan requiere ejecutar los tests requeridos antes de migration con Node.js 24.
 
 El entorno disponible únicamente tiene Node.js 14.
 
 ### Then
 
-El skill no debe ejecutar bajo Node.js 14 y considerar el resultado equivalente.
+El skill no debe ejecutar los tests bajo Node.js 14 y considerar el resultado equivalente.
 
-Debe registrar:
+Debe registrar según corresponda:
 
 - `NOT_EXECUTED`;
 - `BLOCKED`;
-- o `REQUIRES_REVIEW`;
+- `REQUIRES_REVIEW`.
 
-según el impacto.
+Debe registrar el runtime realmente disponible.
 
 ### Expected
 
@@ -1041,6 +1041,7 @@ Se generaron y ejecutaron pruebas.
 
 `testing.json` debe registrar cuando corresponda:
 
+- schemaVersion;
 - Function;
 - status;
 - plan reference;
@@ -1049,7 +1050,7 @@ Se generaron y ejecutaron pruebas.
 - requirements;
 - existing tests;
 - tests created;
-- tests modified;
+- tests modified cuando exista justificación;
 - mocked boundaries;
 - executions;
 - coverage;
@@ -1057,7 +1058,19 @@ Se generaron y ejecutaron pruebas.
 - files modified;
 - risks;
 - unknowns;
+- review requirements;
 - evidence.
+
+Cada requirement debe permitir determinar cuando corresponda:
+
+- requirement ID o referencia estable;
+- `requiredBeforeMigration`;
+- tests que lo protegen;
+- execution result;
+- estado del requirement;
+- evidence.
+
+No debe depender de inferencia posterior para determinar si un gate requerido antes de migration fue satisfecho.
 
 ### Expected
 
@@ -1069,19 +1082,27 @@ Se generaron y ejecutaron pruebas.
 
 ### Given
 
-Todos los testing requirements requeridos antes de migration:
+Todos los testing requirements con:
 
-- tienen tests;
-- fueron ejecutados;
-- están `PASS`.
+`requiredBeforeMigration = true`
 
-No existen blockers ni review requirements.
+aplicables a la Function:
+
+- tienen protección suficiente;
+- fueron ejecutados cuando correspondía;
+- están satisfechos.
+
+No existen blockers ni review requirements sobre esos gates.
+
+Puede existir trabajo de testing adicional no requerido para migration.
 
 ### Then
 
 Estado principal:
 
 `COMPLETED`
+
+Los requirements no obligatorios pendientes no deben impedir por sí solos este estado.
 
 ### Expected
 
@@ -1319,6 +1340,63 @@ Las pruebas podrían ser implementadas manualmente por un developer en vez de po
 
 `testing.json` y los testing requirements deben seguir siendo comprensibles y verificables sin depender de razonamiento
 privado del agente.
+
+### Expected
+
+`PASS`
+
+---
+
+## EVAL-055 — No activarse para migration
+
+### Given
+
+El developer solicita:
+
+`Migra RequestReport al Programming Model v4.`
+
+Existe un testing requirement requerido antes de migration todavía pendiente.
+
+### Then
+
+`generate-function-tests` no debe asumir automáticamente la responsabilidad de migration.
+
+La capability de migration debe:
+
+- consultar el testing gate;
+- impedir continuar cuando el gate requerido no esté satisfecho.
+
+La generación de tests sigue siendo una etapa explícita.
+
+`generate-function-tests` no debe ejecutarse silenciosamente como efecto lateral de migration.
+
+### Expected
+
+`PASS`
+
+---
+
+## EVAL-056 — No activarse para verification
+
+### Given
+
+El developer solicita verificar la Function App después de completar las migraciones.
+
+### Then
+
+`generate-function-tests` no debe asumir la responsabilidad de verification.
+
+La capability correcta pertenece a:
+
+`verify-function-app`
+
+Verification puede volver a ejecutar los tests requeridos como gate final.
+
+No debe utilizar `generate-function-tests` para:
+
+- modificar tests durante verification;
+- generar nuevos tests para ocultar un gap;
+- convertir un fallo final en una nueva expectativa.
 
 ### Expected
 
