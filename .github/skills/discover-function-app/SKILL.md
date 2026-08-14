@@ -11,11 +11,13 @@ Crear la fotografía BEFORE del repositorio sin modificar código ni decidir tod
 
 ## Políticas obligatorias
 
-Aplicar antes de leer source:
+Cargar y aplicar antes de cualquier lectura, búsqueda, listado recursivo o inspección del repositorio objetivo:
 
 - `../_shared/security-policy.md`
 - `../_shared/evidence-policy.md`
 - `../_shared/status-policy.md`
+
+No ejecutar `rg`, `find`, `ls` recursivo, scripts de inventario ni abrir archivos del repositorio objetivo antes de haber cargado estas políticas y aplicado sus exclusiones.
 
 Consultar `../_shared/architecture-policy.md` solo como vocabulario para describir estructura observable.
 
@@ -27,12 +29,13 @@ Artifacts previos en `.migration/` pueden usarse únicamente para detectar una e
 
 ## Workflow
 
-1. Aplicar exclusiones de seguridad.
-2. Ejecutar `scripts/inventory.js <repository-root>`.
-3. Usar su salida como fuente primaria de hechos deterministas.
-4. Inspeccionar source adicional solo para resolver gaps concretos.
-5. Documentar estado actual y candidatos a shared resources.
-6. Crear los artifacts BEFORE.
+1. Cargar políticas obligatorias sin inspeccionar todavía el repositorio objetivo.
+2. Aplicar exclusiones de seguridad.
+3. Ejecutar `scripts/inventory.js <repository-root>`.
+4. Usar su salida como fuente primaria de hechos deterministas.
+5. Inspeccionar source adicional solo para resolver gaps concretos.
+6. Documentar estado actual y candidatos a shared resources.
+7. Crear los artifacts BEFORE.
 
 Para criterios de detección cargar solo cuando haga falta:
 
