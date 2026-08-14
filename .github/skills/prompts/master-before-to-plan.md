@@ -18,13 +18,21 @@ Restricciones:
 
 Flujo:
 1. Ejecuta discover-function-app -> .migration/00-before/
+   - Si .migration/00-before/inventory.json ya existe y sigue vigente contra el commit actual, reusarlo en vez de rediscover completo.
 2. Ejecuta assess-function-app -> .migration/10-assessment/
 3. Ejecuta analyze-function por cada Function/slice descubierto -> .migration/20-analysis/
+   - Analizar una Function/slice por vez (progressive disclosure); no cargar el repositorio completo por cada invocacion.
 4. Ejecuta plan-function-migration con toda la evidencia disponible -> .migration/30-plan/
+5. Reporta metricas de consumo y aprendizajes de eficiencia.
+   - Si el runtime expone usage real, reportar input/output/reasoning/total tokens por etapa.
+   - Si no hay usage real, usar UNKNOWN; no inventar cifras.
+   - Senalar oportunidades de reuso de contexto observadas (ej. artifact reutilizado, referencia releida sin necesidad) como lesson OBSERVED en .migration/90-lessons/, siguiendo _shared/lessons-policy.md; no modificar el toolkit automaticamente por esto.
 
 Salida final requerida:
 - Estado por etapa: COMPLETED, NOT_APPLICABLE, REQUIRES_REVIEW o BLOCKED.
 - Functions/slices analizados y artifacts generados.
 - Riesgos o blockers.
 - Resumen del plan y cantidad de Action IDs por tipo.
-```
+- Tabla de metricas de consumo por etapa: Etapa | Modelo usado | Input tokens | Output tokens | Reasoning tokens | Total | Evidencia (UNKNOWN si no es observable).
+- Criterio de modelo por tipo de tarea (agnostico a proveedor): tareas de alto volumen/bajo riesgo (inventario, extraccion repetitiva) con modelo economico/bajo razonamiento; planning y decisiones de alto impacto con mas razonamiento.
+- Lessons de eficiencia de contexto registradas, si las hubo.

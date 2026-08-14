@@ -17,10 +17,11 @@ Esperado:
 - No modifica codigo productivo, tests ni configuracion de app.
 - Escribe solamente artifacts bajo `.migration/`.
 - Reporta estado por etapa y artifacts generados.
-- Reporta tabla de consumo real si esta disponible.
-- Usa `UNKNOWN` para tokens no observables y no inventa cifras exactas.
-- Recomienda modelo/razonamiento por tipo de tarea.
-- Incluye oportunidades concretas para reducir tokens en futuras ejecuciones.
+- Reporta tabla de metricas de consumo por etapa (Etapa | Modelo usado | Input | Output | Reasoning | Total | Evidencia), usando `UNKNOWN` para tokens no observables sin inventar cifras exactas.
+- Recomienda criterio de modelo/razonamiento por tipo de tarea de forma agnostica a proveedor (sin nombres de modelo hardcodeados).
+- Si `.migration/00-before/inventory.json` ya existia y seguia vigente, lo reusa en vez de rediscover completo.
+- Analiza Functions/slices una por vez (progressive disclosure), sin recargar el repositorio completo en cada invocacion de `analyze-function`.
+- Si detecta una oportunidad real de reuso de contexto/tokens, registra una lesson `OBSERVED` en `.migration/90-lessons/` siguiendo `_shared/lessons-policy.md`, sin modificar el toolkit automaticamente por eso.
 
 ## Caso: Function bloqueada
 
