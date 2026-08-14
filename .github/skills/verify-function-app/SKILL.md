@@ -19,6 +19,7 @@ Aplicar:
 - `../_shared/architecture-policy.md`
 - `../_shared/references/artifact-layout.md`
 - `../_shared/references/validation-tooling.md`
+- `../_shared/references/graphify-usage.md` solo si se necesita confirmar residuales legacy o relaciones no cubiertas por los artifacts de ejecución ya emitidos
 
 ## Entradas
 
@@ -49,7 +50,9 @@ Verification no corrige ni redefine targets.
 8. Validar estructura requerida y shared resources.
 9. Ejecutar `func start` local solo si es seguro/viable y no requiere secretos reales.
 10. Comparar contratos, efectos, topology y comportamiento preservado contra BEFORE/PLAN.
-11. Comparar inventario/estructura AFTER contra BEFORE/PLAN.
+11. Comparar inventario/estructura AFTER contra BEFORE/PLAN, reusando las relaciones ya persistidas en
+    `analysis.json`, `programming-model-v4.json` y `durable-v4.json` para detectar residuales legacy; consultar
+    Graphify únicamente cuando esa evidencia de ejecución no alcance para confirmar un residual sospechado.
 12. Agregar gates y emitir status final.
 
 Cargar:

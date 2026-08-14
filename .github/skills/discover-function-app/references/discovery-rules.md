@@ -4,7 +4,7 @@ Este archivo es un índice corto. Cargar el archivo específico según la duda c
 
 | Necesito... | Cargar |
 |---|---|
-| Usar Graphify / decidir qué modo de consulta usar | `references/graphify-usage.md` |
+| Usar Graphify / decidir qué modo de consulta usar | `../_shared/references/graphify-usage.md` |
 | Documentar Arquitectura observable / generar diagramas (incluyendo repos legacy sin separación clara) | `references/architecture-diagrams.md` |
 | Clasificar Programming Model, Runtime, Durable, Configuración o shared resource candidates ambiguos | `references/ambiguous-signals.md` |
 

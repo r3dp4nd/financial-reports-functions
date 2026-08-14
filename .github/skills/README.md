@@ -185,6 +185,7 @@ _shared/
     ├── architecture-examples.md
     ├── artifact-layout.md
     ├── evidence-model.md
+    ├── graphify-usage.md
     ├── official-sources.md
     ├── security-patterns.md
     ├── target-architecture.md
@@ -195,6 +196,11 @@ _shared/
 que permanece aquí porque lo consumen tanto `discover-function-app` como `analyze-function`. Cualquier otro template
 usado por un solo skill vive en `<skill>/templates/` (por ejemplo `assess-function-app/templates/assessment.template.md`
 o `support/run-migration-checks/templates/check-run.template.md`), no en `_shared/`.
+
+`graphify-usage.md` documenta modos (`explain`/`path`/`query`), reglas de verificación cruzada y la regla de reuso de
+evidencia ya persistida en `.migration/` antes de repetir una consulta a Graphify. Lo cargan `discover-function-app`,
+`analyze-function`, `plan-function-migration`, `migrate-durable-functions-v4` y `verify-function-app` — cada uno solo
+cuando la evidencia ya persistida por una etapa anterior no cubre la relación que necesita.
 
 La política de seguridad aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, secretos y
 CI/CD no se leen directamente.

@@ -1,6 +1,26 @@
 # Uso de Graphify / project graph
 
+Referencia transversal: cualquier skill que necesite relaciones entre módulos, slices, fan-in/fan-out o señales de
+dependencia puede cargarla, no solo `discover-function-app`.
+
 Cargar esta referencia solo cuando Graphify o un indexador de grafo equivalente esté disponible y se necesite acelerar relaciones, slices o señales iniciales.
+
+## Reusar evidencia ya persistida antes de consultar Graphify
+
+Antes de ejecutar cualquier `graphify_query`, revisar si la relación que se necesita ya fue verificada y persistida
+por una ejecución previa en `.migration/`:
+
+1. `.migration/00-before/graph/project-graph.json|md` — relaciones a nivel repositorio ya inferidas/confirmadas por `discover-function-app`;
+2. `.migration/00-before/functions/<FunctionName>.md` — relaciones por Function ya verificadas con `explain` durante discovery;
+3. `.migration/20-analysis/functions/<FunctionName>/analysis.json` (campo `relationships`) o `.migration/20-analysis/slices/<SliceName>/analysis.json` — relaciones verificadas por `analyze-function` para ese slice, incluyendo `affectedFunctionsOutsideScope`;
+4. artifacts de ejecución ya emitidos (`programming-model-v4.json`, `durable-v4.json`) cuando se necesite confirmar qué se migró en una etapa previa.
+
+Si la relación buscada ya existe en alguno de estos artifacts con evidence status `CONFIRMED` o `INFERRED` verificable,
+reusarla directamente citando la fuente en lugar de repetir la consulta a Graphify. Solo consultar Graphify cuando el
+artifact previo no cubra la relación necesaria, o cuando el estado del repositorio cambió desde que se generó (por
+ejemplo nuevo commit) y la evidencia previa ya no es confiable.
+
+Esta regla evita que cada skill pague el costo de una consulta que otro skill ya resolvió y dejó documentada.
 
 ## Cuándo usarlo
 

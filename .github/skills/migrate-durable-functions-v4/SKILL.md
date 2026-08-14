@@ -18,6 +18,7 @@ Aplicar:
 - `../_shared/status-policy.md`
 - `../_shared/architecture-policy.md`
 - `../_shared/references/artifact-layout.md`
+- `../_shared/references/graphify-usage.md` solo si la topology BEFORE (starter/orchestrator/activities) no puede confirmarse con evidencia ya persistida en analyses/plan
 
 ## Precondiciones
 
@@ -39,7 +40,9 @@ Deben existir:
 ## Workflow
 
 1. Confirmar participantes y Action IDs del workflow.
-2. Validar topology BEFORE.
+2. Validar topology BEFORE, reusando primero las relaciones ya verificadas en el campo `relationships` de los
+   `analysis.json` de los participantes y en `project-graph.json|md` si existe; consultar Graphify (`explain`/`path`)
+   solo cuando esa evidencia no cubra la cadena starter → orchestrator → activities/sub-orchestrators.
 3. Adaptar dependency/API target.
 4. Migrar starter/client, orchestrator, activities, entities y sub-orchestrators según aplique.
 5. Preservar determinismo, retries, timers y external events.

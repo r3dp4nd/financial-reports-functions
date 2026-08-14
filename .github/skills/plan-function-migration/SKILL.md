@@ -26,6 +26,7 @@ Aplicar:
 - `../_shared/architecture-policy.md`
 - `../_shared/references/artifact-layout.md`
 - `../_shared/references/validation-tooling.md`
+- `../_shared/references/graphify-usage.md` solo si el `dependsOn` entre Functions no puede confirmarse con evidencia ya persistida en analyses
 - `../_shared/dependency-baseline.json`
 
 ## Precondiciones
@@ -41,7 +42,9 @@ Deben existir inventory, assessment y los analyses requeridos para el effective 
 5. Asignar ownership: `GLOBAL` (herramientas/dependencias/runtime/ownership de shared resources) o `FN-*` por cada
    Function individual. No agrupar Functions en un plan colectivo tipo slice: si varias Functions forman parte de un
    mismo workflow Durable, cada una recibe su propio plan `FN-*` con `dependsOn` explícito hacia las demás cuando el
-   orden deba preservarse.
+   orden deba preservarse. Antes de fijar `dependsOn`, verificar la relación en el campo `relationships` de los
+   `analysis.json` de las Functions involucradas; consultar Graphify (`explain`/`path`) solo si esa evidencia no
+   está disponible o es insuficiente.
 6. Marcar `requiredForMigration` y si aplica `requiredForRefactor`.
 7. Sugerir executor: `HUMAN`, `AI_AGENT` o `EITHER`, con rationale.
 8. Definir comportamiento preservado por acción y qué cambios funcionales están prohibidos.

@@ -51,7 +51,7 @@ Criterio explícito: si `.migration/00-before/inventory.json` no existe, ejecuta
 
 Para criterios de detección, cargar solo el archivo específico que resuelva la duda concreta (ver índice en `references/discovery-rules.md`):
 
-- `references/graphify-usage.md` — uso de Graphify y elección de modo de consulta;
+- `../_shared/references/graphify-usage.md` — uso de Graphify y elección de modo de consulta;
 - `references/architecture-diagrams.md` — cómo documentar arquitectura observable y generar diagramas, incluyendo repositorios legacy o sin separación clara;
 - `references/ambiguous-signals.md` — Programming Model, Runtime, Durable, Configuración o shared resource candidates ambiguos.
 

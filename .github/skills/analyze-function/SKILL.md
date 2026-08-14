@@ -24,6 +24,7 @@ Consultar:
 
 - `../_shared/architecture-policy.md` para evaluar estructura del slice;
 - `../_shared/references/artifact-layout.md` para leer/escribir artifacts;
+- `../_shared/references/graphify-usage.md` cuando exista grafo disponible y se necesite resolver relaciones/slice sin leer código a ciegas;
 - `../_shared/dependency-baseline.json` solo si assessment no materializó un target necesario.
 
 ## Precondiciones
@@ -33,13 +34,17 @@ Deben existir:
 - `.migration/00-before/inventory.json` o legacy `.migration/repository/inventory.json`
 - `.migration/10-assessment/assessment.json` o legacy `.migration/repository/assessment.json`
 
+Opcional cuando exista: `.migration/00-before/graph/project-graph.json|md`. Si está disponible, consultarlo antes de
+leer código fuente adicional para resolver relaciones del slice.
+
 Analizar una Function o slice por ejecución.
 
 ## Progressive disclosure
 
 ```text
-artifacts existentes
+artifacts existentes (incluyendo project-graph si existe)
 → entrypoint seleccionado
+→ relaciones del entrypoint verificadas vía Graphify (explain/path) cuando aplique
 → dependencias directas
 → slice transitivo requerido
 → consumidores relacionados solo si son necesarios

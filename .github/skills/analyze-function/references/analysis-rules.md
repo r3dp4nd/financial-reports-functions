@@ -39,6 +39,28 @@ Si discovery/Graphify muestra un slice natural que cruza Functions, analizar ese
 - shared resource con varios consumidores;
 - capability con entrypoint y activities inseparables.
 
+### Resolver relaciones del slice: Graphify antes de leer código a ciegas
+
+Antes de leer archivos adicionales para entender el slice transitivo, seguir este orden (ver
+`../_shared/references/graphify-usage.md` para el detalle de modos y reglas de verificación cruzada):
+
+1. Revisar si la relación ya está persistida y verificada en `.migration/00-before/graph/project-graph.json|md` o en
+   el catálogo BEFORE de la Function (`.migration/00-before/functions/<FunctionName>.md`). Si ya existe con evidence
+   status confiable, reusarla directamente en vez de repetir la consulta.
+2. Si no existe o es insuficiente y hay grafo disponible, usar `explain` sobre el entrypoint y sus módulos internos
+   conocidos (nombres ya presentes en `inventory.json`/BEFORE) para confirmar quién los consume y qué importan,
+   antes de decidir qué archivos leer.
+3. Usar `path` solo cuando se necesite confirmar la relación exacta entre dos nodos conocidos del slice (por ejemplo,
+   starter → orchestrator → activity de un mismo workflow), verificando que todos los edges del camino sean de
+   código y no de historial git.
+4. Leer directamente el source de los archivos que la consulta señaló como relevantes, en vez de explorar el
+   repositorio completo sin guía.
+
+Toda relación citada de Graphify en `analysis.json`/`analysis.md` sigue la misma regla de verificación cruzada:
+`INFERRED` por defecto, `CONFIRMED` solo tras leer el source real. Persistir las relaciones verificadas en el campo
+`relationships` de `analysis.json` para que `plan-function-migration` y `migrate-durable-functions-v4` puedan
+reusarlas sin volver a consultar Graphify.
+
 ## Configuración
 
 Registrar nombres de claves y dónde se consumen. Nunca valores.
