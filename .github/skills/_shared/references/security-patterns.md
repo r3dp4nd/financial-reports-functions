@@ -31,6 +31,8 @@ azure-pipelines*.yaml
 Jenkinsfile*
 bitbucket-pipelines*.yml
 bitbucket-pipelines*.yaml
+**/pipelines/**
+devops/**
 ```
 
 Las rutas pueden registrarse como metadata, pero no leerse.

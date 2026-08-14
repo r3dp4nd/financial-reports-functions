@@ -54,7 +54,7 @@ function safeStat(filePath) {
 
 function safeReadDir(directory) {
   try {
-    return fs.readdirSync(directory, {withFileTypes: true});
+    return fs.readdirSync(directory, { withFileTypes: true });
   } catch (error) {
     return [];
   }
@@ -122,7 +122,7 @@ function isCiCdFile(relativePath) {
   const normalized = relativePath.toLowerCase();
   const base = path.basename(normalized);
 
-  return (normalized.startsWith('.github/workflows/') || normalized === '.gitlab-ci.yml' || normalized === '.gitlab-ci.yaml' || base === 'jenkinsfile' || normalized === 'bitbucket-pipelines.yml' || normalized === 'bitbucket-pipelines.yaml' || normalized === 'azure-pipelines.yml' || normalized === 'azure-pipelines.yaml' || normalized.startsWith('pipelines/') || normalized.includes('/pipelines/'));
+  return (normalized.startsWith('.github/workflows/') || normalized === '.gitlab-ci.yml' || normalized === '.gitlab-ci.yaml' || base === 'jenkinsfile' || normalized === 'bitbucket-pipelines.yml' || normalized === 'bitbucket-pipelines.yaml' || normalized === 'azure-pipelines.yml' || normalized === 'azure-pipelines.yaml' || normalized.startsWith('pipelines/') || normalized.includes('/pipelines/') || normalized.startsWith('devops/') || normalized.includes('/devops/'));
 }
 
 function classifyProtectedFile(filePath) {

@@ -60,5 +60,7 @@ test-results/
 
 .env.*
 
-.migration
-.migration/repository/inventory.json
+.migration/
+
+# graphify-axet
+.graphify/

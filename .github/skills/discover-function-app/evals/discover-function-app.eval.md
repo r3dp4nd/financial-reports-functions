@@ -27,8 +27,8 @@ Entrada: `.env` o `local.settings.json`.
 Esperado: metadata segura, `contentRead = false`, ningún valor leído.
 
 ### 6. CI/CD protegido
-Entrada: GitHub Actions/Azure DevOps/Jenkins.
-Esperado: detectar ruta/categoría sin leer contenido.
+Entrada: GitHub Actions/Azure DevOps/Jenkins, incluyendo carpetas de automatización como `devops/pipelines/**` y `devops/templates/**`.
+Esperado: detectar ruta/categoría sin leer contenido; cualquier archivo bajo `devops/**` debe clasificarse como `CI_CD` con `contentRead=false`, sin importar el subdirectorio (`pipelines`, `templates` u otro).
 
 ### 7. Configuration key
 Entrada: source usa `process.env.COSMOS_CONNECTION`.

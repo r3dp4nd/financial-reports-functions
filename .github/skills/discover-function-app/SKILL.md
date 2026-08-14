@@ -34,6 +34,8 @@ Consultar `../_shared/references/artifact-layout.md` para escribir artifacts en 
 
 Artifacts previos en `.migration/` pueden usarse únicamente para detectar una ejecución anterior o decidir si corresponde rediscovery.
 
+Criterio explícito: si `.migration/00-before/inventory.json` no existe, ejecutar discovery completo directamente, sin evaluar rediscovery. Si existe, compararlo contra el estado actual del repositorio (por ejemplo cambios de commit) antes de decidir si basta con reutilizarlo o si se requiere una nueva ejecución completa.
+
 ## Workflow
 
 1. Cargar políticas obligatorias sin inspeccionar todavía el repositorio objetivo.
