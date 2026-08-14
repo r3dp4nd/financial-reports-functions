@@ -28,9 +28,9 @@ No usar `latest` como sustituto del baseline aprobado.
 ## Flujo
 
 ```text
-discover-function-app
+discover-function-app              (Graphify/indexer opcional dentro de discovery)
 → assess-function-app
-→ analyze-function                  (por Function cuando aplique)
+→ analyze-function                  (por Function o slice cuando aplique)
 → plan-function-migration
 → prepare-function-app
 → prepare-function                  (por Function cuando aplique)
@@ -58,10 +58,10 @@ caso.
 
 | Skill                          | Cuándo usarlo                                             | Entrada principal              | Resultado principal                           |
 |--------------------------------|-----------------------------------------------------------|--------------------------------|-----------------------------------------------|
-| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio.                   | `inventory.json` + `current-state.md`         |
+| `discover-function-app`        | Inicio de la migración o nueva fotografía BEFORE.         | Repositorio; Graphify opcional. | `inventory.json` + `current-state.md`         |
 | `assess-function-app`          | Después del discovery para medir gaps contra el target.   | Inventory + current state.     | `assessment.json\|md`                         |
-| `analyze-function`             | Cuando una Function necesita análisis específico.         | Inventory + assessment.        | `functions/<name>/analysis.json\|md`          |
-| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.   | Plan global, por Function y shared resources. |
+| `analyze-function`             | Cuando una Function o slice necesita análisis específico. | Inventory + assessment.        | `functions/<name>/analysis.*` o `slices/<name>/analysis.*` |
+| `plan-function-migration`      | Cuando assessment y análisis necesarios están completos.  | Evidencia BEFORE + analyses.   | Contrato/eval de ejecución por lanes, owner y Action IDs. |
 | `prepare-function-app`         | Cuando existen acciones globales aprobadas.               | Plan global.                   | `repository/preparation.json\|md`             |
 | `prepare-function`             | Cuando una Function necesita preparación local.           | Plan de la Function.           | `functions/<name>/preparation.json\|md`       |
 | `migrate-programming-model-v4` | Function v3 con acción aprobada hacia v4.                 | Plan + preparation aplicable.  | `migration-programming-model.json\|md`        |
@@ -86,12 +86,13 @@ Ejecuta review-skill-performance sobre las lessons de esta migración.
 
 ### Reglas de ejecución
 
-* `analyze-function` y `prepare-function` se ejecutan por Function solo cuando corresponda.
+* `analyze-function` se ejecuta por Function o slice natural; `prepare-function` se ejecuta por Function solo cuando corresponda.
 * `migrate-programming-model-v4` debe devolver `NOT_APPLICABLE` si la Function ya está en v4.
 * `migrate-durable-functions-v4` trata el workflow como una unidad coherente.
 * `prepare-function-app` ejecuta cambios globales una sola vez.
 * `verify-function-app` ejecuta el build global después de completar todas las Functions aplicables.
 * ningún skill debe ampliar el scope más allá del plan aprobado.
+* `plan-function-migration` separa migración técnica de refactor/testabilidad y puede sugerir executor `HUMAN`, `AI_AGENT` o `EITHER`.
 
 ## Estados
 
@@ -143,6 +144,9 @@ BEFORE → PLAN → EXECUTION → AFTER
 Los artifacts de `.migration/` son contratos entre etapas. Una etapa posterior consume el artifact de su owner en lugar
 de reconstruir la información.
 
+El plan es además un contrato de evaluación: cada acción debe tener resultado esperado, criterios de verificación,
+criterios de fallo y evidencia BEFORE para que pueda ejecutarla un humano o una IA y verificarse sin reinterpretación.
+
 ## Validación
 
 No se agregan tests al código objetivo. La verificación utiliza evidencia determinista disponible:
@@ -172,6 +176,8 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 
 ```text
 .migration/
+├── graph/
+│   └── project-graph.json|md       (opcional si se usó Graphify/indexer)
 ├── repository/
 │   ├── inventory.json
 │   ├── assessment.json
@@ -184,6 +190,9 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 │   ├── migration-plan.json|md
 │   ├── preparation.json|md
 │   └── migration*.json|md
+├── slices/<SliceName>/
+│   ├── analysis.json|md
+│   └── migration-plan.json|md
 ├── plans/
 │   └── migration-plan.json|md
 ├── resources/

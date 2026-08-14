@@ -1,13 +1,15 @@
 ---
 name: analyze-function
-description: Analiza una Function concreta después del assessment. Úsalo para documentar comportamiento observable, dependencias, configuración, recursos compartidos, compatibilidad Node.js/Programming Model/Durable, acoplamientos e impacto estructural requerido antes de planificar, sin modificar código.
+description: Analiza una Function o slice concreto después del assessment. Úsalo para documentar comportamiento observable, criticidad, testabilidad, dependencias, configuración, recursos compartidos, compatibilidad Node.js/Programming Model/Durable, acoplamientos e impacto estructural requerido antes de planificar, sin modificar código.
 ---
 
 # Analyze Function
 
 ## Objetivo
 
-Comprender una Function y el slice mínimo que debe preservarse/migrarse.
+Comprender una Function o slice y el alcance mínimo que debe preservarse/migrarse/refactorizarse.
+
+Cuando el scope natural cruce varias Functions, por ejemplo Durable workflow, Outbox o shared resource flow, analizarlo como slice coherente en lugar de forzar una Function aislada.
 
 ## Políticas
 
@@ -29,7 +31,7 @@ Deben existir:
 - `.migration/repository/inventory.json`
 - `.migration/repository/assessment.json`
 
-Analizar una Function por ejecución.
+Analizar una Function o slice por ejecución.
 
 ## Progressive disclosure
 
@@ -47,10 +49,11 @@ artifacts existentes
 2. Identificar configuración por nombre de clave.
 3. Analizar dependencias e impacto de target.
 4. Confirmar shared resources relevantes.
-5. Evaluar estructura/acoplamiento frente al slice migrado.
-6. Evaluar Node.js, Programming Model y Durable.
-7. Registrar `migrationNeeds`, deuda, risks y unknowns sin crear acciones.
-8. Crear analysis y completar catálogo BEFORE de la Function si faltaba.
+5. Evaluar criticidad, testabilidad y código difícil de probar.
+6. Evaluar estructura/acoplamiento frente al slice migrado o refactorizado.
+7. Evaluar Node.js, Programming Model y Durable.
+8. Registrar `migrationNeeds`, `refactorTestabilityNeeds`, lane recomendado, deuda, risks y unknowns sin crear acciones.
+9. Crear analysis y completar catálogo BEFORE de la Function si faltaba.
 
 Cargar según necesidad:
 
@@ -62,6 +65,7 @@ Cargar según necesidad:
 
 - `.migration/functions/<FunctionName>/analysis.json`
 - `.migration/functions/<FunctionName>/analysis.md`
+- `.migration/slices/<SliceName>/analysis.json|md` cuando el scope natural no sea una única Function
 - `.migration/catalog/functions/<FunctionName>.md` cuando aún no exista un BEFORE válido.
 
 ## Cierre

@@ -16,6 +16,17 @@
 - Slice analizado:
 - Fuera del scope afectado:
 
+## Criticidad y testabilidad
+
+| Dimensión | Estado | Rationale | Evidencia |
+|---|---|---|---|
+| Criticidad | `HIGH | MEDIUM | LOW` | | |
+| Testabilidad | `GOOD | PARTIAL | POOR` | | |
+| Recommended lane | `TECHNICAL_MIGRATION | REFACTOR_TESTABILITY | BOTH | NO_CHANGE` | | |
+
+- Testability blockers:
+- Testability enablers:
+
 ## Contrato a preservar
 
 - Entrada:
@@ -51,6 +62,11 @@
 | Clasificación | Necesidad | required? decidido aquí | Evidencia |
 |---|---|---|---|
 | | | No — lo decide planning | |
+
+## Refactor/testability needs
+
+| Necesidad | Lane recomendado | Evidencia | Puede esperar |
+|---|---|---|---|
 
 ## Riesgos, unknowns y revisión
 

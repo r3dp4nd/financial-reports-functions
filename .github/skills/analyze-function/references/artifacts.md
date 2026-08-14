@@ -2,14 +2,16 @@
 
 ## analysis.json
 
-Owner de la interpretación técnica de una Function.
+Owner de la interpretación técnica de una Function o slice.
 
 Incluir cuando aplique:
 
-- `function`;
+- `function` o `slice`;
 - `capability`;
 - `status`;
 - `analyzedSlice`;
+- `criticality`;
+- `testability`;
 - `behavior`;
 - `configuration`;
 - `dependencies` y `dependencyImpact`;
@@ -23,6 +25,8 @@ Incluir cuando aplique:
 - `programmingModel`;
 - `durable`;
 - `migrationNeeds`;
+- `refactorTestabilityNeeds`;
+- `recommendedLane`;
 - `technicalDebt`;
 - `optimizations`;
 - `risks`;

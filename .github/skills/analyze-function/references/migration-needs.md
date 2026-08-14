@@ -8,6 +8,7 @@ Clasificaciones recomendadas:
 - `REQUIRED_NODE`: compatibilidad Node.js 24;
 - `REQUIRED_DEPENDENCY`: package o API de dependencia;
 - `STRUCTURAL`: estructura necesaria para migrar el slice conforme a arquitectura objetivo;
+- `REFACTOR_TESTABILITY`: mejora de estructura/testabilidad que puede vivir en carril separado;
 - `TECHNICAL_DEBT`: mejora no obligatoria;
 - `OPTIMIZATION`: optimización no obligatoria.
 
@@ -20,6 +21,7 @@ Cada necesidad debe incluir como mínimo:
 - rationale;
 - evidence;
 - affected scope;
+- recommended lane cuando aplique;
 - uncertainty/review cuando aplique.
 
 No usar Action IDs `GLOBAL-*`, `SR-ACTION-*` o `FN-*`; esos pertenecen a planning.

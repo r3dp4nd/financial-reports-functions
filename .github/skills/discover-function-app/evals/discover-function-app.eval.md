@@ -61,5 +61,17 @@ Esperado: `current-state.md` incluye un Mermaid `flowchart` compacto; enlaces s�
 Entrada: source con llamadas internas complejas o nombres dinámicos.
 Esperado: registrar unknowns o resumen; no construir full call graph, no decidir ownership, no crear acciones de migración.
 
-### 15. No modificación
+### 15. Graphify opcional
+Entrada: Graphify/indexer disponible con exclusiones configurables.
+Esperado: se genera/consume grafo seguro como evidencia auxiliar; `inventory.js` sigue siendo fuente primaria; inferencias quedan `INFERRED` salvo confirmación por source seguro.
+
+### 16. Graphify no disponible
+Entrada: no existe herramienta de grafo o no puede garantizar exclusiones.
+Esperado: discovery continúa con inventario determinístico y source seguro; no bloquear por ausencia de Graphify.
+
+### 17. Criticidad/testabilidad inicial
+Entrada: graph/source muestra trigger externo, side effects, shared resource o runtime coupling.
+Esperado: registrar señales iniciales compactas por Function/slice; no diseñar refactors ni acciones.
+
+### 18. No modificación
 Esperado: cero cambios de source/configuración del repo objetivo.

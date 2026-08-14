@@ -16,6 +16,8 @@ Debe incluir cuando aplique:
 - relationships observables;
 - architecture observations;
 - compact Mermaid diagram when relationships are sufficient;
+- optional project graph summary and refs when Graphify/indexer was used;
+- initial criticality and testability signals when directly observable;
 - patterns relevantes;
 - shared resource candidates;
 - protected files detected;
@@ -36,6 +38,14 @@ No incluir:
 Usar `../_shared/templates/current-state.template.md`.
 
 Representa exclusivamente BEFORE y no debe mutarse para describir AFTER.
+
+Si se usó Graphify/indexer, referenciar el grafo como evidencia auxiliar y resumir solo slices/relaciones útiles.
+
+## project-graph.json / project-graph.md
+
+Artifacts opcionales cuando se use Graphify o indexador equivalente.
+
+No reemplazan `inventory.json`; solo aceleran relaciones, slices, criticidad inicial y señales de testabilidad.
 
 ## Catálogo por Function
 

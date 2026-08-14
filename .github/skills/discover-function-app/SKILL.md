@@ -33,11 +33,13 @@ Artifacts previos en `.migration/` pueden usarse únicamente para detectar una e
 
 1. Cargar políticas obligatorias sin inspeccionar todavía el repositorio objetivo.
 2. Aplicar exclusiones de seguridad.
-3. Ejecutar `scripts/inventory.js <repository-root>`.
-4. Usar su salida como fuente primaria de hechos deterministas.
-5. Inspeccionar source adicional solo para enriquecer gaps concretos y relaciones directamente observables.
-6. Documentar estado actual, arquitectura observable, relaciones útiles para migración y candidatos a shared resources.
-7. Crear los artifacts BEFORE.
+3. Si Graphify o un indexador de grafo aprobado está disponible, indexar el repositorio con las mismas exclusiones y guardar/consumir el grafo seguro como evidencia auxiliar.
+4. Ejecutar `scripts/inventory.js <repository-root>`.
+5. Usar su salida como fuente primaria de hechos deterministas.
+6. Usar el grafo solo para acelerar relaciones, slices, fan-in/fan-out, criticidad inicial y señales de testabilidad que luego puedan rastrearse a source seguro.
+7. Inspeccionar source adicional solo para enriquecer gaps concretos y relaciones directamente observables.
+8. Documentar estado actual, arquitectura observable, relaciones útiles para migración y candidatos a shared resources.
+9. Crear los artifacts BEFORE.
 
 Para criterios de detección cargar solo cuando haga falta:
 
@@ -64,6 +66,11 @@ Obligatorias:
 - `.migration/repository/inventory.json`
 - `.migration/catalog/current-state.md`
 
+Opcional cuando Graphify/indexer esté disponible:
+
+- `.migration/graph/project-graph.json`
+- `.migration/graph/project-graph.md`
+
 Por Function, crear `.migration/catalog/functions/<FunctionName>.md` solo cuando la inspección necesaria para BEFORE ya sea suficiente; de lo contrario `analyze-function` lo completa antes de cualquier modificación.
 
 Lessons son opcionales y siguen `../_shared/lessons-policy.md`.
@@ -77,6 +84,7 @@ Terminar cuando:
 - Programming Model, Runtime, Durable y dependencias quedaron documentados con evidence status;
 - configuration keys se registraron sin valores;
 - relaciones observables relevantes para migración quedaron registradas con evidence status;
+- si se usó Graphify, sus inferencias quedaron marcadas como auxiliares y trazadas a source seguro cuando afecten decisiones posteriores;
 - shared resource candidates y unknowns quedaron explícitos;
 - los artifacts BEFORE fueron creados.
 
@@ -84,6 +92,7 @@ Terminar cuando:
 
 - leer archivos protegidos;
 - evaluar compatibilidad target;
+- tratar Graphify como fuente única de verdad;
 - seleccionar versiones;
 - planificar o migrar;
 - refactorizar;

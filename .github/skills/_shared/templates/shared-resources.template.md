@@ -2,8 +2,13 @@
 
 ## Recursos confirmados
 
-| Resource ID | Tipo | Owner | Owner action | Consumidores | Evidencia |
-|---|---|---|---|---|---|
+| Resource ID | Tipo | Owner | Owner action | Lane | Executor sugerido | Consumidores | Evidencia |
+|---|---|---|---|---|---|---|---|
+
+## Acciones propietarias
+
+| Action ID | Resource ID | Expected result | Verification criteria | Failure criteria |
+|---|---|---|---|---|
 
 ## Candidatos no confirmados
 

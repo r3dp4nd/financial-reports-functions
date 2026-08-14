@@ -30,6 +30,12 @@
 - infraestructura:
 - acoplamientos relevantes:
 
+## Grafo auxiliar
+
+- Graphify/indexer usado:
+- Artifact:
+- Uso en discovery:
+
 ## Relaciones observables
 
 | Origen | Relación | Destino | Estado de evidencia | Evidencia |

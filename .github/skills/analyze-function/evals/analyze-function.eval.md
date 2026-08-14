@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Validar análisis local mínimo y trazable sin planificación ni cambios.
+Validar análisis local/slice mínimo y trazable sin planificación ni cambios, incluyendo criticidad y testabilidad cuando afecten migración o refactor.
 
 ## Casos
 
@@ -33,15 +33,31 @@ Esperado: confirmar/referenciar identidad y consumidores cuando exista evidencia
 Entrada: lógica funcional acoplada al adapter que debe refactorizarse.
 Esperado: necesidad `STRUCTURAL` mínima alineada con arquitectura objetivo.
 
-### 9. Deuda opcional
+### 9. Criticidad
+Entrada: Function con trigger externo, persistencia, fan-out o mensajería.
+Esperado: criticidad `HIGH|MEDIUM|LOW` con rationale/evidencia; no usar tamaño o nombre como única señal.
+
+### 10. Testabilidad
+Entrada: SDK/config/I/O/runtime mezclado con lógica o composition root.
+Esperado: testabilidad `GOOD|PARTIAL|POOR`, blockers/enablers y necesidad `REFACTOR_TESTABILITY` cuando aplique; no generar tests.
+
+### 11. Lane recomendado
+Entrada: slice con necesidad técnica y refactor posterior.
+Esperado: recommended lane `TECHNICAL_MIGRATION`, `REFACTOR_TESTABILITY`, `BOTH` o `NO_CHANGE`; planning decide acciones.
+
+### 12. Slice multi-Function
+Entrada: Durable workflow u Outbox cruza varias Functions.
+Esperado: analysis puede producir artifact de slice y `affectedFunctionsOutsideScope`; no forzar Function aislada.
+
+### 13. Deuda opcional
 Entrada: mejora no necesaria para target.
 Esperado: `TECHNICAL_DEBT`/`OPTIMIZATION`, no required automáticamente.
 
-### 10. Repo sin tests
+### 14. Repo sin tests
 Esperado: no generar necesidad de testing obligatoria ni crear archivos de tests.
 
-### 11. Unknown crítico
+### 15. Unknown crítico
 Esperado: `PARTIAL`/`BLOCKED`/`REQUIRES_REVIEW` según impacto; no asumir.
 
-### 12. Salida
+### 16. Salida
 Esperado: analysis JSON/MD y BEFORE por Function cuando faltaba; sin `FN-*`.

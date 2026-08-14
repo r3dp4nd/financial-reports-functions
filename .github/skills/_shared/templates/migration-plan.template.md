@@ -12,25 +12,38 @@
 - Requested scope:
 - Effective scope:
 
+## Decision de ejecución
+
+- Technical migration lane:
+- Refactor/testability lane:
+- Puede ejecutar IA:
+- Requiere humano:
+- Review antes de ejecución:
+
 ## Target técnico
 
 | Dimensión | Target aprobado |
 |---|---|
 
+## Workstreams
+
+| Lane | Objetivo | Scope | Estado |
+|---|---|---|---|
+
 ## Acciones globales
 
-| Action ID | Cambio | requiredForMigration | dependsOn | Criterio verificable |
-|---|---|---|---|---|
+| Action ID | Lane | Cambio | Executor sugerido | requiredForMigration | dependsOn | Criterio verificable |
+|---|---|---|---|---|---|---|
 
 ## Recursos compartidos
 
-| Resource ID | Owner action | Consumidores | Dependencias |
-|---|---|---|---|
+| Resource ID | Owner action | Lane | Executor sugerido | Consumidores | Dependencias |
+|---|---|---|---|---|---|
 
 ## Functions
 
-| Function | Plan | Programming Model action | Durable | Estado |
-|---|---|---|---|---|
+| Function/Slice | Plan | Lane principal | Executor sugerido | Programming Model action | Durable | Estado |
+|---|---|---|---|---|---|---|
 
 ## Orden
 
@@ -42,6 +55,11 @@
 
 - Build global después de completar todas las Functions.
 - Otros gates obligatorios:
+
+## Contrato de evaluación
+
+| Action ID | Expected result | Verification criteria | Failure criteria |
+|---|---|---|---|
 
 ## Riesgos, unknowns y deuda
 

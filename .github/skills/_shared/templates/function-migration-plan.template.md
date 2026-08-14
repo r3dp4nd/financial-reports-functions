@@ -18,8 +18,8 @@
 
 ## Acciones FN
 
-| Action ID | Cambio | Owner/stage | requiredForMigration | dependsOn | Criterio verificable |
-|---|---|---|---|---|---|
+| Action ID | Lane | Cambio | Executor sugerido | Owner/stage | requiredForMigration | requiredForRefactor | dependsOn | Criterio verificable |
+|---|---|---|---|---|---|---|---|---|
 
 ## Dependencias globales/shared
 
@@ -48,6 +48,11 @@
 
 - checks intermedios seguros:
 - gates finales:
+
+## Contrato de evaluación local
+
+| Action ID | Expected result | Verification criteria | Failure criteria |
+|---|---|---|---|
 
 ## Riesgos, unknowns y deuda
 
