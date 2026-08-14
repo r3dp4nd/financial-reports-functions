@@ -19,11 +19,15 @@ Restricciones:
 - No ejecutar comandos que requieran servicios externos, credenciales o entorno cloud.
 - No optimizar/refactorizar funcionalidad; solo descubrir, analizar y planificar.
 - Si una etapa no aplica, reportar NOT_APPLICABLE con evidencia.
+- El flujo debe funcionar igual de bien sobre repositorios legacy o con mala arquitectura. Revelar la ausencia de estructura, separacion de capas, tests o boundaries observables es tan valioso como documentar una estructura limpia; no es un fallo del flujo ni motivo para omitir detalle, es evidencia critica para dimensionar el esfuerzo de migracion/refactor.
+- El analysis debe ser exhaustivo revelando deuda tecnica y code smells reales, aunque no se vayan a corregir en esta pasada. No autolimitarse a "lo minimo indispensable" cuando hay evidencia observable de un problema.
 
 Flujo:
 1. Ejecuta discover-function-app sobre este repositorio.
-   - Usa Graphify/indexer si esta disponible y es seguro.
-   - Genera o actualiza .migration/00-before/.
+   - Usa Graphify/indexer si esta disponible y es seguro; para elegir modo de consulta (explain/path/query) y evitar interpretar coincidencias de historial git como relaciones de codigo, sigue `references/graphify-usage.md`.
+   - Para documentar Arquitectura observable y generar diagramas (incluyendo el caso de capabilities legacy sin separacion clara), sigue `references/architecture-diagrams.md`.
+   - Para clasificar Programming Model, Runtime, Durable, Configuracion o shared resource candidates ambiguos, sigue `references/ambiguous-signals.md`.
+   - Genera o actualiza .migration/00-before/. El artifact `current-state.md` debe quedar en español simple y claro para lectores humanos, con una leyenda de estados de evidencia al inicio.
    - No hagas analisis profundo de comportamiento si corresponde a analyze-function.
 
 2. Ejecuta assess-function-app usando el inventario actual.
@@ -48,7 +52,9 @@ Flujo:
      - patrones legacy;
      - testabilidad;
      - codigo dificil de probar;
-     - comportamiento observable que debe preservarse.
+     - comportamiento observable que debe preservarse, redactado como contrato comparable pre/post migracion (entrada exacta, salida exacta, efectos secundarios, errores observables, invariantes como idempotencia/retries/ordering) para que verify-function-app pueda usarlo directamente;
+     - gap contra arquitectura objetivo (adapters delgados, handlers testeables, organizacion por capability, application/domain con responsabilidad real, infraestructura aislada, shared resources con ownership), clasificando cada gap detectado como TECHNICAL_DEBT o STRUCTURAL con evidencia;
+     - señales de deuda tecnica de codigo (code smells): archivos/modulos grandes, handlers monoliticos, God functions, dependencias externas sin boundary, duplicacion de logica, acoplamiento a detalles de runtime. Revelar estas señales exhaustivamente, incluso si no bloquean la migracion tecnica inmediata.
 
 5. Ejecuta plan-function-migration con toda la evidencia disponible.
    - Usar .migration/00-before/, .migration/10-assessment/ y .migration/20-analysis/.
