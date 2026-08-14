@@ -83,12 +83,13 @@ Cargar según necesidad:
 
 ## Salidas
 
-- `.migration/documentation/repository.md` — documento de referencia de la Function App completa.
-- `.migration/documentation/functions/<FunctionName>.md` — uno por Function/slice, cuando el detalle lo justifique.
+- `documentation/repository.md` — documento de referencia de la Function App completa.
+- `documentation/functions/<FunctionName>.md` — uno por Function/slice, cuando el detalle lo justifique.
 
-Estas salidas viven en `.migration/documentation/`, separado de las fases `00-before`…`50-verification` porque no
-son evidencia de un flujo de migración en curso: son una línea base que puede regenerarse o consultarse en cualquier
-momento, incluso sin intención de migrar.
+Estas salidas viven en `documentation/` **en la raíz del repositorio objetivo**, no dentro de `.migration/`. Son dos
+naturalezas de evidencia distintas: `.migration/` es evidencia de una ejecución de migración (descartable, ignorada
+por git) mientras que `documentation/` es una línea base pensada para commitearse y compartirse con el equipo, igual
+que un README profesional. No agregar `documentation/` a `.gitignore`.
 
 ## Cierre
 

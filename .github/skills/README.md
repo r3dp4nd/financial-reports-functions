@@ -73,6 +73,7 @@ El plan decide qué skills de ejecución aplican. No ejecutar la cadena completa
 | Prompt | Uso |
 |--------|-----|
 | [`prompts/master-before-to-plan.md`](prompts/master-before-to-plan.md) | Orquestar discovery, assessment, analysis por cada Function y planning, con metricas de consumo/modelo. |
+| [`prompts/document-then-migrate.md`](prompts/document-then-migrate.md) | Generar primero `documentation/` (baseline reutilizable) y luego orquestar discovery/assessment/analysis/planning reusando esa evidencia, sin recomenzar desde cero. |
 
 ## Cómo usar los skills
 
@@ -297,14 +298,13 @@ El código refactorizado debe converger incrementalmente hacia la arquitectura a
 │   └── workflows/<WorkflowName>/durable-v4.json|md
 ├── 50-verification/
 │   └── verification.json|md
-├── 90-lessons/
-└── documentation/
-    ├── repository.md
-    └── functions/<FunctionName>.md
+└── 90-lessons/
 ```
 
-`documentation/` es la salida de `document-function-app`: una línea base reutilizable, independiente del flujo
-BEFORE→PLAN→EXECUTION→AFTER. Puede existir sin que ninguna otra fase de `.migration/` se haya ejecutado.
+**Excepción**: `document-function-app` no escribe dentro de `.migration/`. Su salida vive en `documentation/` **en
+la raíz del repositorio objetivo** (`documentation/repository.md` + `documentation/functions/<FunctionName>.md`),
+porque es una línea base pensada para commitearse y compartirse con el equipo — a diferencia de `.migration/`, que
+está en `.gitignore` y es evidencia descartable de una ejecución de migración. Ver `document-function-app/SKILL.md`.
 
 Crear solo artifacts aplicables. No generar archivos vacíos para satisfacer una estructura ideal.
 

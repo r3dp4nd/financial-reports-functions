@@ -126,4 +126,4 @@ Solo nombres de claves; nunca valores.
 
 - Inventory (si se reusó): `.migration/00-before/inventory.json`
 - Analyses reusados (si existen): `.migration/20-analysis/`
-- Documentación por Function: `.migration/documentation/functions/`
+- Documentación por Function: `documentation/functions/`

@@ -41,11 +41,13 @@ Las nuevas ejecuciones deben escribir en el layout semántico. Las skills pueden
 │   └── workflows/<WorkflowName>/durable-v4.json|md
 ├── 50-verification/
 │   └── verification.json|md
-├── 90-lessons/
-└── documentation/
-    ├── repository.md
-    └── functions/<FunctionName>.md
+└── 90-lessons/
 ```
+
+**Excepción de layout**: `document-function-app` no escribe dentro de `.migration/`. Su salida vive en
+`documentation/` en la raíz del repositorio objetivo (`documentation/repository.md` +
+`documentation/functions/<FunctionName>.md`), porque es una línea base pensada para commitearse — a diferencia de
+`.migration/`, que está en `.gitignore`.
 
 ## Fases
 
@@ -60,9 +62,6 @@ Las nuevas ejecuciones deben escribir en el layout semántico. Las skills pueden
 - support artifacts dentro de `40-execution` son opcionales y deben estar ligados a solicitud explícita o Action ID.
 - `50-verification`: cierre AFTER contra BEFORE/PLAN/EXECUTION.
 - `90-lessons`: aprendizaje del toolkit, separado de artifacts operativos.
-- `documentation`: línea base reutilizable producida por `document-function-app`, independiente del flujo
-  BEFORE→PLAN→EXECUTION→AFTER. Puede existir sin que ninguna otra fase se haya ejecutado, y se regenera en su
-  totalidad en cada ejecución en vez de acumular versiones.
 
 ## Legacy read compatibility
 
