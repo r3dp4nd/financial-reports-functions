@@ -41,6 +41,13 @@ código relevante citado literal) como base, añadiendo:
 - si ya existe `analysis.json` para esta Function/slice, citar su `criticality`/`testability`/gaps en vez de
   re-derivarlos desde cero.
 
+**Persistencia incremental obligatoria**: escribir este archivo tan pronto el análisis de esa Function/slice esté
+completo, antes de pasar a la siguiente Function del inventario (ver `SKILL.md`, sección Workflow). No acumular el
+análisis de varias Functions en memoria esperando escribir todo junto al final — eso arriesga perder trabajo ya
+hecho si la ejecución se interrumpe, y no aporta ningún beneficio frente a escribir cada archivo apenas está listo.
+`documentation/repository.md` se escribe al final, después de que todos los `documentation/functions/*.md`
+relevantes ya existan en disco.
+
 ## Sección obligatoria: resumen de complejidad y deuda técnica
 
 Esta es la sección que distingue este documento de un README genérico. Debe incluir:

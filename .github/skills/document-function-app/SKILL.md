@@ -59,22 +59,33 @@ Consultar:
 
 ## Workflow
 
+El workflow es deliberadamente **incremental y con escritura temprana a disco**, no "explorar todo y escribir al
+final". Una Function App con varias Functions/god files puede requerir muchas lecturas; retener todo el análisis en
+memoria hasta el cierre arriesga perder trabajo ya hecho si la ejecución se interrumpe.
+
 1. Aplicar políticas de seguridad antes de inspeccionar el repositorio.
 2. Resolver evidencia BEFORE: reusar `inventory.json`/`project-graph` vigentes o generarlos (ver "Reuso obligatorio").
-3. Para cada Function/slice, determinar si ya existe `analysis.json|md`; si existe, reusar su clasificación de
-   criticidad/testabilidad/gaps; si no existe, clasificarla con `../_shared/references/complexity-debt-rubric.md`
-   directamente para este documento (sin generar un `analysis.json` de migración — ese artifact pertenece a
-   `analyze-function`).
-4. Documentar arquitectura observable a nivel repositorio: organización de carpetas, adapters, capas, acoplamientos,
+3. Priorizar el orden de documentación por criticidad/complejidad observable (Functions con god files asociados,
+   rol central en un workflow Durable, o criticidad `HIGH` primero), no por orden alfabético ni de descubrimiento.
+4. **Por cada Function/slice, en el orden priorizado, ejecutar el ciclo completo antes de pasar a la siguiente**:
+   a. Determinar si ya existe `analysis.json|md`; si existe, reusar su clasificación de criticidad/testabilidad/gaps;
+      si no existe, clasificarla con `../_shared/references/complexity-debt-rubric.md` directamente para este
+      documento (sin generar un `analysis.json` de migración — ese artifact pertenece a `analyze-function`).
+   b. Documentar su contrato observable, dependencias, configuración y rol en workflows Durable u Outbox, aplicando
+      el mismo nivel de detalle a legacy y moderno.
+   c. **Escribir inmediatamente `documentation/functions/<FunctionName>.md`** (cuando el detalle lo justifique) antes
+      de continuar con la siguiente Function/slice — no acumular varios análisis en memoria antes de la primera
+      escritura.
+   d. Actualizar `task_progress` marcando esa Function como completada (hito concreto, no solo "documentando…"), de
+      forma que una interrupción permita reanudar exactamente desde la Function que falta, sin releer lo ya escrito.
+5. Documentar arquitectura observable a nivel repositorio: organización de carpetas, adapters, capas, acoplamientos,
    diagramas (reusar los de `current-state.md` si ya existen y siguen vigentes).
-5. Documentar cada Function/slice con su contrato observable, dependencias, configuración y rol en workflows Durable
-   u Outbox, aplicando el mismo nivel de detalle a legacy y moderno.
 6. Calcular el resumen de complejidad y deuda técnica agregado a nivel repo (ver
-   `references/documentation-rules.md`), citando la combinación de señales que lo produjo.
-7. Producir el documento de referencia siguiendo buenas prácticas de documentación de repos de Function Apps (ver
-   `references/documentation-rules.md`): visión general, arquitectura, inventario de Functions, dependencias,
-   configuración, deuda técnica, diagrama, cómo ejecutar/desplegar si es observable de forma segura.
-8. Guardar como baseline reutilizable, no como artifact de una sola migración.
+   `references/documentation-rules.md`), citando la combinación de señales que lo produjo, apoyándose en los
+   `documentation/functions/*.md` ya persistidos en el paso 4 en vez de re-derivar el análisis desde memoria.
+7. Escribir `documentation/repository.md` **al final**, como documento consolidado que referencia los archivos
+   por-Function ya escritos y resume el resto (Functions sin archivo dedicado) como filas de tabla.
+8. Cerrar con el reporte final solo después de que todos los artifacts ya estén persistidos en disco.
 
 Cargar según necesidad:
 

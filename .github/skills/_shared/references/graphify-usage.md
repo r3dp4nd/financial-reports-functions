@@ -127,6 +127,22 @@ No más de 2-3 queries de Graphify por ejecución de discovery. Este límite apl
 
 Si se necesitan más de 2-3 consultas exploratorias, es señal de que el inventario determinista o la lectura directa de source deberían resolver la pregunta en su lugar.
 
+## Cobertura pobre del grafo (comunidades delgadas, nodos aislados)
+
+No todo repositorio produce un grafo útil. Si tras 1-2 consultas iniciales el grafo devuelve comunidades delgadas
+(pocos edges reales de código), nodos aislados sin conexiones relevantes, o resultados dominados por edges de
+historial (`MODIFIES`) en lugar de edges de código, esto es evidencia de que el grafo no cubre bien este repositorio
+concreto — no un fallo de la consulta.
+
+En ese caso:
+
+1. documentar la limitación explícitamente (ej. "Graphify usado; cobertura pobre para este repo — comunidades
+   delgadas, sin relaciones de código útiles más allá de lo ya confirmado por lectura directa");
+2. proceder con lectura directa de source como fuente principal, sin insistir en más consultas al grafo para
+   compensar la cobertura pobre;
+3. no penalizar al ejecutor por "no usar más el grafo" cuando ya se determinó que no aporta valor adicional — el
+   objetivo es evidencia útil, no maximizar el uso de una herramienta.
+
 ## Uso sistemático de `explain` por Function (catálogo por Function)
 
 Cuando se documente el catálogo por Function (`.migration/00-before/functions/<FunctionName>.md`), no limitar el uso de `explain` a 2-3 consultas genéricas por todo el repositorio. En su lugar, para cada Function que tenga imports internos relevantes (detectables directamente en `inventory.js`/lectura de source — módulos propios del repositorio, no paquetes de terceros), ejecutar `explain` sobre esos módulos concretos (ej. `ReportCosmosDbService`, `ExcelUtil`, `ReportServiceBusService`) antes de redactar las secciones "Dependencias" y "Relaciones" de esa Function.
