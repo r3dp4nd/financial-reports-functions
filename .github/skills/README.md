@@ -2,36 +2,34 @@
 
 ## Objetivo
 
-Toolkit de skills para comprender, planificar, preparar, migrar y verificar Azure Function Apps Node.js hacia un target
-técnico y arquitectónico definido.
+Toolkit de Agent Skills para comprender, planificar, preparar, migrar y verificar Azure Function Apps Node.js hacia un
+target técnico aprobado.
 
-Target actual:
+Target de campaña:
 
 - Node.js 24;
 - Azure Functions Runtime v4;
 - Programming Model v4;
-- dependencias compatibles;
-- comportamiento protegido por tests;
-- arquitectura alineada con `financial-reports-functions`;
-- menor acoplamiento futuro al runtime y SDKs.
+- dependencias compatibles según baseline aprobado;
+- comportamiento observable protegido y verificable.
 
-Los skills son capacidades independientes.
+La migración técnica no exige modernización arquitectónica completa.
 
-La ejecución puede realizarse:
+Los cambios estructurales se realizan únicamente cuando sean necesarios para completar o verificar de forma segura la
+migración.
 
-- mediante GitHub Copilot Chat;
-- mediante otro agente compatible;
+## Ejecución
+
+La ejecución principal se realiza desde GitHub Copilot Chat dentro del repositorio objetivo.
+
+Los artefactos también deben poder ser comprendidos y ejecutados:
+
+- por otro agente compatible;
 - manualmente por un developer.
 
 No existe orquestación autónoma obligatoria.
 
-## Uso
-
-La ejecución principal se realiza desde GitHub Copilot Chat.
-
-Ver:
-
-[Uso rápido con GitHub Copilot Chat](#uso-rápido-con-github-copilot-chat)
+El developer decide cuándo avanzar a la siguiente etapa.
 
 ## Principio
 
@@ -39,466 +37,212 @@ Trabajar desde evidencia hacia cambios.
 
 Flujo conceptual:
 
-`discover → assess → analyze → plan → prepare → migrate → verify`
+```text
+DISCOVER
+→ ASSESS
+→ SELECT SCOPE
+→ ANALYZE
+→ PLAN
+→ PREPARE
+→ TEST
+→ MIGRATE
+→ VERIFY
+```
 
-No todos los skills deben ejecutarse en todos los repositorios.
+No todos los skills deben ejecutarse en todos los casos.
 
 Una dimensión que ya cumple el target debe preservarse.
 
-## Independencia del ejecutor
+No modificar código únicamente para ajustarlo a una convención del toolkit.
 
-Los artefactos describen:
+## Policies compartidas
 
-- intención técnica;
-- evidencia;
-- acciones;
-- criterios de resultado.
+Fuente de verdad:
 
-No deben depender de quién ejecute el cambio.
-
-## Políticas compartidas
-
-Aplicar cuando corresponda:
-
-- `_shared/evidence-policy.md`
-- `_shared/security-policy.md`
-- `_shared/lessons-policy.md`
-- `_shared/architecture-policy.md`
-- `_shared/status-policy.md`
+| Policy                           | Responsabilidad                                     |
+|----------------------------------|-----------------------------------------------------|
+| `_shared/security-policy.md`     | Qué contenido puede leerse, procesarse o producirse |
+| `_shared/evidence-policy.md`     | Cómo sustentar hechos, inferencias e incertidumbres |
+| `_shared/status-policy.md`       | Semántica común de estados                          |
+| `_shared/architecture-policy.md` | Principios aplicables a cambios estructurales       |
+| `_shared/lessons-policy.md`      | Aprendizaje gobernado desde ejecuciones reales      |
 
 Las policies compartidas tienen prioridad sobre instrucciones locales contradictorias.
 
-## Referencias compartidas
+No duplicar sus reglas en los skills salvo cuando sea necesario referenciarlas.
 
-La baseline de dependencias vive en:
+## Dependency baseline
 
-`_shared/dependency-baseline.json`
-
-No es una policy.
-
-Es una referencia técnica versionada para la campaña de migración.
-
-Contiene:
-
-- target técnico;
-- Azure packages aprobados;
-- recomendaciones aprendidas;
-- reglas de investigación;
-- reglas de promoción de conocimiento.
-
-## Responsabilidad de cada policy
-
-### evidence-policy
-
-Define cómo sustentar afirmaciones y tratar contradicciones.
-
-### security-policy
-
-Define qué contenido puede o no puede leerse.
-
-### architecture-policy
-
-Define hacia qué arquitectura converge el código refactorizado.
-
-### status-policy
-
-Define la semántica de:
-
-- evidencia;
-- necesidad de cambio;
-- ejecución;
-- checks;
-- resultado final.
-
-### lessons-policy
-
-Define cómo registrar observaciones y mejorar el toolkit mediante revisión humana.
-
-## Templates compartidos
-
-Usar cuando corresponda:
-
-- `_shared/templates/current-state.template.md`
-- `_shared/templates/function-current-state.template.md`
-- `_shared/templates/migration-plan.template.md`
-- `_shared/templates/function-migration-plan.template.md`
-- `_shared/templates/repository-preparation.template.md`
-- `_shared/templates/function-preparation.template.md`
-- `_shared/templates/function-migration.template.md`
-- `_shared/templates/durable-migration.template.md`
-- `_shared/templates/verification.template.md`
-
-Los templates definen presentación humana.
-
-Los JSON son los contratos estructurados entre capabilities.
-
-# Dependency baseline
-
-Las versiones objetivo aprobadas viven en:
+El baseline técnico vive en:
 
 `_shared/dependency-baseline.json`
 
-La baseline responde:
+Responde:
 
-`¿A qué versión queremos llegar en esta campaña?`
+`¿A qué target aprobado queremos llegar en esta campaña?`
 
 No responde:
 
-`¿Puede actualizarse sin impacto?`
+`¿Debe actualizarse esta dependencia en este repositorio?`
 
-Flujo:
+Ni:
 
-`baseline → assess → analyze → plan → prepare/migrate → verify`
+`¿Cuál es la última versión disponible?`
 
-## Estructura
+El baseline:
 
-La baseline contiene:
-
-- `target`;
-- `azurePolicy`;
-- `azurePackages`;
-- `learnedPackages`;
-- `rules`.
-
-## Target
-
-Define el contexto técnico de la campaña.
-
-Ejemplo conceptual:
-
-```json
-{
-  "node": "24",
-  "azureFunctionsRuntime": "v4",
-  "programmingModel": "v4"
-}
-```
-
-## Azure policy
-
-Define cómo tratar Azure packages.
-
-Cualquier package que cumpla un patrón como:
-
-`@azure/*`
-
-se considera Azure package aunque todavía no exista en `azurePackages`.
-
-También pueden existir paquetes adicionales relacionados con Azure, por ejemplo:
-
-`durable-functions`
-
-## Azure packages
-
-`azurePackages` contiene versiones objetivo ya aprobadas para la campaña.
-
-Ejemplos:
-
-- `@azure/functions`;
-- `durable-functions`;
-- `@azure/cosmos`;
-- `@azure/service-bus`.
-
-Una entrada en baseline significa:
-
-`target conocido`
-
-No:
-
-`upgrade automático`
-
-## Azure package no mapeado
-
-Si aparece por ejemplo:
-
-`@azure/keyvault-secrets`
-
-y no existe todavía en `azurePackages`:
-
-1. discovery lo identifica como Azure package;
-2. assessment investiga fuentes oficiales;
-3. propone un target cuando existe evidencia suficiente;
-4. la propuesta permanece pendiente de validación;
-5. no se modifica automáticamente la baseline.
-
-## Learned packages
-
-`learnedPackages` contiene conocimiento reutilizable aprobado para dependencias no Azure.
-
-Ejemplo conceptual:
-
-```json
-{
-  "uuid": {
-    "targetVersion": "x.y.z",
-    "validatedAgainst": {
-      "node": "24"
-    },
-    "successfulMigrations": 2,
-    "recommendationStatus": "APPROVED"
-  }
-}
-```
-
-Una recomendación aprendida:
-
-- reduce investigación repetida;
-- aporta evidencia inicial;
-- no elimina la validación del repositorio actual.
-
-## Third-party no conocido
-
-Si una dependencia no Azure:
-
-- no existe en `learnedPackages`;
-- y presenta evidencia de posible incompatibilidad;
-
-assessment puede investigar:
-
-1. documentación oficial;
-2. repositorio oficial;
-3. release notes;
-4. metadata del package;
-5. fuentes secundarias únicamente cuando las anteriores sean insuficientes.
-
-No investigar todo `package.json` indiscriminadamente.
-
-## Recommendation status
-
-El conocimiento de dependencias puede usar:
-
-- `PROPOSED`
-- `VALIDATED`
-- `REPEATED`
-- `APPROVED`
-
-Estos estados pertenecen exclusivamente al dominio de dependency knowledge.
-
-No forman parte de `status-policy.md`.
-
-### PROPOSED
-
-Existe una recomendación investigada.
-
-Todavía no tiene validación completa.
-
-### VALIDATED
-
-La versión fue utilizada en una migración independiente que superó los gates requeridos.
-
-### REPEATED
-
-La misma recomendación fue validada en más de una migración independiente.
-
-Varias Functions dentro de una misma Function App no cuentan como varias migraciones.
-
-### APPROVED
-
-La recomendación fue aprobada explícitamente para reutilización por el toolkit.
-
-## Dependency learning
-
-El toolkit puede aprender de migraciones anteriores.
+- define el target técnico;
+- contiene package targets aprobados;
+- usa versiones reproducibles;
+- no ejecuta upgrades;
+- no sustituye assessment ni impact analysis;
+- no se modifica automáticamente a partir de una migración exitosa.
 
 Flujo:
 
 ```text
-research
-   ↓
-proposal
-   ↓
-migration
-   ↓
-verification
-   ↓
-lessons
-   ↓
-review-skill-performance
-   ↓
-human approval
-   ↓
-dependency baseline
+baseline
+→ assessment
+→ function analysis
+→ plan
+→ execution
+→ verification
 ```
 
-Nunca:
+Las dependencias no conocidas permanecen inventariadas.
+
+Cuando sea necesario investigar una dependencia no mapeada, utilizar evidencia oficial conforme a
+`evidence-policy.md`.
+
+Una nueva recomendación no se convierte automáticamente en target de campaña.
+
+## Templates compartidos
+
+Los templates Markdown definen vistas humanas.
+
+Los JSON correspondientes son los contratos estructurados entre capabilities.
+
+Templates:
 
 ```text
-migration exitosa
-→ baseline modificada automáticamente
+_shared/templates/
+├── current-state.template.md
+├── function-current-state.template.md
+├── assessment.template.md
+├── function-analysis.template.md
+├── migration-plan.template.md
+├── function-migration-plan.template.md
+├── repository-preparation.template.md
+├── function-preparation.template.md
+├── function-migration.template.md
+├── durable-migration.template.md
+├── verification.template.md
+└── shared-resources.template.md
 ```
 
-## Invalidación del conocimiento
+`shared-resources.template.md` se utiliza únicamente cuando existan recursos compartidos confirmados.
 
-Una recomendación existente puede necesitar revisión cuando:
+No crear artifacts o documentos vacíos únicamente por simetría.
 
-- cambia Node target;
-- cambia Azure Functions target;
-- cambia Programming Model;
-- aparece incompatibilidad;
-- deja de existir soporte;
-- nueva evidencia contradice experiencias anteriores.
-
-El conocimiento aprendido no es permanente.
-
-# Memoria de migración
-
-Los artefactos se almacenan bajo:
-
-`.migration/`
-
-Cada capability debe consumir artefactos existentes antes de volver a inspeccionar source.
-
-No reconstruir información cuyo owner ya exista.
-
-# Modelo documental
+## Modelo documental
 
 La migración conserva cuatro perspectivas:
 
-`BEFORE → PLAN → EXECUTION → AFTER`
+```text
+BEFORE
+→ PLAN
+→ EXECUTION
+→ AFTER
+```
 
-## BEFORE
+### BEFORE
 
 Describe el sistema original.
 
-## PLAN
-
-Describe qué debe cambiar.
-
-## EXECUTION
-
-Registra qué se hizo.
-
-## AFTER
-
-Verifica qué quedó realmente.
-
-# Catálogo BEFORE
-
-Documento principal:
-
-`.migration/catalog/current-state.md`
-
-Detalle por Function:
-
-`.migration/catalog/functions/<FunctionName>.md`
-
-El catálogo representa exclusivamente el estado anterior a la migración.
-
-No debe convertirse en documentación del target.
-
-# Arquitectura objetivo
-
-Toda refactorización debe seguir:
-
-`_shared/architecture-policy.md`
-
-Principios:
-
-- Azure adapters bajo `src/functions/`;
-- lógica por capability;
-- infraestructura aislada cuando corresponda;
-- configuración desacoplada cuando sea necesario;
-- contracts solo cuando aporten un límite real;
-- shared resources con ownership explícito;
-- sin capas o carpetas vacías por convención.
-
-La arquitectura es obligatoria.
-
-Su materialización es incremental.
-
-# Future-proofing
-
-Una refactorización correcta debe reducir el impacto de futuras migraciones.
-
-Idealmente cambios futuros de runtime o Programming Model deberían concentrarse en:
-
-- `src/functions/**`;
-- composition;
-- dependencies;
-- configuration.
-
-Esto reduce acoplamiento.
-
-No garantiza compatibilidad futura automática.
-
-# Recursos compartidos
-
-Pueden incluir:
-
-- Cosmos DB;
-- MongoDB;
-- SQL;
-- Service Bus;
-- Blob Storage;
-- HTTP clients;
-- repositories;
-- services;
-- configuración común.
-
-Discovery no necesita reconocer determinísticamente todos estos tipos.
-
-Dependencias desconocidas permanecen inventariadas y pueden ser interpretadas posteriormente por analysis.
-
-No fusionar recursos únicamente porque utilicen la misma tecnología.
-
-# Ownership de recursos
-
-Scopes:
-
-- `REPOSITORY`
-- `FUNCTION_APP`
-- `CAPABILITY`
-- `WORKFLOW`
-
-Cada recurso compartido debe tener ownership explícito cuando pueda confirmarse.
-
-Un recurso que requiera cambio debe tener una única acción propietaria.
-
-# Shared resource catalog
-
-Cuando existan recursos compartidos confirmados:
-
-`.migration/resources/shared-resources.json`
-
-`.migration/resources/shared-resources.md`
-
-Son artefactos descriptivos.
-
-Responden:
-
-`¿Qué recurso existe, quién lo posee y quién lo consume?`
-
-No son migration plans.
-
-`plan-function-migration` los consolida antes de construir las acciones del plan.
-
-# Shared resource action
-
-Una acción:
-
-`SR-ACTION-*`
-
-responde:
-
-`¿Qué cambio debe ejecutarse sobre un shared resource?`
-
-Ejemplo:
+Owners principales:
 
 ```text
-SR-COSMOS-REPORTS
+.migration/repository/inventory.json
+.migration/catalog/current-state.md
+.migration/catalog/functions/<FunctionName>.md
 ```
 
-es el recurso.
+El catálogo BEFORE no debe reescribirse para representar el estado posterior a la migración.
+
+### PLAN
+
+Describe qué debe cambiar y por qué.
+
+Owners principales:
 
 ```text
-SR-ACTION-001
+.migration/plans/migration-plan.json
+.migration/functions/<FunctionName>/migration-plan.json
 ```
 
-es una acción sobre ese recurso.
+### EXECUTION
 
-No son el mismo concepto.
+Registra qué se ejecutó realmente.
 
-# Flujo operativo
+Owners principales:
+
+```text
+.migration/repository/preparation.json
+.migration/functions/<FunctionName>/preparation.json
+.migration/functions/<FunctionName>/migration.json
+.migration/workflows/<WorkflowName>/durable-migration.json
+```
+
+### AFTER
+
+Demuestra el resultado final.
+
+Owner:
+
+```text
+.migration/verification/verification.json
+```
+
+## Flujo operativo
+
+```mermaid
+flowchart LR
+  D[Discover] --> A[Assess]
+  A --> S[Select Scope]
+  S --> F[Analyze Functions]
+  F --> P[Plan]
+  P --> PA[Prepare Function App]
+  PA --> PF[Prepare Functions]
+  PF --> T[Protect Behavior]
+  T --> M[Technical Migration]
+  M --> PM[Programming Model v4]
+  M --> DU[Durable v4]
+  PM --> V[Verify Function App]
+  DU --> V
+```
+
+La generación dedicada de pruebas podrá ser realizada por `generate-function-tests` cuando esa capability sea
+implementada.
+
+Mientras no exista como skill operativo, ninguna etapa debe asumir silenciosamente responsabilidades que no pertenezcan
+a su contrato.
+
+## Skills operativos
+
+| Skill                          | Pregunta principal                                                     | Modifica código    |
+|--------------------------------|------------------------------------------------------------------------|--------------------|
+| `discover-function-app`        | ¿Qué existe actualmente?                                               | No                 |
+| `assess-function-app`          | ¿Qué gaps globales existen contra el target?                           | No                 |
+| `analyze-function`             | ¿Qué implica migrar esta Function?                                     | No                 |
+| `plan-function-migration`      | ¿Qué acciones coordinadas deben ejecutarse?                            | No                 |
+| `prepare-function-app`         | ¿Qué preparación global aprobada necesita la Function App?             | Sí                 |
+| `prepare-function`             | ¿Qué preparación estructural o de testabilidad necesita esta Function? | Sí                 |
+| `migrate-programming-model-v4` | ¿Qué adaptación requiere el Azure adapter para PM v4?                  | Sí                 |
+| `migrate-durable-functions-v4` | ¿Cómo migramos coherentemente este workflow Durable?                   | Sí                 |
+| `verify-function-app`          | ¿La migración quedó demostrada?                                        | No corrige         |
+| `review-skill-performance`     | ¿Qué debería evolucionar en el toolkit?                                | No automáticamente |
+
+`review-skill-performance` está fuera del flujo operativo de migración.
 
 ## 1. discover-function-app
 
@@ -508,59 +252,29 @@ Pregunta:
 
 Produce:
 
-`.migration/repository/inventory.json`
+```text
+.migration/repository/inventory.json
+.migration/catalog/current-state.md
+```
 
-y:
-
-`.migration/catalog/current-state.md`
-
-No genera:
-
-`.migration/repository/inventory.md`
-
-### Responsabilidades
+Responsabilidades principales:
 
 - detectar Function Apps;
 - inventariar Functions;
-- detectar triggers/bindings;
+- detectar triggers y bindings;
 - registrar dependencias;
 - detectar Node declarado;
 - detectar Programming Model;
 - detectar Durable;
-- registrar configuration key names;
+- registrar nombres de configuration keys;
 - detectar archivos protegidos sin leerlos;
-- generar shared resource candidates únicamente cuando exista señal determinista suficiente.
+- generar candidatos de recursos compartidos únicamente cuando exista señal determinista suficiente.
 
-### Dependencias
+Discovery registra hechos observables.
 
-Discovery registra todas las dependencias.
+No realiza assessment.
 
-No elimina packages desconocidos.
-
-Marca como Azure package:
-
-- `@azure/*`;
-- packages Azure adicionales configurados.
-
-Solo algunos Azure resource SDKs conocidos generan shared-resource hints.
-
-### Seguridad
-
-Debe detectar sin leer:
-
-- `.env*`;
-- `local.settings.json`;
-- certificados;
-- claves;
-- CI/CD protegido.
-
-Ejemplo:
-
-```text
-.github/workflows/deploy.yml
-→ detected
-→ contentRead = false
-```
+No planifica.
 
 No modifica código.
 
@@ -568,278 +282,515 @@ No modifica código.
 
 Pregunta:
 
-`¿Qué tan lejos está globalmente del target?`
+`¿Qué tan lejos está globalmente esta Function App del target aprobado?`
 
-Evalúa:
+Consume principalmente:
+
+```text
+inventory.json
+current-state.md
+dependency-baseline.json
+```
+
+Evalúa dimensiones como:
 
 - Node.js;
-- Runtime;
+- Azure Functions Runtime;
 - Programming Model;
-- Durable;
+- Durable Functions;
 - dependencias;
-- TypeScript;
-- testing;
-- arquitectura;
-- shared resources.
-
-### Dependencias
-
-Clasifica dependencias relevantes como:
-
-- `AZURE_BASELINED`;
-- `AZURE_UNMAPPED`;
-- `LEARNED`;
-- `UNMAPPED`.
-
-Assessment puede investigar targets.
-
-No modifica baseline.
+- TypeScript y tooling cuando corresponda;
+- pruebas actuales;
+- condiciones globales relevantes para la migración.
 
 Produce:
 
-`.migration/repository/assessment.json`
+```text
+.migration/repository/assessment.json
+.migration/repository/assessment.md
+```
 
-`.migration/repository/assessment.md`
+Assessment puede identificar dependencias que requieren investigación.
 
-## 3. analyze-function
+No modifica el baseline.
+
+No analiza profundamente cada Function.
+
+No planifica cambios concretos.
+
+## 3. Selección de scope
+
+El developer puede solicitar:
+
+- una Function;
+- varias Functions;
+- una Function App completa.
+
+El flujo diferencia:
+
+```text
+requestedScope
+effectiveScope
+affectedFunctionsOutsideScope
+```
+
+`requestedScope` representa exactamente lo seleccionado por el developer.
+
+`effectiveScope` representa el mínimo scope técnicamente necesario para ejecutar una migración coherente.
+
+Encontrar un consumidor fuera del scope no lo incorpora automáticamente a la migración.
+
+### Durable
+
+Cuando una Function seleccionada pertenece a un workflow Durable, el análisis o planificación puede determinar que el
+workflow completo constituye la unidad mínima coherente.
+
+La expansión debe quedar justificada y visible para el developer.
+
+## 4. analyze-function
 
 Pregunta:
 
-`¿Cómo funciona esta Function y qué necesita?`
+`¿Qué implica migrar esta Function?`
 
-Analiza:
+Analiza únicamente el slice necesario.
 
-- comportamiento;
-- arquitectura actual;
-- arquitectura target;
+Puede identificar:
+
+- comportamiento observable;
+- entradas y salidas;
+- errores relevantes;
+- efectos observables;
+- configuración utilizada;
+- dependencias internas y externas;
+- Azure SDK usage;
+- infraestructura;
+- compatibilidad Node.js;
+- impacto de Programming Model;
+- rol Durable;
 - testabilidad;
-- dependencias;
-- dependency impact;
-- shared resources;
-- Node compatibility;
-- Programming Model;
-- Durable role.
-
-Genera acciones:
-
-- `REQUIRED_PLATFORM`;
-- `REQUIRED_NODE`;
-- `REQUIRED_DEPENDENCY`;
-- `REQUIRED_TESTABILITY`;
-- `STRUCTURAL`;
-- `TECHNICAL_DEBT`;
-- `OPTIMIZATION`.
+- acoplamiento legacy;
+- recursos compartidos;
+- consumidores fuera del scope.
 
 Produce:
 
-`.migration/functions/<FunctionName>/analysis.json`
+```text
+.migration/functions/<FunctionName>/analysis.json
+.migration/functions/<FunctionName>/analysis.md
+```
 
-`.migration/functions/<FunctionName>/analysis.md`
+También puede producir la ficha BEFORE cuando todavía no exista:
 
-y ficha BEFORE:
+```text
+.migration/catalog/functions/<FunctionName>.md
+```
 
-`.migration/catalog/functions/<FunctionName>.md`
+Analysis identifica necesidades.
 
-## 4. plan-function-migration
+No asigna acciones definitivas ni pasos de implementación.
 
-Pregunta:
+No modifica código.
 
-`¿Cómo coordinamos la migración?`
-
-Primero consolida shared resources.
-
-Después genera:
-
-### Plan global
-
-`.migration/plans/migration-plan.json`
-
-`.migration/plans/migration-plan.md`
-
-El plan conserva:
-
-- dependency baseline;
-- dependency target;
-- recommendation provenance;
-- global actions;
-- shared actions;
-- execution order.
-
-### Plan por Function
-
-`.migration/functions/<FunctionName>/migration-plan.json`
-
-`.migration/functions/<FunctionName>/migration-plan.md`
-
-Planning no:
-
-- investiga nuevas versiones;
-- redefine targets;
-- promueve dependency knowledge.
-
-## 5. prepare-function-app
+## 5. plan-function-migration
 
 Pregunta:
 
-`¿Qué base global debe quedar preparada?`
-
-Puede modificar:
-
-- Node.js;
-- dependencias aprobadas;
-- TypeScript;
-- Jest;
-- build;
-- scripts;
-- estructura base;
-- configuración;
-- shared resources de alcance global.
-
-Produce:
-
-`.migration/repository/preparation.json`
-
-`.migration/repository/preparation.md`
-
-No decide dependency versions.
-
-## 6. prepare-function
-
-Pregunta:
-
-`¿Cómo dejamos esta Function preparada y protegida?`
-
-Puede:
-
-- refactorizar;
-- separar Azure adapter;
-- organizar capability;
-- aislar infraestructura;
-- adaptar consumidores a dependency upgrades planificados;
-- preparar shared dependencies;
-- agregar tests;
-- obtener baseline.
-
-Produce:
-
-`.migration/functions/<FunctionName>/preparation.json`
-
-`.migration/functions/<FunctionName>/preparation.md`
-
-No selecciona dependency versions.
-
-## 7. migrate-programming-model-v4
-
-Pregunta:
-
-`¿Cómo migramos este Azure adapter legacy a v4?`
-
-La versión de:
-
-`@azure/functions`
-
-ya debe estar determinada por baseline/assessment/plan.
-
-Produce:
-
-`.migration/functions/<FunctionName>/migration.json`
-
-`.migration/functions/<FunctionName>/migration.md`
-
-Si ya está v4:
-
-`NOT_APPLICABLE`
-
-## 8. migrate-durable-functions-v4
-
-Pregunta:
-
-`¿Cómo migramos este workflow Durable como una unidad?`
-
-La versión de:
-
-`durable-functions`
-
-debe provenir de baseline/assessment/plan.
-
-Produce:
-
-`.migration/workflows/<WorkflowName>/durable-migration.json`
-
-`.migration/workflows/<WorkflowName>/durable-migration.md`
-
-El workflow no se representa como una Function ficticia.
-
-## 9. verify-function-app
-
-Pregunta:
-
-`¿La migración realmente terminó correctamente?`
-
-Compara:
-
-`BEFORE → PLAN → AFTER`
-
-Verifica:
-
-- Node;
-- dependency targets;
-- install;
-- typecheck;
-- build global;
-- tests;
-- coverage cuando aplica;
-- Functions;
-- Programming Model;
-- Durable;
-- arquitectura;
-- shared resources;
-- legacy;
-- packaging.
-
-Puede registrar:
-
-`dependencyLearningCandidates`
-
-cuando una recomendación nueva fue utilizada y verificada.
-
-No modifica baseline.
-
-Produce:
-
-`.migration/verification/verification.json`
-
-`.migration/verification/verification.md`
-
-# Mejora del toolkit
-
-`review-skill-performance`
-
-está fuera del flujo operativo.
+`¿Qué debemos ejecutar y en qué orden?`
 
 Consume:
 
-- lessons;
-- findings;
-- failures;
-- verification;
-- dependency learning candidates;
-- evals.
+```text
+inventory
+assessment
+function analyses
+dependency baseline
+```
 
-Puede proponer:
+Determina:
 
-- cambios de skill;
-- cambios de script;
-- nuevos evals;
-- simplificaciones;
-- promoción de dependency knowledge;
-- invalidación de dependency knowledge.
+- scope solicitado;
+- scope efectivo;
+- Functions afectadas fuera del scope;
+- acciones globales;
+- acciones sobre recursos compartidos;
+- acciones por Function;
+- dependencias entre acciones;
+- orden de ejecución;
+- acciones estructurales requeridas para migración;
+- deuda u optimizaciones fuera de alcance;
+- coordinación Durable.
 
-Nunca modifica automáticamente el toolkit.
+Produce:
 
-# Estructura de `.migration`
+```text
+.migration/plans/migration-plan.json
+.migration/plans/migration-plan.md
+```
 
-Crear incrementalmente.
+y:
+
+```text
+.migration/functions/<FunctionName>/migration-plan.json
+.migration/functions/<FunctionName>/migration-plan.md
+```
+
+Planning no:
+
+- modifica código;
+- investiga arbitrariamente versiones nuevas;
+- redefine targets aprobados;
+- moderniza el repositorio.
+
+## Recursos compartidos
+
+Discovery puede producir candidatos.
+
+Analysis confirma uso por Function.
+
+Planning consolida recursos compartidos cuando exista evidencia suficiente.
+
+Artifacts condicionales:
+
+```text
+.migration/resources/shared-resources.json
+.migration/resources/shared-resources.md
+```
+
+Un recurso compartido debe representar un recurso o implementación concreta.
+
+Usar la misma tecnología o SDK no demuestra que dos Functions compartan el mismo recurso.
+
+Cada recurso que requiera modificación debe tener una única acción propietaria.
+
+IDs:
+
+```text
+SR-<TYPE>-<NAME>
+SR-ACTION-NNN
+```
+
+Los consumidores dependen de la acción propietaria cuando corresponda.
+
+## 6. prepare-function-app
+
+Pregunta:
+
+`¿Qué preparación global aprobada necesita la Function App?`
+
+Ejecuta únicamente acciones globales o compartidas aprobadas por el plan.
+
+Puede incluir cuando corresponda:
+
+- runtime/tooling;
+- dependencias aprobadas;
+- TypeScript;
+- Jest y configuración de pruebas;
+- scripts;
+- build configuration;
+- configuración estructural;
+- recursos compartidos globales.
+
+Produce:
+
+```text
+.migration/repository/preparation.json
+.migration/repository/preparation.md
+```
+
+No selecciona nuevas versiones.
+
+No realiza el build global final.
+
+## 7. prepare-function
+
+Pregunta:
+
+`¿Qué preparación mínima necesita esta Function antes de la migración técnica?`
+
+Ejecuta únicamente cambios estructurales o de testabilidad aprobados.
+
+Puede incluir cuando corresponda:
+
+- separar responsabilidades necesarias del Azure adapter;
+- introducir seams mínimos;
+- aislar configuración;
+- aislar una dependencia externa;
+- adaptar consumidores a dependency upgrades ya planificados;
+- introducir un boundary real;
+- utilizar un Provider o Adapter temporal para código legacy.
+
+No debe:
+
+- modernizar todo el slice;
+- reorganizar carpetas por estética;
+- descomponer completamente servicios legacy;
+- crear contratos sin responsabilidad real;
+- introducir cambios `requiredForMigration: false`.
+
+Produce:
+
+```text
+.migration/functions/<FunctionName>/preparation.json
+.migration/functions/<FunctionName>/preparation.md
+```
+
+`prepare-function` habilita testabilidad cuando sea necesario.
+
+La generación dedicada de pruebas pertenece a la capability de testing correspondiente.
+
+## Protección del comportamiento
+
+La migración debe preservar cuando corresponda:
+
+```text
+same input
+same output
+same relevant errors
+same observable side effects
+```
+
+Preferir:
+
+```text
+comportamiento actual
+→ caracterización cuando sea posible
+→ seam mínimo cuando sea necesario
+→ pruebas faltantes
+→ baseline verde
+→ migración técnica
+→ mismos contratos verdes
+```
+
+Cuando una estructura legacy impida caracterizar el comportamiento antes de una extracción mínima:
+
+- registrar la limitación;
+- realizar únicamente el seam necesario;
+- proteger después el comportamiento observable;
+- no convertir la limitación en permiso para una refactorización amplia.
+
+Las pruebas de aplicación utilizan Jest.
+
+No agregar integration tests dentro del alcance actual.
+
+## 8. migrate-programming-model-v4
+
+Pregunta:
+
+`¿Cómo adaptamos el Azure adapter a Programming Model v4?`
+
+Consume el plan y la preparación existentes.
+
+La versión objetivo de `@azure/functions` debe provenir del baseline y del plan aprobado.
+
+Responsabilidad principal:
+
+- adaptar registro;
+- trigger;
+- bindings;
+- Azure Functions APIs;
+- adapter específico del runtime.
+
+No vuelve a realizar preparación estructural.
+
+No selecciona versiones.
+
+No ejecuta el build global final.
+
+Produce:
+
+```text
+.migration/functions/<FunctionName>/migration.json
+.migration/functions/<FunctionName>/migration.md
+```
+
+Si la Function ya satisface Programming Model v4:
+
+```text
+NOT_APPLICABLE
+```
+
+## 9. migrate-durable-functions-v4
+
+Pregunta:
+
+`¿Cómo migramos este workflow Durable como una unidad coherente?`
+
+Consume el plan y los análisis de las Functions participantes.
+
+La versión objetivo de `durable-functions` debe provenir del baseline y del plan aprobado.
+
+Debe preservar cuando corresponda:
+
+- workflow topology;
+- decisions;
+- Activities;
+- retries;
+- timers;
+- external events;
+- sub-orchestrations;
+- outputs;
+- error semantics;
+- determinism.
+
+Las instancias Durable potencialmente activas requieren tratamiento explícito cuando la seguridad de replay no pueda
+demostrarse.
+
+Produce:
+
+```text
+.migration/workflows/<WorkflowName>/durable-migration.json
+.migration/workflows/<WorkflowName>/durable-migration.md
+```
+
+El workflow no se representa como una Function ficticia.
+
+## 10. verify-function-app
+
+Pregunta:
+
+`¿La migración técnica quedó demostrada?`
+
+Verification compara:
+
+```text
+BEFORE
+→ PLAN
+→ AFTER
+```
+
+Verifica cuando corresponda:
+
+- Node.js utilizado;
+- Azure Functions Runtime;
+- dependency targets;
+- instalación;
+- typecheck;
+- build global;
+- pruebas;
+- cobertura;
+- contratos observables;
+- Functions registradas;
+- Programming Model;
+- Durable;
+- acciones requeridas del plan;
+- estructura requerida por el plan;
+- recursos compartidos;
+- legacy residual relevante;
+- packaging.
+
+Produce:
+
+```text
+.migration/verification/verification.json
+.migration/verification/verification.md
+```
+
+Verification:
+
+```text
+VERIFY != FIX
+```
+
+No debe corregir automáticamente los fallos encontrados.
+
+Un resultado de build exitoso no demuestra por sí solo preservación funcional.
+
+La deuda no bloqueante puede producir:
+
+```text
+VERIFIED_WITH_DEBT
+```
+
+Las mejoras con:
+
+```text
+requiredForMigration: false
+```
+
+no impiden cerrar una migración técnica.
+
+## Build
+
+El build global final pertenece a:
+
+`verify-function-app`
+
+No ejecutar el build global como gate obligatorio después de cada Function.
+
+Durante preparation y migration pueden utilizarse validaciones selectivas como:
+
+- pruebas relevantes;
+- typecheck selectivo;
+- static analysis;
+- checks deterministas.
+
+Esto evita falsos fallos intermedios cuando existen varias Functions pendientes de adaptación dentro de la misma
+Function App.
+
+## Arquitectura
+
+Fuente de verdad:
+
+`_shared/architecture-policy.md`
+
+La migración técnica no exige que el repositorio alcance una arquitectura ideal.
+
+Preservar las convenciones existentes cuando sean coherentes.
+
+Aplicar cambios estructurales únicamente cuando una acción aprobada los requiera.
+
+Todo cambio estructural debe distinguir entre:
+
+```text
+requiredForMigration: true
+requiredForMigration: false
+```
+
+Solo los cambios requeridos para migración forman parte obligatoria de la ejecución técnica.
+
+## Estados
+
+Fuente de verdad:
+
+`_shared/status-policy.md`
+
+La policy define:
+
+```text
+evidenceStatus
+actionStatus
+executionStatus
+artifact status
+verification checks
+final verification status
+```
+
+No redefinir enums localmente en este README ni en los skills.
+
+## IDs
+
+IDs de acciones:
+
+```text
+GLOBAL-NNN
+FN-<FUNCTION>-NNN
+SR-ACTION-NNN
+```
+
+IDs de recursos compartidos:
+
+```text
+SR-<TYPE>-<NAME>
+```
+
+`REQ-*` está deprecado para nuevas acciones.
+
+No utilizar UUIDs o hashes para acciones en el MVP.
+
+## Estructura de `.migration`
+
+Crear incrementalmente:
 
 ```text
 .migration/
@@ -879,521 +830,316 @@ Crear incrementalmente.
 └── lessons/
 ```
 
-`resources/` solo existe cuando aplica.
+Crear únicamente las carpetas que correspondan.
 
-`workflows/` solo existe cuando existen workflows Durable.
+`resources/` existe únicamente cuando haya recursos compartidos confirmados.
+
+`workflows/` existe únicamente cuando existan workflows Durable.
 
 No crear carpetas vacías.
 
-# Ownership de información
+## Ownership de información
 
-| Información                         | Owner                                 |
-|-------------------------------------|---------------------------------------|
-| Functions existentes                | `inventory.json`                      |
-| Dependencias existentes             | `inventory.json`                      |
-| Azure package detection             | `inventory.json`                      |
-| Arquitectura observable BEFORE      | `inventory.json`                      |
-| Catálogo humano BEFORE              | `catalog/**`                          |
-| Gap global                          | `assessment.json`                     |
-| Dependency classification           | `assessment.json`                     |
-| Dependency recommendation           | `assessment.json`                     |
-| Dependency target aprobado          | `_shared/dependency-baseline.json`    |
-| Dependency recommendation aprendida | `_shared/dependency-baseline.json`    |
-| Shared resources consolidados       | `shared-resources.json`               |
-| Comportamiento Function             | `analysis.json`                       |
-| Architecture gap Function           | `analysis.json`                       |
-| Dependency impact por Function      | `analysis.json`                       |
-| Acciones Function                   | `analysis.json`                       |
-| Coordinación global                 | global `migration-plan.json`          |
-| Pasos Function                      | Function `migration-plan.json`        |
-| Cambios globales ejecutados         | `repository/preparation.json`         |
-| Refactor Function ejecutado         | `preparation.json`                    |
-| Migración plataforma ejecutada      | `migration.json`                      |
-| Migración Durable ejecutada         | `workflows/**/durable-migration.json` |
-| Resultado final                     | `verification.json`                   |
-| Dependency learning candidate       | `verification.json`                   |
-| Propuesta de aprendizaje            | `.skill-improvement/**`               |
+| Información                                       | Owner                                 |
+|---------------------------------------------------|---------------------------------------|
+| Functions y dependencias existentes               | `inventory.json`                      |
+| Catálogo humano BEFORE                            | `catalog/**`                          |
+| Gap global                                        | `assessment.json`                     |
+| Dependency classification                         | `assessment.json`                     |
+| Dependency target aprobado                        | `_shared/dependency-baseline.json`    |
+| Comportamiento e impacto por Function             | `analysis.json`                       |
+| Necesidades estructurales o técnicas por Function | `analysis.json`                       |
+| Shared resources consolidados                     | `shared-resources.json`               |
+| Acciones globales y coordinación                  | global `migration-plan.json`          |
+| Acciones aprobadas por Function                   | Function `migration-plan.json`        |
+| Preparación global ejecutada                      | `repository/preparation.json`         |
+| Preparación estructural ejecutada                 | Function `preparation.json`           |
+| Migración técnica ejecutada                       | Function `migration.json`             |
+| Migración Durable ejecutada                       | `workflows/**/durable-migration.json` |
+| Resultado final                                   | `verification.json`                   |
+| Aprendizaje de ejecución                          | lessons / `review-skill-performance`  |
 
 Referenciar al owner.
 
 No duplicar información completa sin necesidad.
 
-# Semántica de estados
+## Invalidación
 
-Aplicar:
+Regenerar únicamente el artifact cuya entrada relevante haya cambiado.
 
-`_shared/status-policy.md`
-
-## Evidence
-
-Campo:
-
-`evidenceStatus`
-
-Valores:
-
-- `CONFIRMED`
-- `INFERRED`
-- `UNKNOWN`
-- `NOT_APPLICABLE`
-
-## Action
-
-Campo:
-
-`actionStatus`
-
-Valores:
-
-- `REQUIRED`
-- `NOT_REQUIRED`
-- `REQUIRES_VALIDATION`
-
-## Assessment
-
-Campo principal:
-
-`status`
-
-Valores:
-
-- `READY_FOR_ANALYSIS`
-- `PARTIAL`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
-## Planning
-
-- `READY`
-- `PARTIAL`
-- `BLOCKED`
-
-## Global preparation
-
-- `COMPLETED`
-- `PARTIAL`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
-## Function preparation
-
-- `READY_FOR_MIGRATION`
-- `NOT_APPLICABLE`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
-## Migration
-
-- `MIGRATED`
-- `NOT_APPLICABLE`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
-## Verification checks
-
-- `PASS`
-- `FAIL`
-- `NOT_EXECUTED`
-- `NOT_APPLICABLE`
-- `REQUIRES_REVIEW`
-
-## Final verification
-
-- `VERIFIED`
-- `VERIFIED_WITH_DEBT`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
-
-## Dependency recommendation
-
-No pertenece a `status-policy.md`.
-
-Usar:
-
-- `PROPOSED`
-- `VALIDATED`
-- `REPEATED`
-- `APPROVED`
-
-# IDs
-
-Usar identificadores simples y humanos.
-
-## Global actions
-
-`GLOBAL-NNN`
-
-Ejemplos:
-
-- `GLOBAL-001`
-- `GLOBAL-002`
-
-## Function actions
-
-`FN-<FUNCTION>-NNN`
-
-Ejemplos:
-
-- `FN-REQUESTREPORT-001`
-- `FN-COMPLETEREPORT-001`
-
-No usar:
-
-`REQ-*`
-
-para nuevas acciones.
-
-## Shared resources
-
-`SR-<TYPE>-<NAME>`
-
-Ejemplos:
-
-- `SR-COSMOS-REPORTS`
-- `SR-SERVICEBUS-OUTBOX`
-
-## Shared resource actions
-
-`SR-ACTION-NNN`
-
-Ejemplos:
-
-- `SR-ACTION-001`
-- `SR-ACTION-002`
-
-# Riesgos y unknowns
-
-No requieren ID por defecto.
-
-Agregar ID únicamente cuando deban referenciarse desde varios artefactos.
-
-No introducir UUIDs ni hashes en el MVP.
-
-# Invalidation
-
-Mantenerla simple.
-
-## Rediscover
-
-Cuando:
-
-- cambia significativamente estructura;
-- aparecen o desaparecen Functions;
-- cambian registrations relevantes;
-- cambia `package.json` de forma significativa.
-
-## Reassess
-
-Cuando:
-
-- cambia dependency baseline;
-- cambia un dependency target;
-- cambia Node target;
-- cambia Runtime target;
-- cambia Programming Model target;
-- cambia arquitectura global;
-- aparece nueva evidencia externa relevante.
-
-## Reanalyze
-
-Cuando:
-
-- cambia el slice;
-- cambia dependency assessment relevante;
-- cambia un shared resource;
-- nueva evidencia invalida conclusiones.
-
-## Replan
-
-Cuando:
-
-- cambian `FN-*`;
-- cambia ownership;
-- cambian shared actions;
-- cambian dependency targets;
-- cambia assessment relevante.
-
-## Reverify
-
-Cuando el sistema se modifica después del gate final.
-
-No usar checksums ni state machines complejas en el MVP.
-
-# Build
-
-No ejecutar build global como gate después de cada Function.
-
-Durante preparación/migración se permiten:
-
-- tests selectivos;
-- typecheck selectivo;
-- static checks.
-
-El build global final pertenece a:
-
-`verify-function-app`
-
-# Tests
-
-Secuencia:
+Ejemplos conceptuales:
 
 ```text
-comportamiento actual
-→ refactor
-→ tests
-→ baseline verde
-→ migración
-→ mismos tests verdes
+estructura o Functions cambian
+→ rediscover
+
+target o dependency baseline cambia
+→ reassess
+
+slice o dependency impact cambia
+→ reanalyze
+
+acciones, ownership o scope cambian
+→ replan
+
+sistema cambia después de verification
+→ reverify
 ```
 
-No agregar integration tests en el alcance actual.
+No implementar checksums ni una state machine compleja en el MVP.
 
-Los tests de aplicación usan Jest.
+Los artifacts históricos BEFORE no deben reescribirse para representar AFTER.
 
-Los tests internos de scripts del toolkit pueden utilizar APIs core compatibles con Node.js 14 cuando sea necesario para
-no depender de las dependencias del repo objetivo.
+## Seguridad
 
-# Seguridad
+Fuente de verdad:
 
-Excluir contenido sensible antes de lectura.
+`_shared/security-policy.md`
 
-No leer automáticamente:
+La policy aplica antes de cualquier discovery, analysis, planning, preparation, migration o verification.
 
-- `.env*`;
-- `local.settings.json`;
-- certificados;
-- claves privadas;
-- secretos;
-- CI/CD protegido.
+Regla:
 
-Puede registrarse:
+```text
+detect
+→ exclude
+→ never read protected content
+```
 
-- existencia;
-- path;
-- nombre de clave.
+Detectar la existencia de un archivo protegido no autoriza inspeccionarlo.
 
-Nunca valores.
+Ningún skill, agente o script puede saltarse esta policy para completar automáticamente una validación.
 
-La existencia de un archivo protegido puede detectarse.
+## Scripts internos
 
-Su contenido no debe abrirse.
+Los scripts internos deben funcionar con Node.js 14 o superior.
 
-# Scripts internos
+Su runtime es independiente del runtime objetivo de la Function App.
 
-Los scripts deben funcionar con Node.js 14 o superior.
+Mantener un script dentro de un skill cuando solo ese skill lo utilice.
 
-Su runtime es independiente del target de la Function App.
+Promover tooling a shared únicamente cuando exista reuse real.
 
-Mantener un script dentro de un skill cuando solo ese skill lo necesita.
+Los scripts son herramientas internas del toolkit.
 
-Promoverlo a shared únicamente cuando exista reuse real.
+No constituyen una CLI pública.
 
-# Economía de contexto
+## Economía de contexto
+
+Preferir este orden:
+
+```text
+existing artifacts
+→ deterministic tools
+→ selective source inspection
+→ broader repository inspection only when necessary
+```
 
 Preferir:
 
-- artifacts ya existentes;
 - referencias por ID;
-- análisis por Function;
 - source slices;
-- scripts deterministas;
-- dependency knowledge acumulado.
+- artefactos estructurados;
+- análisis por Function;
+- resultados deterministas;
+- conocimiento aprobado existente.
 
 Evitar:
 
-- releer todo el repo;
+- releer todo el repositorio;
+- cargar todos los analyses cuando solo se necesita uno;
 - investigar dependencias irrelevantes;
-- cargar todos los analyses para una sola Function;
-- repetir investigaciones ya aprobadas sin motivo.
+- repetir evidencia ya disponible;
+- duplicar información cuyo owner ya existe.
 
-# Regla final
+## Mejora del toolkit
 
-El toolkit debe buscar el menor cambio suficiente para alcanzar el target con:
+`review-skill-performance` está fuera del flujo operativo.
 
-- evidencia;
-- seguridad;
-- trazabilidad;
-- comportamiento protegido;
-- dependency targets reproducibles;
-- conocimiento reutilizable gobernado;
-- arquitectura consistente;
-- ownership claro;
-- recursos compartidos coordinados;
-- verificación reproducible;
-- mínima complejidad accidental.
+Puede consumir:
 
-La IA puede:
+- lessons;
+- findings;
+- failures;
+- verification;
+- eval results.
 
-- descubrir;
-- analizar;
-- investigar;
-- sugerir;
-- ejecutar cambios aprobados;
-- registrar evidencia;
-- proponer aprendizaje.
+Puede proponer:
 
-La IA no puede convertir por sí sola una recomendación nueva en estándar permanente del toolkit.
+- evolución de un skill;
+- evolución de scripts;
+- nuevos evals;
+- simplificaciones;
+- correcciones de policies o templates;
+- actualización controlada del dependency baseline.
 
-# Uso rápido con GitHub Copilot Chat
+Nunca modifica automáticamente el toolkit.
 
-El toolkit se ejecuta de forma guiada desde GitHub Copilot Chat dentro del repositorio objetivo.
-
-El developer conserva el control sobre cada etapa.
-
-## Flujo
-
-```mermaid
-flowchart LR
-  A[Discover] --> B[Assess]
-  B --> C[Analyze Functions]
-  C --> D[Plan]
-  D --> E[Prepare]
-  E --> F[Migrate]
-  F --> G[Verify]
-  G --> H[Review Lessons]
-```
-
-Cada etapa consume los artefactos generados por la anterior.
-
-No es necesario ejecutar una etapa cuando el target correspondiente ya está satisfecho.
-
-## Inicio
-
-Copiar el bundle `.github/` del toolkit al repositorio objetivo.
-
-Abrir el repositorio en un entorno compatible con GitHub Copilot Chat.
-
-Después iniciar el flujo indicando explícitamente el skill.
-
-Ejemplo:
+Flujo:
 
 ```text
-Usa el skill discover-function-app para analizar este repositorio.
-
-Trabaja desde la raíz actual.
-Respeta las políticas de seguridad.
-No leas archivos sensibles ni CI/CD protegido.
-Genera los artefactos definidos por el skill.
+execution
+→ observation
+→ proposal
+→ review-skill-performance
+→ human review
+→ approved change
+→ evals
 ```
 
-## Assessment
+Una ejecución exitosa no convierte automáticamente una recomendación en estándar permanente.
 
-Después de revisar el inventory:
+## Uso rápido con GitHub Copilot Chat
+
+### Discovery
+
+```text
+Usa el skill discover-function-app.
+
+Trabaja desde la raíz actual.
+
+Respeta security-policy.md antes de leer cualquier archivo.
+
+Genera únicamente los artifacts definidos por el skill.
+```
+
+### Assessment
 
 ```text
 Usa assess-function-app.
 
-Consume los artefactos existentes en .migration.
-Evalúa la Function App contra el target de la campaña.
-Usa dependency-baseline.json.
+Consume los artifacts existentes en .migration.
+
+Evalúa la Function App contra el target aprobado de dependency-baseline.json.
+
 No modifiques código.
 ```
 
-## Análisis por Function
-
-Ejecutar por cada Function o unidad funcional relevante:
+### Análisis de una Function
 
 ```text
 Usa analyze-function para RequestReport.
 
-Consume inventory y assessment.
+Consume inventory, assessment y el catálogo BEFORE.
+
 Analiza únicamente el slice necesario.
+
 No modifiques código.
 ```
 
-Repetir para las Functions necesarias.
-
-## Plan
-
-Cuando los análisis requeridos estén disponibles:
+### Planning
 
 ```text
 Usa plan-function-migration.
 
-Consume inventory, assessment y los analyses existentes.
+Consume inventory, assessment y los analyses requeridos.
+
+Determina requestedScope, effectiveScope y affectedFunctionsOutsideScope.
+
 Consolida shared resources cuando corresponda.
+
 Genera el plan global y los planes por Function.
+
 No modifiques código.
 ```
 
-## Preparación
-
-Primero preparar la Function App:
+### Preparación global
 
 ```text
 Usa prepare-function-app.
 
 Ejecuta únicamente las acciones GLOBAL-* y SR-ACTION-* aprobadas por el plan.
+
 No selecciones nuevas versiones.
+
+No ejecutes todavía el build global final.
 ```
 
-Después preparar cada Function:
+### Preparación de Function
 
 ```text
 Usa prepare-function para RequestReport.
 
-Ejecuta únicamente las acciones FN-* aprobadas.
-Preserva comportamiento.
-Agrega los tests requeridos.
+Ejecuta únicamente las acciones FN-* aprobadas con requiredForMigration=true que correspondan a preparation.
+
+Preserva comportamiento observable.
+
+No realices modernización adicional.
 ```
 
-## Migración
-
-Para Programming Model:
+### Programming Model v4
 
 ```text
 Usa migrate-programming-model-v4 para RequestReport.
 
-Consume el plan y la preparación existentes.
-Migra únicamente el Azure adapter.
+Consume plan y preparation existentes.
+
+Migra únicamente las responsabilidades técnicas del Azure adapter que correspondan.
+
+No realices refactorización adicional.
 ```
 
-Para Durable:
+### Durable
 
 ```text
 Usa migrate-durable-functions-v4 para GenerateReportWorkflow.
 
-Trata el workflow como una unidad.
+Trata el workflow como una unidad coherente.
+
 Preserva comportamiento y determinismo.
+
+No asumas seguridad de replay de instancias activas sin evidencia.
 ```
 
-## Verificación
-
-Cuando todas las adaptaciones estén completas:
+### Verification
 
 ```text
 Usa verify-function-app.
 
 Compara BEFORE, PLAN y AFTER.
+
 Ejecuta los gates finales.
+
+Verifica contratos observables y acciones requeridas.
+
 No corrijas automáticamente los fallos.
 ```
 
-## Mejora del toolkit
-
-Después de una o varias migraciones:
+### Mejora del toolkit
 
 ```text
 Usa review-skill-performance.
 
-Revisa lessons, verification y findings.
-Propón mejoras o dependency knowledge reutilizable.
-No modifiques automáticamente los skills ni la baseline.
+Revisa lessons, verification, failures y evals disponibles.
+
+Propón evoluciones mínimas basadas en evidencia.
+
+No modifiques automáticamente skills, policies, templates ni dependency-baseline.json.
 ```
 
 ## Regla de trabajo
 
-La interacción recomendada es:
+Interacción recomendada:
 
 ```text
 skill
-→ resultado
+→ artifact
 → revisión del developer
 → siguiente skill
 ```
 
-El developer decide cuándo avanzar.
+GitHub Copilot Chat es el punto principal de interacción.
 
-GitHub Copilot Chat es el punto de interacción.
+Los scripts internos son herramientas deterministas del skill.
 
-Los scripts internos son herramientas del skill, no una interfaz pública del toolkit.
+El toolkit debe buscar el menor cambio suficiente para alcanzar el target técnico con:
+
+- evidencia;
+- seguridad;
+- trazabilidad;
+- comportamiento preservado;
+- targets reproducibles;
+- ownership claro;
+- recursos compartidos coordinados;
+- verificación reproducible;
+- mínima complejidad accidental.

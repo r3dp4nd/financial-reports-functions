@@ -1,34 +1,42 @@
 ---
 name: prepare-function
-description: Prepara una Function para migración refactorizándola hacia la arquitectura objetivo, aislando infraestructura cuando corresponda y agregando tests que protejan su comportamiento actual.
+description: Prepara una Function para su migración técnica ejecutando únicamente acciones locales aprobadas de estructura, testabilidad y adaptación previa, preservando su comportamiento observable y sin migrar todavía el Programming Model ni workflows Durable.
 ---
 
 # Prepare Function
 
 ## Objetivo
 
-Dejar una Function preparada para su siguiente migración de plataforma.
+Ejecutar la preparación local aprobada para una Function antes de su migración técnica.
 
-Debe:
+Debe cuando corresponda:
 
-- preservar comportamiento;
-- aplicar acciones estructurales requeridas;
-- reducir acoplamiento al runtime;
-- respetar recursos compartidos;
-- lograr testabilidad suficiente;
-- obtener baseline verde.
+- preservar comportamiento observable;
+- ejecutar acciones `FN-*` asignadas a preparation;
+- aplicar cambios estructurales mínimos requeridos;
+- habilitar testabilidad;
+- ejecutar adaptaciones locales de dependencias ya aprobadas;
+- respetar recursos compartidos y sus acciones propietarias;
+- dejar visibles las necesidades de testing pendientes.
 
-No migra Programming Model ni workflows Durable.
+No migra Programming Model.
+
+No migra workflows Durable.
+
+No genera nuevas pruebas de comportamiento.
 
 ## Políticas
 
-Aplicar:
+Aplicar siempre:
 
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
-- `../_shared/lessons-policy.md`
-- `../_shared/architecture-policy.md`
 - `../_shared/status-policy.md`
+
+Aplicar cuando corresponda:
+
+- `../_shared/architecture-policy.md`
+- `../_shared/lessons-policy.md`
 
 ## Precondiciones
 
@@ -43,117 +51,195 @@ Cuando corresponda:
 
 `.migration/resources/shared-resources.json`
 
+Las acciones globales o shared requeridas por las `FN-*` de esta etapa deben encontrarse en un estado que permita
+continuar.
+
 ## Entradas
 
 Consumir primero:
 
 - analysis;
-- Function plan;
+- Function migration plan;
 - global plan;
 - global preparation;
-- shared resources.
+- shared resources cuando existan.
 
 No reconstruir analysis.
 
+No reinterpretar planning.
+
+## Principio
+
+Ejecutar únicamente acciones aprobadas asignadas a esta etapa.
+
+Antes de modificar:
+
+1. confirmar Action ID;
+2. comprobar `requiredForMigration`;
+3. verificar `dependsOn`;
+4. comprobar el estado actual;
+5. preservar lo válido;
+6. aplicar el menor cambio necesario;
+7. validar el resultado;
+8. registrar `executionStatus`;
+9. registrar desviaciones.
+
+No generar trabajo adicional por conveniencia o preferencia arquitectónica.
+
 ## Acciones
 
-Ejecutar acciones `FN-*` autorizadas por el plan.
+Ejecutar únicamente acciones `FN-*` cuyo owner o fase corresponda a preparation.
 
-Principalmente:
+Ejemplos:
 
 - `REQUIRED_TESTABILITY`;
 - `STRUCTURAL`;
-- otras acciones locales explícitamente planificadas.
+- `REQUIRED_DEPENDENCY` cuando represente adaptación local previa;
+- otras acciones locales explícitamente asignadas a esta etapa.
 
-No ejecutar:
+No ejecutar automáticamente:
 
 - `TECHNICAL_DEBT`;
 - `OPTIMIZATION`;
+- acciones con `requiredForMigration = false`.
 
-salvo que hayan sido promovidas explícitamente a requisito mediante nuevo análisis/plan aprobado.
+No ejecutar acciones de Programming Model o Durable desde esta etapa.
 
 ## IDs
 
-Preservar los IDs provenientes de `analysis.json`.
+Preservar exactamente los Action IDs definidos por planning.
 
 Ejemplo:
 
 `FN-REQUESTREPORT-001`
 
-No crear un ID nuevo para representar la misma acción.
+Este skill no genera nuevos Action IDs.
+
+Si descubre una necesidad no representada por el plan:
+
+- no ejecutarla;
+- registrar la desviación;
+- utilizar `BLOCKED` o `REQUIRES_REVIEW` cuando afecte trabajo requerido;
+- volver a planning cuando sea necesaria una nueva acción.
+
+## Execution status
+
+Cada acción procesada utiliza:
+
+- `COMPLETED`;
+- `FAILED`;
+- `NOT_EXECUTED`;
+- `NOT_APPLICABLE`;
+- `BLOCKED`;
+- `REQUIRES_REVIEW`.
+
+Aplicar:
+
+`../_shared/status-policy.md`
+
+No utilizar `PASS` o `FAIL` como estado de ejecución de una acción.
 
 ## Dependency adaptations
 
-No decidir versiones de paquetes.
+No decidir versiones de packages.
 
-Las versiones target provienen de:
+Los targets provienen del plan aprobado y de su baseline referenciada.
 
-- assessment;
-- plan;
-- dependency baseline referenciada.
-
-Este skill únicamente ejecuta adaptaciones locales `FN-*` cuando el cambio de dependencia afecta el código de la
-Function.
+Este skill ejecuta únicamente adaptaciones locales `FN-*` asignadas a preparation.
 
 Ejemplo conceptual:
 
-    @azure/cosmos 3.x → baseline target
-             ↓
-    SR-ACTION-* adapta infraestructura compartida
-             ↓
-    FN-* adapta consumidor solo si es necesario
+```text
+package target global
+        ↓
+GLOBAL-*
+        ↓
+shared implementation cuando aplica
+        ↓
+SR-ACTION-*
+        ↓
+consumer-specific preparation
+        ↓
+FN-*
+```
 
-No modificar `package.json` nuevamente si la acción propietaria ya fue ejecutada globalmente.
+No modificar `package.json` nuevamente si la acción propietaria global ya fue ejecutada.
 
 No seleccionar una versión alternativa.
 
-## Arquitectura
+Una adaptación específica del Programming Model pertenece a:
+
+`migrate-programming-model-v4`
+
+## Cambios estructurales
 
 Aplicar:
 
 `../_shared/architecture-policy.md`
 
-Azure adapters:
+únicamente para acciones estructurales aprobadas.
+
+Preservar las convenciones existentes cuando sean coherentes.
+
+No imponer rutas como:
 
 `src/functions/`
 
-Lógica funcional:
+o:
 
 `src/<Capability>/`
 
-Crear solo las piezas requeridas.
+cuando el repositorio ya posea una estructura válida y el plan no requiera moverla.
+
+Crear únicamente piezas con responsabilidad real.
 
 No crear capas vacías.
 
-## Adapter Azure
+No reorganizar código para hacerlo coincidir con ejemplos arquitectónicos.
 
-Debe concentrarse principalmente en:
+## Azure adapter
+
+Cuando exista una acción aprobada de separación, limitar el adapter cuando corresponda a responsabilidades como:
 
 - registro;
-- adaptación;
-- composition;
-- invocation;
-- response mapping.
+- adaptación de entrada;
+- composición de dependencias;
+- invocación;
+- adaptación de salida.
 
-Si el plan exige extracción funcional, no mantener la lógica significativa dentro del adapter.
+Extraer únicamente la lógica funcional identificada por el plan.
+
+No utilizar esta etapa para limpiar completamente un handler legacy.
 
 ## Contracts
 
-Crear únicamente cuando proporcionen un límite real.
+Crear únicamente cuando una acción aprobada requiera un boundary real.
 
 Usar nombres naturales.
 
 Ejemplos:
 
-- `ReportRepository`
-- `MessagePublisher`
-- `ReportGenerator`
+- `ReportRepository`;
+- `MessagePublisher`;
+- `ReportGenerator`.
 
-No imponer `*.port.ts`.
+No imponer:
+
+`*.port.ts`
+
+No introducir un contract únicamente para satisfacer una estructura arquitectónica.
 
 ## Infraestructura
 
-Aislar cuando corresponda:
+Aislar únicamente cuando exista una acción aprobada relacionada con:
+
+- compatibilidad;
+- testabilidad;
+- ownership;
+- adaptación de dependencia;
+- preservación de comportamiento.
+
+Puede incluir cuando corresponda:
 
 - Cosmos DB;
 - MongoDB;
@@ -163,9 +249,17 @@ Aislar cuando corresponda:
 - HTTP;
 - otros SDKs.
 
+La existencia de una integración externa no obliga por sí sola a introducir un nuevo boundary.
+
 ## Recursos compartidos
 
-Consumir resource IDs y shared action dependencies.
+Consumir:
+
+- Resource IDs;
+- acciones shared;
+- `dependsOn`;
+
+definidos por planning.
 
 Ejemplo:
 
@@ -173,55 +267,64 @@ Ejemplo:
       "resourceId": "SR-COSMOS-REPORTS"
     }
 
-Si una acción compartida obligatoria:
+No crear una implementación local alternativa para reemplazar un recurso compartido pendiente.
+
+Si una acción local requerida depende de:
 
 `SR-ACTION-*`
 
-está pendiente:
+y esa dependencia no se encuentra completada:
+
+no ejecutar la acción dependiente.
+
+Si esto impide completar la preparación requerida:
 
 `status = BLOCKED`
 
-No crear una implementación local alternativa.
-
 ## Configuración
 
-Aislar `process.env` cuando sea requerido por:
+Modificar únicamente configuración permitida por:
+
+`security-policy.md`
+
+Aislar referencias como:
+
+`process.env.KEY`
+
+solo cuando una acción aprobada lo requiera para:
 
 - testabilidad;
-- arquitectura;
-- plan.
+- compatibilidad;
+- separación estructural necesaria.
 
-Nunca leer valores sensibles.
+Registrar únicamente nombres de claves.
 
-## Refactor scope
+Nunca valores.
 
-Clasificar:
+No leer ni modificar archivos protegidos originales.
 
-- `NONE`
-- `MINIMAL`
-- `SIGNIFICANT`
+## Preparación para pruebas
 
-Esta clasificación no usa el campo `status`.
+Ejecutar únicamente cambios necesarios para habilitar la protección del comportamiento.
 
-Si un refactor `SIGNIFICANT` excede el alcance aprobado:
+Puede incluir cuando esté planificado:
 
-`status = REQUIRES_REVIEW`
+- introducir un seam mínimo;
+- permitir sustitución de una dependencia externa;
+- separar construcción rígida de un cliente;
+- aislar acceso a configuración;
+- separar lógica funcional necesaria para poder probarla.
 
-## Tests
+No generar nuevas pruebas desde este skill.
 
-Agregar únicamente tests definidos o derivados directamente del análisis/plan.
+No diseñar una suite adicional fuera de los `testingRequirements` del plan.
 
-Priorizar:
+La generación de pruebas pertenece a la capability de testing correspondiente.
 
-1. comportamiento principal;
-2. validaciones;
-3. decisiones;
-4. errores;
-5. límites externos.
+## Baseline de pruebas existente
 
-No agregar integration tests.
-
-## Baseline
+Cuando existan pruebas relevantes, pueden ejecutarse selectivamente para comprobar que la preparación no introdujo una
+regresión observable.
 
 Registrar:
 
@@ -231,38 +334,86 @@ Registrar:
 - tests;
 - failures;
 - coverage cuando aplique;
-- status.
+- status;
+- evidence.
 
-El status de baseline usa:
+Estados:
 
-- `PASS`
-- `FAIL`
-- `NOT_EXECUTED`
-- `REQUIRES_REVIEW`
+- `PASS`;
+- `FAIL`;
+- `NOT_EXECUTED`;
+- `NOT_APPLICABLE`;
+- `REQUIRES_REVIEW`.
+
+No afirmar `PASS` sin ejecutar la validación.
+
+La ausencia de una baseline existente no autoriza generar pruebas desde este skill.
+
+Los `testingRequirements` pendientes deben permanecer visibles para la siguiente etapa.
 
 ## Programming Model
 
-Preservar temporalmente el modelo actual.
+Preservar temporalmente el Programming Model actual.
 
-No migrarlo aquí.
+No modificar registro, trigger o bindings como parte de este skill salvo que una acción no relacionada con la migración
+del Programming Model requiera preservar su forma actual.
+
+La migración pertenece a:
+
+`migrate-programming-model-v4`
 
 ## Durable
 
-Puede refactorizar una Activity internamente cuando esté planificado.
+Puede ejecutar cambios estructurales locales aprobados dentro de una Activity cuando sean necesarios para preparation.
 
-No cambiar:
+No modificar:
 
 - workflow graph;
 - orchestration semantics;
 - retries;
 - timers;
-- events.
+- external events;
+- sub-orchestration behavior.
+
+La migración Durable pertenece a:
+
+`migrate-durable-functions-v4`
 
 ## Catálogo BEFORE
 
-No modificar la ficha histórica:
+No modificar:
 
 `.migration/catalog/functions/<FunctionName>.md`
+
+La ficha representa el estado histórico BEFORE.
+
+## Validaciones
+
+Ejecutar únicamente validaciones relevantes a las acciones realizadas.
+
+Cada validación utiliza:
+
+- `PASS`;
+- `FAIL`;
+- `NOT_EXECUTED`;
+- `NOT_APPLICABLE`;
+- `REQUIRES_REVIEW`.
+
+Registrar evidencia.
+
+No utilizar el build global final como gate de este skill.
+
+## Desviaciones del plan
+
+Registrar cualquier diferencia entre lo planificado y lo ejecutado.
+
+Una desviación no autoriza trabajo nuevo.
+
+Cuando se descubra una nueva necesidad requerida:
+
+- no ejecutarla;
+- registrar evidencia;
+- volver a planning cuando corresponda.
 
 ## Salida estructurada
 
@@ -270,42 +421,78 @@ Crear:
 
 `.migration/functions/<FunctionName>/preparation.json`
 
-Debe contener:
+Debe contener cuando corresponda:
 
 - `schemaVersion`;
 - `function`;
 - `status`;
+- `planRef`;
 - `behaviorPreserved`;
-- `architectureBefore`;
-- `architectureChanges`;
+- `actionResults`;
+- `structuralChanges`;
 - `resultingStructure`;
-- `requiredActionsExecuted`;
 - `sharedResources`;
 - `sharedActionDependencies`;
 - `filesModified`;
 - `contractsIntroduced`;
 - `infrastructureIsolated`;
-- `testsAdded`;
-- `baseline`;
+- `testabilityPreparation`;
+- `existingTestBaseline`;
+- `testingRequirementsPending`;
 - `validations`;
+- `deviationsFromPlan`;
 - `risks`;
 - `unknowns`;
-- `technicalDebtRemaining`.
+- `reviewRequirements`;
+- `technicalDebtRemaining`;
+- `evidence`.
+
+## actionResults
+
+Cada acción procesada debe registrar como mínimo:
+
+- `actionId`;
+- `executionStatus`.
+
+Registrar además cuando corresponda:
+
+- reason;
+- filesModified;
+- evidence.
+
+No crear una acción nueva desde execution.
 
 ## Estado principal
 
 Usar únicamente:
 
-- `READY_FOR_MIGRATION`
-- `NOT_APPLICABLE`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
+- `READY_FOR_MIGRATION`;
+- `NOT_APPLICABLE`;
+- `BLOCKED`;
+- `REQUIRES_REVIEW`.
 
-Ejemplo:
+### READY_FOR_MIGRATION
 
-    {
-      "status": "READY_FOR_MIGRATION"
-    }
+Todas las acciones requeridas de preparation para esta Function están:
+
+- `COMPLETED`;
+- o justificadamente `NOT_APPLICABLE`.
+
+No existen blockers locales para continuar con las siguientes etapas del plan.
+
+`READY_FOR_MIGRATION` no significa que puedan omitirse `testingRequirements` pendientes.
+
+### NOT_APPLICABLE
+
+La Function no requiere preparación local antes de su siguiente etapa.
+
+### BLOCKED
+
+Un impedimento técnico conocido impide completar una acción de preparation requerida.
+
+### REQUIRES_REVIEW
+
+Completar la preparación requiere una decisión humana.
 
 No utilizar evidencia como estado principal.
 
@@ -336,40 +523,66 @@ Usar:
 
 ## Lecciones
 
-Crear:
+Aplicar cuando corresponda:
 
-`.migration/lessons/prepare-function/<FunctionName>.json`
+`../_shared/lessons-policy.md`
 
-`.migration/lessons/prepare-function/<FunctionName>.md`
+Registrar lessons únicamente cuando exista aprendizaje relevante.
+
+No crear artifacts de lessons vacíos como requisito de cierre.
 
 ## Criterio de cierre
 
 `READY_FOR_MIGRATION` requiere:
 
-- comportamiento preservado;
-- acciones `FN-*` necesarias completadas;
-- adaptaciones locales de dependency upgrades completadas cuando apliquen;
-- arquitectura requerida aplicada;
-- shared dependencies disponibles;
-- baseline requerida en `PASS`;
-- ausencia de blocker local.
+- todas las `FN-*` de preparation con `requiredForMigration = true` fueron procesadas;
+- las acciones requeridas terminaron `COMPLETED` o justificadamente `NOT_APPLICABLE`;
+- adaptaciones locales de dependencias asignadas a preparation fueron completadas;
+- shared dependencies requeridas están disponibles;
+- cambios estructurales ejecutados estaban aprobados por el plan;
+- testabilidad requerida por preparation fue habilitada;
+- `testingRequirements` pendientes permanecen explícitos;
+- Programming Model fue preservado;
+- semántica Durable no fue modificada;
+- archivos y validaciones quedaron registrados;
+- desviaciones permanecen visibles;
+- no existe blocker local;
+- no se generaron nuevos Action IDs;
+- no se modificó el catálogo BEFORE.
+
+La ausencia de lessons no impide cerrar preparation.
 
 ## Fuera de alcance
 
 No debe:
 
+- generar nuevas pruebas de comportamiento;
 - migrar Programming Model;
 - migrar Runtime;
 - migrar workflow Durable;
 - ejecutar global actions;
+- ejecutar `SR-ACTION-*` como adaptación local;
+- generar nuevos Action IDs;
 - seleccionar dependency versions;
+- modificar packages ya propiedad de una acción global salvo instrucción explícita del plan;
 - duplicar shared resources;
-- modificar comportamiento;
-- optimizar;
+- modificar intencionalmente comportamiento observable;
+- ejecutar acciones con `requiredForMigration = false` como trabajo obligatorio;
 - resolver deuda no requerida;
-- desplegar.
+- modernizar;
+- optimizar;
+- desplegar;
+- ejecutar el build global final.
 
-Siguiente skill:
+Siguiente etapa:
 
-- `migrate-programming-model-v4`
-- o `migrate-durable-functions-v4`
+`generate-function-tests`
+
+cuando existan `testingRequirements` pendientes.
+
+Después:
+
+- `migrate-programming-model-v4`;
+- o `migrate-durable-functions-v4`;
+
+según el plan.

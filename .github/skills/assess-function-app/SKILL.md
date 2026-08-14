@@ -1,43 +1,44 @@
 ---
 name: assess-function-app
-description: Evalúa una Azure Function App descubierta previamente y determina qué dimensiones técnicas, arquitectónicas, dependencias y recursos compartidos requieren cambio o validación para alcanzar el target sin modificar código.
+description: Evalúa una Azure Function App descubierta previamente y determina qué dimensiones técnicas, dependencias, tooling y condiciones transversales requieren cambio o validación para alcanzar el target aprobado sin modificar código.
 ---
 
 # Assess Function App
 
 ## Objetivo
 
-Determinar el gap global entre el estado actual de la Function App y el target.
+Determinar el gap global entre el estado actual de una Function App y el target técnico aprobado.
 
-Debe responder qué dimensiones:
+Debe identificar qué dimensiones:
 
-- ya cumplen;
+- ya cumplen el target;
 - requieren cambio;
 - requieren validación;
-- presentan gap arquitectónico;
-- presentan riesgo transversal.
+- presentan riesgo transversal;
+- requieren análisis posterior por Function.
 
-No analiza todavía comportamiento detallado por Function.
+No analiza todavía comportamiento detallado ni impacto local profundo por Function.
+
+No genera acciones de migración.
 
 ## Políticas
 
-Aplicar:
+Aplicar siempre:
 
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
-- `../_shared/lessons-policy.md`
-- `../_shared/architecture-policy.md`
 - `../_shared/status-policy.md`
 
-Usar como referencia de dependencias:
+Aplicar cuando corresponda:
+
+- `../_shared/architecture-policy.md`
+- `../_shared/lessons-policy.md`
+
+Usar como referencia técnica:
 
 `../_shared/dependency-baseline.json`
 
-La baseline contiene:
-
-- targets Azure aprobados;
-- recomendaciones aprendidas aprobadas;
-- reglas de investigación y promoción.
+El baseline define targets aprobados.
 
 No implica upgrade automático.
 
@@ -53,34 +54,62 @@ Si existen contradicciones o información insuficiente:
 
 - registrarlas;
 - no reconstruir discovery;
+- no reemplazar incertidumbre por supuestos;
 - utilizar los estados definidos en `status-policy.md`.
 
 ## Entradas
 
 Consumir primero:
 
-- inventory;
+- `inventory.json`;
 - catálogo BEFORE;
-- dependency baseline;
-- shared resource candidates.
+- `dependency-baseline.json`;
+- shared resource candidates relevantes.
 
-Consultar source únicamente cuando falte evidencia concreta necesaria para evaluar una dimensión.
+Consultar source únicamente cuando falte evidencia concreta necesaria para evaluar una dimensión global.
 
 No cargar el repositorio completo.
 
-## Target
+Aplicar `security-policy.md` antes de toda inspección adicional.
+
+## Dependency baseline
+
+Registrar la referencia del baseline utilizado:
+
+```text
+baselineId
+baselineRevision
+```
+
+El baseline es owner de:
+
+- target técnico;
+- package targets aprobados.
+
+Assessment determina:
+
+`¿Necesita esta Function App cambiar para alcanzar esos targets?`
+
+Assessment no:
+
+- redefine targets aprobados;
+- modifica el baseline;
+- adopta automáticamente versiones más recientes;
+- convierte investigación externa en target aprobado.
+
+## Target técnico
 
 Evaluar frente a:
 
 - Node.js 24;
 - Azure Functions Runtime v4;
 - Programming Model v4;
-- dependency baseline aprobada;
-- capacidad de build y tests;
-- arquitectura objetivo;
-- recursos compartidos con ownership y límites coherentes.
+- package targets aprobados aplicables desde el baseline.
 
-El target no implica optimización.
+Otras dimensiones como testing, TypeScript, tooling, estructura o recursos compartidos se evalúan por su impacto sobre
+la migración.
+
+No constituyen por sí solas un target arquitectónico global.
 
 ## Modelo de dimensión
 
@@ -96,14 +125,14 @@ No utilizar `status` para representar evidencia interna.
 
 ## Dimensiones técnicas
 
-Evaluar independientemente:
+Evaluar independientemente cuando corresponda:
 
 - Node.js;
 - Azure Functions Runtime;
 - Programming Model;
 - Durable Functions;
 - dependencias;
-- TypeScript;
+- TypeScript y tooling;
 - testing;
 - capacidad global de validación.
 
@@ -113,14 +142,18 @@ Determinar:
 
 - versión declarada;
 - target;
-- necesidad de cambio;
-- riesgos globales.
+- necesidad global de cambio;
+- riesgos globales observables.
 
 No considerar una declaración de Node.js como evidencia suficiente de compatibilidad del source.
 
+El impacto concreto de Node.js 24 sobre una Function pertenece a:
+
+`analyze-function`
+
 ## Azure Functions Runtime
 
-Determinar la versión cuando exista evidencia suficiente.
+Determinar la versión actual únicamente cuando exista evidencia suficiente.
 
 No confundir Runtime con Programming Model.
 
@@ -137,44 +170,46 @@ No leer CI/CD protegido para resolverlo.
 
 ## Programming Model
 
-Si está confirmado v4:
+Usar las clasificaciones provenientes de discovery:
 
-    {
-      "current": "v4",
-      "target": "v4",
-      "evidenceStatus": "CONFIRMED",
-      "actionStatus": "NOT_REQUIRED"
-    }
+- `V3`;
+- `V4`;
+- `MIXED`;
+- `UNKNOWN`.
 
-Si está confirmado legacy:
+Ejemplos conceptuales:
 
-`actionStatus = REQUIRED`
+```text
+V4
+→ actionStatus: NOT_REQUIRED
 
-cuando el target exige v4.
+V3
+→ actionStatus: REQUIRED
 
-Si existe evidencia contradictoria:
+UNKNOWN
+→ actionStatus: REQUIRES_VALIDATION
+```
 
-- mantener la contradicción;
-- no seleccionar silenciosamente una versión.
+Cuando exista `MIXED`, conservar la evidencia y determinar si existe cambio requerido o validación adicional.
+
+No seleccionar silenciosamente una clasificación cuando exista evidencia contradictoria.
 
 ## Durable Functions
 
-Si no existe:
+Si no existe Durable:
 
 `evidenceStatus = NOT_APPLICABLE`
 
-Si existe:
-
-evaluar globalmente:
+Si existe, evaluar globalmente:
 
 - package;
 - versión actual;
-- versión target aprobada cuando exista;
-- modelo;
-- workflows observables;
+- target aprobado cuando exista;
+- modelo observable;
+- workflows detectados;
 - necesidad de migración especializada.
 
-El impacto detallado pertenece al análisis posterior.
+El impacto detallado del workflow pertenece al análisis y migración posteriores.
 
 ## Dependencias
 
@@ -182,46 +217,38 @@ Evaluar únicamente dependencias relevantes para:
 
 - Node.js 24;
 - Azure Functions;
-- Durable;
+- Durable Functions;
 - Azure SDK;
 - build;
 - tests;
+- tooling;
 - infraestructura;
-- comportamiento afectado por la migración.
+- comportamiento potencialmente afectado por la migración.
 
 No investigar todo `package.json` indiscriminadamente.
 
-## Clasificación
+Antigüedad no implica incompatibilidad.
 
-Cada dependencia relevante debe clasificarse como:
+## Clasificación de dependencias
 
-- `AZURE_BASELINED`
-- `AZURE_UNMAPPED`
-- `LEARNED`
-- `UNMAPPED`
+Cada dependencia relevante puede clasificarse como:
+
+- `BASELINED`;
+- `AZURE_UNMAPPED`;
+- `UNMAPPED`.
 
 La clasificación no reemplaza:
 
 - `evidenceStatus`;
 - `actionStatus`.
 
-## Azure package
+## BASELINED
 
-Considerar Azure package cuando:
+Una dependencia es `BASELINED` cuando existe en:
 
-- coincide con `azurePolicy.packagePatterns`;
-- aparece en `azurePolicy.additionalPackages`;
-- existe en `azurePackages`.
+`dependency-baseline.managedPackages`
 
-El campo `azurePackage` producido por inventory puede utilizarse como señal determinista.
-
-## AZURE_BASELINED
-
-Cuando una dependencia existe en:
-
-`dependency-baseline.azurePackages`
-
-usar la versión target aprobada.
+Usar exclusivamente el target aprobado del baseline.
 
 Registrar cuando corresponda:
 
@@ -230,204 +257,118 @@ Registrar cuando corresponda:
 - currentVersion;
 - targetVersion;
 - baselineId;
+- baselineRevision;
+- category;
 - impactAnalysisRequired;
 - recommendationSource;
 - evidenceStatus;
 - actionStatus.
 
-Ejemplo:
+Ejemplo conceptual:
 
     {
       "package": "@azure/cosmos",
-      "classification": "AZURE_BASELINED",
-      "currentVersion": "^3.10.5",
-      "targetVersion": "4.10.0",
+      "classification": "BASELINED",
+      "currentVersion": "<declared-version>",
+      "targetVersion": "<approved-target>",
       "baselineId": "node24-azure-functions-v4",
+      "baselineRevision": 1,
       "impactAnalysisRequired": true,
       "recommendationSource": "BASELINE",
       "evidenceStatus": "CONFIRMED",
       "actionStatus": "REQUIRED"
     }
 
-No volver a investigar una versión diferente salvo evidencia de que la baseline puede estar inválida.
+No investigar una versión alternativa salvo que exista evidencia suficiente de posible invalidación del baseline.
 
 Ante contradicción:
 
 - registrar la evidencia;
-- no actualizar baseline;
-- usar `REQUIRES_REVIEW`.
+- no modificar el baseline;
+- mantener la incertidumbre correspondiente;
+- utilizar `REQUIRES_REVIEW` cuando sea necesaria decisión humana.
+
+## Azure package
+
+Considerar una dependencia como parte del ecosistema Azure cuando:
+
+- coincide con `azurePolicy.packagePatterns`;
+- aparece en `azurePolicy.additionalPackages`;
+- está clasificada como Azure por metadata determinista del inventory.
+
+El campo `azurePackage` producido por discovery puede utilizarse como señal determinista.
 
 ## AZURE_UNMAPPED
 
-Cuando una dependencia Azure no exista todavía en:
+Cuando una dependencia Azure relevante no exista todavía en:
 
-`azurePackages`
+`managedPackages`
 
-investigar únicamente fuentes oficiales.
+investigar únicamente cuando sea necesario para determinar el camino de migración.
 
-Priorizar:
-
-1. Microsoft Learn;
-2. documentación Azure SDK;
-3. repositorio oficial;
-4. documentación oficial del package.
+Aplicar `evidence-policy.md` y priorizar fuentes oficiales.
 
 Determinar cuando sea posible:
 
-- versión estable;
-- soporte de Node.js target;
+- soporte del target técnico;
+- versiones soportadas;
 - engines;
 - breaking changes relevantes;
 - migration guidance;
-- compatibilidad con APIs usadas.
+- compatibilidad conocida con APIs relevantes.
 
-No usar `latest` como criterio suficiente.
+No usar `latest` como criterio de selección.
 
-La salida es una recomendación.
+Cuando exista evidencia suficiente puede registrarse:
 
-Ejemplo:
+`candidateTarget`
+
+Un `candidateTarget` no es un target aprobado.
+
+Ejemplo conceptual:
 
     {
-      "package": "@azure/keyvault-secrets",
+      "package": "@azure/example",
       "classification": "AZURE_UNMAPPED",
-      "currentVersion": "^4.7.0",
-      "targetVersion": "4.x.y",
+      "currentVersion": "<declared-version>",
+      "candidateTarget": "<researched-candidate>",
       "recommendationSource": "OFFICIAL_RESEARCH",
       "impactAnalysisRequired": true,
-      "evidenceStatus": "CONFIRMED",
-      "actionStatus": "REQUIRES_VALIDATION",
-      "recommendationStatus": "PROPOSED"
-    }
-
-Assessment nunca agrega automáticamente esta recomendación a la baseline.
-
-## LEARNED
-
-Cuando una dependencia no Azure exista en:
-
-`dependency-baseline.learnedPackages`
-
-usar la experiencia previa como evidencia inicial.
-
-Registrar:
-
-- package;
-- classification;
-- currentVersion;
-- targetVersion;
-- recommendationSource;
-- previousSuccessfulMigrations;
-- evidenceStatus;
-- actionStatus.
-
-Ejemplo:
-
-    {
-      "package": "uuid",
-      "classification": "LEARNED",
-      "currentVersion": "^8.3.2",
-      "targetVersion": "x.y.z",
-      "recommendationSource": "LEARNED_BASELINE",
-      "previousSuccessfulMigrations": 2,
       "evidenceStatus": "CONFIRMED",
       "actionStatus": "REQUIRES_VALIDATION"
     }
 
-Una recomendación aprendida no implica upgrade automático.
+Assessment nunca agrega automáticamente el candidato al baseline.
 
-Debe volver a evaluarse contra el repositorio actual.
+Si la aprobación de un target es necesaria antes de continuar, registrarlo como decisión pendiente.
 
 ## UNMAPPED
 
-Cuando una dependencia no Azure:
+Una dependencia no gestionada por baseline permanece `UNMAPPED`.
 
-- no exista en `learnedPackages`;
-- y exista evidencia de que puede afectar la migración;
+Investigar únicamente cuando exista evidencia de que puede afectar la migración.
 
-investigar opciones compatibles y estables.
+Evaluar únicamente lo necesario, por ejemplo:
 
-Priorizar:
-
-1. documentación oficial;
-2. repositorio oficial;
-3. release notes;
-4. package metadata;
-5. fuentes secundarias solo cuando las anteriores sean insuficientes.
-
-Evaluar:
-
-- soporte de Node.js 24;
-- mantenimiento;
-- versión estable;
-- breaking changes;
+- soporte del target Node.js;
+- mantenimiento cuando afecte soporte;
+- breaking changes relevantes;
 - compatibilidad con APIs utilizadas;
-- reemplazo solo cuando exista evidencia suficiente.
+- necesidad real de reemplazo.
 
-No sustituir una librería únicamente por preferencia tecnológica.
+No sustituir una librería únicamente por:
 
-Ejemplo:
+- antigüedad;
+- preferencia tecnológica;
+- disponibilidad de una alternativa más nueva.
 
-    {
-      "package": "some-library",
-      "classification": "UNMAPPED",
-      "currentVersion": "1.2.0",
-      "targetVersion": "3.1.0",
-      "recommendationSource": "EXTERNAL_RESEARCH",
-      "evidenceStatus": "CONFIRMED",
-      "actionStatus": "REQUIRES_VALIDATION",
-      "recommendationStatus": "PROPOSED"
-    }
+Cuando no exista evidencia de incompatibilidad:
 
-## Dependencias no relevantes
+preservar.
 
-Si una dependencia:
+Si una investigación produce un candidato:
 
-- no tiene target aprobado;
-- no tiene recomendación aprendida;
-- no presenta evidencia de incompatibilidad;
-
-preservarla.
-
-No investigar ni actualizar por antigüedad.
-
-## Recommendation status
-
-Las recomendaciones pueden usar:
-
-- `PROPOSED`
-- `VALIDATED`
-- `REPEATED`
-- `APPROVED`
-
-Estos valores pertenecen al conocimiento de dependencias.
-
-No forman parte de `status-policy.md`.
-
-### PROPOSED
-
-Existe investigación suficiente para sugerirla.
-
-### VALIDATED
-
-Fue utilizada en una migración que superó los gates requeridos.
-
-### REPEATED
-
-Fue validada en más de una migración independiente.
-
-### APPROVED
-
-Fue aprobada explícitamente como conocimiento reutilizable del toolkit.
-
-## Regla de promoción
-
-`assess-function-app` nunca modifica:
-
-`dependency-baseline.json`
-
-Flujo:
-
-`research → proposal → migration → verification → lesson → review → human approval → baseline`
+registrarlo como `candidateTarget`, no como `targetVersion` aprobado.
 
 ## Impact analysis
 
@@ -435,61 +376,135 @@ Cuando una dependencia tenga:
 
 `impactAnalysisRequired = true`
 
-y requiera cambio o validación:
+y:
 
-el análisis de consumidores pertenece a:
+`actionStatus = REQUIRED`
+
+o:
+
+`actionStatus = REQUIRES_VALIDATION`
+
+identificar que el análisis de consumidores relevantes pertenece a:
 
 `analyze-function`
 
-## TypeScript
+Assessment no inspecciona exhaustivamente todos sus consumidores.
 
-Determinar:
+## TypeScript y tooling
+
+Determinar cuando corresponda:
 
 - versión actual;
-- necesidad de cambio;
+- tooling observado;
+- compatibilidad global conocida;
+- necesidad de cambio o validación;
 - riesgos relevantes.
 
 Si no existe target aprobado:
 
 no inventarlo.
 
+Cuando falte evidencia suficiente:
+
+usar `REQUIRES_VALIDATION`.
+
 ## Testing global
 
-Registrar:
+Registrar únicamente información global como:
 
 - framework;
 - scripts;
 - presencia general de tests;
 - coverage observable;
-- capacidad aparente de baseline.
+- capacidad aparente de obtener una baseline.
 
 No evaluar todavía testabilidad detallada por Function.
 
-## Architecture assessment
+La ausencia de tests no produce `BLOCKED` automáticamente.
 
-Evaluar globalmente frente a:
+## Capacidad global de validación
 
-`../_shared/architecture-policy.md`
+Identificar si existen mecanismos observables para ejecutar cuando corresponda:
 
-Usar:
+- install;
+- typecheck;
+- build;
+- tests;
+- coverage.
 
-- `ALIGNED`
-- `PARTIALLY_ALIGNED`
-- `CHANGE_REQUIRED`
-- `REQUIRES_VALIDATION`
+No ejecutar todavía el gate global final.
 
-La clasificación arquitectónica no reemplaza el status principal.
+No afirmar que una capacidad funciona únicamente porque exista un script declarado.
+
+## Condiciones estructurales globales
+
+Aplicar `architecture-policy.md` únicamente cuando existan observaciones transversales relevantes para la migración.
+
+Registrar condiciones como:
+
+- runtime y lógica fuertemente mezclados en múltiples Functions;
+- construcción repetida de clientes externos;
+- recurso compartido potencialmente afectado;
+- configuración transversal;
+- boundary global que pueda afectar múltiples consumidores.
+
+No clasificar toda la Function App como:
+
+- `ALIGNED`;
+- `PARTIALLY_ALIGNED`;
+- `CHANGE_REQUIRED`.
+
+No exigir convergencia hacia una arquitectura objetivo.
+
+La necesidad estructural concreta pertenece al análisis por Function y posteriormente a planning.
 
 ## Shared resources assessment
 
-Evaluar candidatos detectados durante discovery.
+Evaluar únicamente los candidatos detectados durante discovery que sean relevantes para la migración.
 
-Para cada recurso usar cuando corresponda:
+Para cada candidato utilizar cuando corresponda:
 
 - `evidenceStatus`;
-- `actionStatus`.
+- `actionStatus`;
+- consumidores observados;
+- ownership observable;
+- evidencia.
 
-No fusionar recursos únicamente porque compartan tecnología.
+No consolidar definitivamente ownership.
+
+No crear `SR-ACTION-*`.
+
+No fusionar recursos únicamente porque compartan tecnología o SDK.
+
+La consolidación definitiva pertenece a:
+
+`plan-function-migration`
+
+## Functions que requieren análisis
+
+Identificar Functions que necesiten análisis posterior.
+
+Registrar cuando corresponda:
+
+- Function;
+- motivo;
+- dimensiones afectadas;
+- dependencia o workflow relacionado;
+- prioridad o dependencia técnica observable.
+
+Ejemplo conceptual:
+
+    {
+      "function": "RequestReport",
+      "reasons": [
+        "PROGRAMMING_MODEL_V3",
+        "DEPENDENCY_IMPACT"
+      ]
+    }
+
+No ejecutar análisis profundo desde assessment.
+
+No crear `FN-*`.
 
 ## Riesgos globales
 
@@ -497,14 +512,22 @@ Registrar únicamente riesgos relevantes.
 
 Ejemplos:
 
-- salto major de SDK;
+- salto major de una dependencia aprobada;
 - dependencia compartida;
 - workflow Durable complejo;
-- estado legacy/v4 mixto;
-- ausencia de tests;
+- Programming Model mixto;
+- ausencia general de tests;
 - dependencia desconocida crítica.
 
 Un riesgo no es automáticamente blocker.
+
+## Incertidumbres
+
+Mantener explícitamente las dimensiones que no puedan determinarse con evidencia suficiente.
+
+No sustituir `UNKNOWN` por una recomendación.
+
+Registrar la validación necesaria cuando corresponda.
 
 ## Salidas
 
@@ -514,47 +537,58 @@ Crear:
 
 `.migration/repository/assessment.md`
 
+Usar para la vista humana:
+
+`../_shared/templates/assessment.template.md`
+
 ## assessment.json
 
-Debe contener como mínimo:
+Debe ser owner del gap global respecto del target.
 
-- schemaVersion;
-- target;
-- technicalDimensions;
-- dependencyAssessment;
-- architectureAssessment;
-- sharedResourcesAssessment;
-- testingAssessment;
-- risks;
-- unknowns;
-- externalEvidence;
-- status.
+Debe contener cuando corresponda:
+
+- `schemaVersion`;
+- `baselineRef`;
+- `target`;
+- `technicalDimensions`;
+- `dependencyAssessment`;
+- `toolingAssessment`;
+- `testingAssessment`;
+- `validationCapability`;
+- `structuralObservations`;
+- `sharedResourcesAssessment`;
+- `functionsRequiringAnalysis`;
+- `risks`;
+- `unknowns`;
+- `reviewRequirements`;
+- `externalEvidence`;
+- `status`.
+
+No debe contener:
+
+- acciones `FN-*`;
+- acciones `GLOBAL-*`;
+- acciones `SR-ACTION-*`;
+- migration plan;
+- target architecture;
+- cambios ejecutados.
 
 ## Estado principal
 
 Usar:
 
-- `READY_FOR_ANALYSIS`
-- `PARTIAL`
-- `BLOCKED`
-- `REQUIRES_REVIEW`
+- `READY_FOR_ANALYSIS`;
+- `PARTIAL`;
+- `BLOCKED`;
+- `REQUIRES_REVIEW`.
 
-## Markdown
+Aplicar la semántica de:
 
-`assessment.md` debe responder:
+`../_shared/status-policy.md`
 
-- qué ya cumple;
-- qué necesita cambio;
-- qué necesita validación;
-- qué targets provienen de baseline;
-- qué recomendaciones provienen de experiencia;
-- qué dependencias requirieron investigación;
-- cuáles requieren impact analysis;
-- estado arquitectónico;
-- riesgos;
-- unknowns.
+`READY_FOR_ANALYSIS` no significa que todas las dimensiones estén resueltas.
 
-No generar plan.
+Significa que existe evidencia suficiente para comenzar el análisis seguro de las Functions necesarias.
 
 ## Catálogo
 
@@ -562,33 +596,47 @@ No modificar las secciones BEFORE de:
 
 `.migration/catalog/current-state.md`
 
+Assessment consume el catálogo.
+
+No lo convierte en documentación del target.
+
 ## Lecciones
 
-Crear:
+Aplicar cuando corresponda:
 
-`.migration/lessons/assess-function-app/lessons.json`
+`../_shared/lessons-policy.md`
 
-`.migration/lessons/assess-function-app/lessons.md`
+Registrar lessons únicamente cuando exista aprendizaje relevante.
+
+No crear artifacts de lessons vacíos como requisito de cierre.
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
 - inventory fue consumido;
-- dependency baseline fue consumida;
-- dimensiones técnicas fueron evaluadas;
+- catálogo BEFORE fue consumido;
+- dependency baseline y su revisión fueron identificados;
+- target técnico fue evaluado;
+- dimensiones técnicas relevantes fueron evaluadas;
 - dependencias relevantes fueron clasificadas;
-- Azure baseline fue aplicada cuando existía;
-- Azure unmapped fue investigado oficialmente cuando era necesario;
-- learned recommendations fueron reutilizadas como evidencia inicial;
-- third-party unmapped fue investigado solo cuando era relevante;
+- package targets aprobados fueron aplicados cuando existían;
+- dependencias Azure no mapeadas fueron investigadas únicamente cuando era necesario;
+- third-party unmapped fueron investigadas únicamente cuando existía impacto potencial;
 - dependencias irrelevantes fueron preservadas;
-- impact analysis requerido quedó identificado;
-- arquitectura global fue evaluada;
-- shared resources fueron considerados;
+- necesidades de impact analysis quedaron identificadas;
+- TypeScript y tooling fueron evaluados al nivel global necesario;
+- testing global fue evaluado sin inferir testabilidad por Function;
+- condiciones estructurales globales relevantes fueron registradas cuando existían;
+- shared resource candidates fueron considerados sin consolidar ownership;
+- Functions que requieren analysis fueron identificadas;
 - unknowns permanecen explícitos;
+- el estado principal fue determinado;
 - no se modificó código;
-- no se modificó la baseline.
+- no se modificó dependency baseline;
+- no se generaron acciones ni planes.
+
+La ausencia de lessons no impide cerrar assessment.
 
 ## Fuera de alcance
 
@@ -597,11 +645,19 @@ No debe:
 - modificar código;
 - instalar dependencias;
 - actualizar dependency baseline;
-- convertir una propuesta en conocimiento aprobado;
-- generar planes;
+- aprobar un `candidateTarget`;
+- convertir investigación en target permanente;
+- crear acciones `GLOBAL-*`;
+- crear acciones `FN-*`;
+- crear acciones `SR-ACTION-*`;
+- decidir `effectiveScope`;
+- consolidar definitivamente shared resources;
+- diseñar cambios estructurales por Function;
 - analizar impacto detallado por Function;
-- agregar tests;
+- agregar pruebas;
+- generar migration plans;
 - migrar;
+- modernizar;
 - optimizar.
 
 Siguiente skill sugerido:

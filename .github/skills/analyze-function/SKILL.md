@@ -1,31 +1,49 @@
 ---
 name: analyze-function
-description: Analiza una Function concreta para documentar comportamiento, dependencias, arquitectura, recursos compartidos, testabilidad, compatibilidad y acciones necesarias para alcanzar el target sin modificar código.
+description: Analiza una Function concreta para documentar comportamiento, dependencias, testabilidad, compatibilidad, acoplamientos e impacto técnico o estructural de su migración sin modificar código ni generar el plan de ejecución.
 ---
 
 # Analyze Function
 
 ## Objetivo
 
-Comprender una Function concreta y determinar las acciones necesarias para:
+Comprender una Function concreta y determinar qué implica migrarla al target técnico aprobado.
 
-- preservar comportamiento;
-- alcanzar testabilidad;
-- converger hacia arquitectura objetivo;
-- preparar migración de plataforma;
-- reducir dependencia futura del runtime y SDKs.
+Debe identificar cuando corresponda:
+
+- comportamiento observable que debe preservarse;
+- slice funcional relevante;
+- dependencias y consumidores;
+- impacto de Node.js;
+- impacto de Programming Model;
+- impacto de Azure SDKs y otras dependencias;
+- testabilidad;
+- necesidades de pruebas;
+- acoplamientos legacy;
+- recursos compartidos;
+- impacto fuera del scope solicitado;
+- necesidades técnicas o estructurales potenciales.
 
 No modifica código.
 
+No genera el plan de ejecución.
+
 ## Políticas
 
-Aplicar:
+Aplicar siempre:
 
 - `../_shared/evidence-policy.md`
 - `../_shared/security-policy.md`
-- `../_shared/lessons-policy.md`
-- `../_shared/architecture-policy.md`
 - `../_shared/status-policy.md`
+
+Aplicar cuando corresponda:
+
+- `../_shared/architecture-policy.md`
+- `../_shared/lessons-policy.md`
+
+`architecture-policy.md` se utiliza únicamente para evaluar límites estructurales relevantes para la migración.
+
+No evaluar convergencia hacia una arquitectura ideal.
 
 ## Precondiciones
 
@@ -35,7 +53,9 @@ Deben existir:
 
 `.migration/repository/assessment.json`
 
-La Function debe existir en inventory.
+La Function objetivo debe existir en inventory.
+
+Aplicar `security-policy.md` antes de toda inspección adicional de source.
 
 ## Entradas
 
@@ -45,26 +65,44 @@ Consumir primero:
 
 - inventory;
 - assessment;
-- catálogo actual cuando sea útil;
-- shared resource candidates.
+- catálogo BEFORE cuando exista;
+- shared resource candidates relevantes.
 
-No leer directamente `dependency-baseline.json` para volver a decidir versiones ya resueltas por assessment.
+Consultar `dependency-baseline.json` únicamente cuando sea necesario verificar un target aprobado o metadata que
+assessment no haya materializado.
 
-Analizar una Function o unidad funcional coherente por ejecución.
+No utilizarlo para volver a seleccionar versiones.
+
+Analizar una Function por ejecución.
+
+Puede inspeccionarse contexto relacionado únicamente cuando sea necesario para comprender su slice o impacto.
 
 ## Progressive disclosure
 
-Leer únicamente el slice necesario para comprender:
+Preferir:
+
+```text
+existing artifacts
+→ selected Function entrypoint
+→ direct dependencies
+→ required transitive slice
+→ related consumers only when necessary
+```
+
+Leer únicamente el contexto necesario para comprender:
 
 - entrypoint;
 - comportamiento;
 - dependencias directas;
+- dependencias transitivas relevantes;
 - infraestructura;
-- shared resources;
-- tests;
-- relaciones.
+- recursos compartidos;
+- pruebas existentes;
+- relaciones relevantes.
 
-Ampliar contexto únicamente cuando sea necesario.
+No analizar todo el repositorio por defecto.
+
+No construir un call graph completo salvo que sea imprescindible para resolver una incertidumbre concreta.
 
 ## Comportamiento actual
 
@@ -80,67 +118,102 @@ Documentar cuando aplique:
 - llamadas externas;
 - side effects;
 - output;
-- errores.
+- errores relevantes.
 
 No inferir comportamiento de negocio por naming.
 
-## Arquitectura actual
+Identificar el contrato observable que deberá preservarse:
 
-Evaluar:
+```text
+same input
+same output
+same relevant errors
+same observable side effects
+```
 
-- responsabilidad del entrypoint;
-- mezcla runtime/lógica;
-- acceso a SDKs;
-- configuración;
-- separación funcional;
-- contracts;
-- infraestructura;
-- organización por capability.
+Referenciar el catálogo BEFORE cuando contenga suficiente detalle.
 
-## Arquitectura objetivo
+No duplicarlo completamente.
 
-Determinar cómo debe encajar la Function según:
+## Slice actual
 
-`../_shared/architecture-policy.md`
+Representar únicamente el flujo relevante para la Function.
 
-La arquitectura es requerida para código refactorizado.
+Ejemplo conceptual:
 
-No significa crear todas las capas.
+```text
+trigger
+→ entrypoint
+→ service/use case
+→ repository/publisher/gateway
+→ external system
+```
 
-## Architecture gap
+Distinguir cuando corresponda:
 
-Identificar únicamente cambios necesarios.
+- responsabilidad específica de la Function;
+- responsabilidad compartida;
+- responsabilidad fuera del scope solicitado.
 
-Ejemplos:
+## Configuración
 
-- extraer lógica del Azure adapter;
-- aislar infraestructura;
-- encapsular configuración;
-- introducir un contract;
-- mover implementación hacia capability;
-- corregir ownership.
-
-Registrar acciones `STRUCTURAL` cuando corresponda.
-
-## Recursos compartidos
-
-Confirmar para la Function:
-
-- `resourceId`;
-- usage;
-- ownership observable;
-- `evidenceStatus`;
-- configuración asociada.
+Registrar únicamente nombres de claves utilizadas por el slice.
 
 Ejemplo:
 
-    {
-      "resourceId": "SR-COSMOS-REPORTS",
-      "usage": "Persist report request",
-      "evidenceStatus": "CONFIRMED"
-    }
+`process.env.COSMOS_DATABASE`
 
-No planificar aquí una segunda modificación del recurso.
+Registrar:
+
+- key name;
+- ubicación de uso;
+- ownership observable cuando exista evidencia.
+
+Nunca registrar valores.
+
+No resolver valores desde archivos protegidos.
+
+## Estructura y acoplamiento actual
+
+Evaluar únicamente aspectos relevantes para la migración:
+
+- responsabilidad del entrypoint;
+- mezcla entre runtime y lógica funcional;
+- acceso directo a SDKs;
+- configuración;
+- separación funcional;
+- contracts existentes;
+- infraestructura;
+- organización observable por capability;
+- dependencias compartidas.
+
+No evaluar estructura por cantidad de carpetas.
+
+No exigir reorganización física únicamente por convención.
+
+## Impacto estructural de migración
+
+Identificar únicamente límites estructurales cuya modificación pueda ser necesaria para:
+
+- compatibilidad técnica;
+- preservación de comportamiento;
+- testabilidad requerida;
+- adaptación de una dependencia;
+- aislamiento mínimo necesario del runtime o infraestructura.
+
+Ejemplos cuando exista evidencia:
+
+- separar lógica funcional del Azure adapter;
+- aislar construcción de un cliente externo;
+- encapsular acceso a configuración;
+- introducir un boundary real;
+- introducir un seam mínimo para pruebas.
+
+No diseñar una arquitectura target completa.
+
+No generar todavía acciones `FN-*`.
+
+La decisión final de ejecutar un cambio estructural y su `requiredForMigration` pertenece a planning.
 
 ## Dependencias
 
@@ -158,19 +231,19 @@ Clasificar cuando corresponda:
 - third-party;
 - Node runtime.
 
-Cada hallazgo de compatibilidad debe utilizar `evidenceStatus` cuando sea necesario.
+Cada conclusión de compatibilidad debe utilizar la semántica de evidencia definida en `evidence-policy.md`.
 
 ## Dependencias y baseline
 
-Consumir:
+El owner del target aprobado es:
 
-`assessment.dependencyAssessment`
+`../_shared/dependency-baseline.json`
 
-La versión target aprobada pertenece al assessment y a la baseline de la campaña.
+`assessment.json` determina si existe necesidad global de cambio.
 
-No volver a seleccionar una versión distinta.
+Este analysis determina únicamente el impacto local sobre la Function.
 
-Para cada dependencia con:
+Para dependencias con:
 
 `impactAnalysisRequired = true`
 
@@ -178,45 +251,41 @@ y:
 
 `actionStatus = REQUIRED`
 
-analizar únicamente los consumidores relevantes de la Function actual.
+analizar únicamente los consumidores relevantes del slice actual.
 
 Determinar cuando corresponda:
 
 - imports;
-- API utilizada;
+- APIs utilizadas;
 - construcción de cliente;
 - configuración;
 - métodos;
 - opciones;
 - tipos;
-- shared resources relacionados;
-- cambios necesarios en el slice.
+- recursos compartidos relacionados;
+- adaptación local potencialmente necesaria.
 
-Registrar una acción `FN-*` únicamente cuando la Function necesite adaptación local.
-
-Ejemplo:
+Ejemplo de necesidad:
 
     {
-      "id": "FN-REQUESTREPORT-003",
       "type": "REQUIRED_DEPENDENCY",
-      "action": "Adaptar el consumidor al SDK Cosmos target.",
-      "reason": "El cambio aprobado de SDK afecta una API utilizada por la Function.",
+      "need": "Adaptar el consumidor de Cosmos al SDK target.",
+      "reason": "La API utilizada por la Function presenta impacto respecto del target aprobado.",
       "dependency": "@azure/cosmos",
-      "targetVersion": "4.10.0",
       "resourceId": "SR-COSMOS-REPORTS",
       "evidenceStatus": "CONFIRMED",
       "evidence": []
     }
 
-Si la dependencia cambia pero el consumidor no necesita modificación de código:
+No asignar `FN-*` durante analysis.
 
-no crear una acción local.
+Si la dependencia cambia globalmente pero el consumidor no necesita modificación local:
 
-La actualización puede permanecer como acción global o shared.
+no registrar una necesidad local artificial.
 
 ## Dependencias no incluidas en baseline
 
-Si assessment no detectó incompatibilidad:
+Si assessment no identificó impacto:
 
 preservar.
 
@@ -224,13 +293,46 @@ Si assessment indica:
 
 `actionStatus = REQUIRES_VALIDATION`
 
-analizar únicamente el impacto relevante.
+analizar únicamente el uso relevante para esta Function.
+
+Cuando la incertidumbre dependa de una API concreta utilizada por el slice, puede consultarse evidencia oficial mínima
+conforme a `evidence-policy.md`.
 
 No seleccionar arbitrariamente una versión target.
 
+## Recursos compartidos
+
+Confirmar únicamente el uso observado por esta Function.
+
+Registrar cuando corresponda:
+
+- `resourceId` o candidate id;
+- usage;
+- consumers observados;
+- ownership observable;
+- configuration keys;
+- `evidenceStatus`;
+- evidence.
+
+Ejemplo:
+
+    {
+      "resourceId": "SR-COSMOS-REPORTS",
+      "usage": "Persist report request",
+      "evidenceStatus": "CONFIRMED"
+    }
+
+Un mismo SDK o tecnología no demuestra que exista un único recurso compartido.
+
+No consolidar definitivamente ownership.
+
+No crear aquí la acción propietaria del recurso.
+
+Planning consolida recursos, ownership y acciones `SR-ACTION-*`.
+
 ## Testabilidad
 
-Evaluar:
+Evaluar cuando corresponda:
 
 - lógica mezclada con runtime;
 - `context`;
@@ -239,178 +341,290 @@ Evaluar:
 - side effects;
 - globals;
 - funciones puras;
-- dependencias sustituibles.
+- dependencias sustituibles;
+- seams existentes.
 
 Usar:
 
 - `HIGH`
 - `MEDIUM`
 - `LOW`
+- `REQUIRES_REVIEW`
 
-Este valor es una clasificación específica de testabilidad.
+Esta clasificación no reemplaza `evidenceStatus`.
 
-No reemplaza `evidenceStatus`.
+La ausencia de pruebas no determina por sí sola la testabilidad.
 
-La ausencia de tests no determina por sí sola la testabilidad.
+### Bloqueadores
 
-## Tests
+-
 
-Registrar tests existentes.
+### Seams existentes
 
-Proponer el conjunto mínimo necesario para preservar:
+-
 
-1. comportamiento principal;
-2. validaciones;
+### Seams mínimos potencialmente necesarios
+
+-
+
+No diseñar aquí una refactorización completa.
+
+## Necesidades de pruebas
+
+Registrar pruebas existentes relevantes.
+
+Identificar únicamente comportamiento que necesite protección adicional, como:
+
+1. flujo principal;
+2. validaciones relevantes;
 3. decisiones;
 4. errores;
-5. interacciones externas relevantes.
+5. efectos observables;
+6. boundaries externos relevantes.
 
-No proponer integration tests.
+No generar pruebas.
+
+No diseñar tests orientados a detalles internos de implementación.
+
+No proponer integration tests en el alcance actual.
+
+La generación de pruebas pertenece a la capability de testing correspondiente.
 
 ## Node.js 24
 
-Cada hallazgo puede usar una clasificación específica:
-
-- `CONFIRMED_COMPATIBLE`
-- `CHANGE_REQUIRED`
-- `REQUIRES_VALIDATION`
-- `NOT_APPLICABLE`
-
-Cuando sea útil, acompañarla de:
+Evaluar el slice utilizando:
 
 `evidenceStatus`
+
+y:
+
+`actionStatus`
+
+Ejemplos:
+
+```text
+evidenceStatus: CONFIRMED
+actionStatus: NOT_REQUIRED
+```
+
+o:
+
+```text
+evidenceStatus: CONFIRMED
+actionStatus: REQUIRED
+```
+
+o:
+
+```text
+evidenceStatus: UNKNOWN
+actionStatus: REQUIRES_VALIDATION
+```
+
+Registrar únicamente APIs, sintaxis, módulos o dependencias relevantes para la Function.
 
 No asumir compatibilidad por compilación.
 
 ## Programming Model
 
-Si ya está v4:
+Registrar el estado observado conforme a discovery:
 
-no generar acción de migración.
+- `V3`;
+- `V4`;
+- `MIXED`;
+- `UNKNOWN`.
 
-Si es legacy:
+Evaluar la necesidad mediante `actionStatus`.
 
-identificar puntos de adaptación.
+Ejemplos conceptuales:
+
+```text
+V4
+→ NOT_REQUIRED
+
+V3
+→ REQUIRED
+
+UNKNOWN
+→ REQUIRES_VALIDATION
+```
+
+Cuando exista migración requerida, identificar únicamente los puntos de adaptación relevantes.
+
+No generar todavía una acción de migración.
 
 ## Durable
 
-Identificar rol y contexto mínimo del workflow cuando aplique.
+Identificar cuando corresponda:
+
+- workflow;
+- rol;
+- participantes observables relevantes;
+- dependencias necesarias;
+- implicaciones potenciales sobre scope.
+
+Roles posibles:
+
+- `CLIENT`;
+- `STARTER`;
+- `ORCHESTRATOR`;
+- `ACTIVITY`;
+- `SUB_ORCHESTRATOR`;
+- `ENTITY`.
 
 No migrar Durable.
 
-## Categorías de acciones
+No analizar todo el workflow en profundidad salvo lo necesario para identificar la relación de esta Function.
 
-Usar:
+Si la Function pertenece a un workflow Durable, registrar que planning debe evaluar si el workflow completo constituye
+el scope efectivo mínimo.
 
-- `REQUIRED_PLATFORM`
-- `REQUIRED_NODE`
-- `REQUIRED_DEPENDENCY`
-- `REQUIRED_TESTABILITY`
-- `STRUCTURAL`
-- `TECHNICAL_DEBT`
-- `OPTIMIZATION`
+## Acoplamiento legacy
+
+Registrar únicamente cuando exista evidencia relevante.
+
+Clasificación:
+
+- `NONE`;
+- `LEGACY_COUPLING`;
+- `LEGACY_MONOLITH_CANDIDATE`;
+- `REQUIRES_REVIEW`.
+
+Registrar también:
+
+`evidenceStatus`
+
+Considerar cuando corresponda:
+
+- consumidores;
+- responsabilidades observadas;
+- acceso a configuración;
+- persistencia;
+- mensajería;
+- APIs externas;
+- orquestación;
+- métodos utilizados por otras Functions.
+
+El tamaño del archivo o servicio es una señal.
+
+No es evidencia suficiente por sí sola para clasificar un monolito.
+
+No proponer la descomposición completa del componente legacy desde analysis.
+
+## Impacto fuera del scope solicitado
+
+Registrar consumidores o unidades afectadas que no formen parte de la Function solicitada.
+
+| Function / workflow | Relación | Impacto | Evidence status |
+|---------------------|----------|---------|-----------------|
+|                     |          |         |                 |
+
+Detectar impacto fuera del scope no incorpora automáticamente ese consumidor a la migración.
+
+Planning determina:
+
+- `requestedScope`;
+- `effectiveScope`;
+- `affectedFunctionsOutsideScope`.
+
+## Categorías de necesidad
+
+Usar cuando corresponda:
+
+- `REQUIRED_PLATFORM`;
+- `REQUIRED_NODE`;
+- `REQUIRED_DEPENDENCY`;
+- `REQUIRED_TESTABILITY`;
+- `STRUCTURAL`.
+
+Registrar separadamente:
+
+- `TECHNICAL_DEBT`;
+- `OPTIMIZATION`.
 
 ### REQUIRED_PLATFORM
 
-Cambio necesario por Azure Functions Runtime o Programming Model.
+Necesidad derivada de Azure Functions Runtime o Programming Model.
 
 ### REQUIRED_NODE
 
-Cambio necesario específicamente por Node.js 24.
+Necesidad derivada específicamente de Node.js 24.
 
 ### REQUIRED_DEPENDENCY
 
-Cambio necesario por compatibilidad o adaptación de una dependencia aprobada.
+Necesidad derivada de compatibilidad o adaptación de una dependencia aprobada.
 
 ### REQUIRED_TESTABILITY
 
-Cambio necesario para proteger comportamiento mediante tests.
+Necesidad mínima para poder proteger comportamiento requerido por la migración.
 
 ### STRUCTURAL
 
-Cambio arquitectónico necesario para cumplir los límites definidos.
+Necesidad estructural potencialmente requerida para completar o verificar la migración.
+
+Planning determina si finalmente utiliza:
+
+`requiredForMigration: true`
+
+o:
+
+`requiredForMigration: false`.
 
 ### TECHNICAL_DEBT
 
-Problema conocido no necesario para completar la migración.
+Problema conocido que no es necesario resolver para completar la migración.
 
 ### OPTIMIZATION
 
-Mejora no requerida para migración.
+Mejora no requerida para la migración.
 
-## IDs de acciones
+## migrationNeeds
 
-Las acciones propias de una Function usan:
+Cada necesidad debe contener como mínimo cuando corresponda:
 
-`FN-<FUNCTION>-NNN`
-
-Ejemplos:
-
-- `FN-REQUESTREPORT-001`
-- `FN-REQUESTREPORT-002`
-- `FN-COMPLETEREPORT-001`
-
-El ID no codifica el tipo de acción.
-
-El tipo vive en:
-
-`type`
-
-## requiredActions
-
-Cada acción debe contener como mínimo:
-
-- `id`;
 - `type`;
-- `action`;
+- `need`;
 - `reason`;
 - `evidenceStatus`;
 - `evidence`.
 
+Puede referenciar:
+
+- `dependency`;
+- `resourceId`;
+- Functions relacionadas;
+- workflow.
+
 Ejemplo:
 
     {
-      "id": "FN-REQUESTREPORT-001",
       "type": "STRUCTURAL",
-      "action": "Extraer lógica funcional del Azure adapter.",
-      "reason": "El entrypoint contiene comportamiento funcional.",
+      "need": "Separar la construcción del cliente externo del comportamiento funcional.",
+      "reason": "El acoplamiento actual impide sustituir el boundary requerido para proteger comportamiento.",
       "evidenceStatus": "CONFIRMED",
       "evidence": []
     }
 
-Referenciar `dependency` cuando corresponda.
+No asignar:
 
-Referenciar `resourceId` cuando la acción esté relacionada con un recurso compartido.
+- `FN-*`;
+- `dependsOn`;
+- orden de ejecución;
+- `executionStatus`.
 
-No utilizar:
-
-`status: CONFIRMED`
-
-dentro de una acción.
-
-Utilizar:
-
-`evidenceStatus: CONFIRMED`
-
-## Acción vs recurso compartido
-
-Si la Function consume un recurso compartido que necesita transformación global:
-
-la acción Function debe expresar únicamente su dependencia o adaptación local.
-
-No duplicar la transformación propietaria del recurso.
+Esos conceptos pertenecen a planning y execution.
 
 ## Technical debt
 
 Registrar separadamente.
 
-No convertir automáticamente en `requiredActions`.
+No convertir automáticamente deuda en necesidad obligatoria de migración.
 
 ## Optimization
 
 Registrar separadamente.
 
-Siempre fuera de alcance de migración salvo cambio explícito del proyecto.
+Mantener fuera del alcance de migración salvo decisión posterior explícita.
 
 ## Salidas estructuradas
 
@@ -420,46 +634,85 @@ Crear:
 
 `.migration/functions/<FunctionName>/analysis.md`
 
+Usar para la vista humana:
+
+`../_shared/templates/function-analysis.template.md`
+
+## Estado
+
+`analysis.json` y `analysis.md` deben utilizar un estado principal:
+
+- `READY`;
+- `PARTIAL`;
+- `BLOCKED`;
+- `REQUIRES_REVIEW`.
+
+### READY
+
+Existe evidencia suficiente para continuar a planning.
+
+### PARTIAL
+
+Existen incertidumbres pendientes, pero existe trabajo independiente que puede planificarse de forma segura.
+
+### BLOCKED
+
+Falta información necesaria para planificar el trabajo requerido de forma segura.
+
+### REQUIRES_REVIEW
+
+Una decisión humana impide cerrar el análisis.
+
+El significado formal debe mantenerse alineado con:
+
+`../_shared/status-policy.md`
+
 ## analysis.json
 
-Debe ser owner de:
+Es owner de la interpretación técnica de esta Function.
+
+Debe contener cuando corresponda:
 
 - function;
 - capability;
+- status;
+- analyzedSlice;
 - behavior;
-- dependencies;
-- sharedResources;
-- currentArchitecture;
-- targetArchitecture;
-- architectureGap;
 - configuration;
+- dependencies;
+- dependencyImpact;
+- sharedResources;
+- currentStructure;
+- structuralNeeds;
 - relationships;
+- affectedFunctionsOutsideScope;
+- legacyCoupling;
 - testability;
 - existingTests;
-- proposedTests;
-- node24Compatibility;
+- testingNeeds;
+- node24;
 - programmingModel;
-- durableRole;
-- requiredActions;
+- durable;
+- migrationNeeds;
 - technicalDebt;
 - optimizations;
 - risks;
 - unknowns;
+- reviewRequirements;
 - evidence.
 
-No necesita un `status` principal mientras el análisis haya podido completarse.
+No debe contener:
 
-Si el análisis completo no puede realizarse, registrar:
-
-- blocker;
-- unknown;
-- review requirement;
-
-sin inventar conclusiones.
+- acciones definitivas `FN-*`;
+- orden de ejecución;
+- `dependsOn`;
+- migration plan;
+- target architecture completa;
+- cambios ejecutados.
 
 ## Catálogo por Function
 
-Crear:
+Si todavía no existe, crear:
 
 `.migration/catalog/functions/<FunctionName>.md`
 
@@ -469,34 +722,51 @@ Usar:
 
 Este documento representa BEFORE.
 
-No incluir como estado implementado lo que solo pertenece al target.
+Si ya existe un catálogo BEFORE válido:
+
+- consumirlo;
+- referenciarlo;
+- no regenerarlo únicamente para reflejar el análisis.
+
+Si el repositorio fue modificado después de crear el BEFORE:
+
+no sobrescribirlo silenciosamente para representar el estado posterior.
 
 ## Lecciones
 
-Crear:
+Aplicar cuando corresponda:
 
-`.migration/lessons/analyze-function/<FunctionName>.json`
+`../_shared/lessons-policy.md`
 
-`.migration/lessons/analyze-function/<FunctionName>.md`
+Registrar lessons únicamente cuando exista aprendizaje relevante.
+
+No generar artifacts de lessons vacíos como requisito de cierre.
 
 ## Criterio de cierre
 
 El skill termina cuando:
 
-- comportamiento fue documentado;
-- arquitectura actual y target fueron comparadas;
-- shared resources fueron confirmados cuando existía evidencia;
-- dependency impacts relevantes fueron analizados;
+- el comportamiento observable relevante fue identificado;
+- el slice necesario fue analizado;
+- dependencias e impactos relevantes fueron evaluados;
 - versiones target aprobadas no fueron redefinidas;
 - testabilidad fue evaluada;
-- tests fueron propuestos;
-- compatibilidad fue evaluada;
-- requiredActions usan IDs `FN-*`;
-- dependency adaptations usan `REQUIRED_DEPENDENCY`;
-- evidencia interna usa `evidenceStatus`;
-- ficha BEFORE fue creada;
-- deuda y optimización quedaron separadas;
-- se generaron analysis y lessons.
+- necesidades de protección mediante pruebas fueron identificadas;
+- compatibilidad Node.js relevante fue evaluada o quedó explícitamente pendiente;
+- Programming Model fue evaluado;
+- rol Durable e impacto potencial sobre scope fueron registrados cuando aplique;
+- recursos compartidos relevantes fueron confirmados para esta Function cuando exista evidencia;
+- acoplamientos legacy relevantes fueron registrados;
+- impacto fuera del scope solicitado fue registrado cuando exista;
+- necesidades de migración fueron registradas sin `FN-*`;
+- deuda y optimizaciones quedaron separadas;
+- evidencia utiliza `evidenceStatus`;
+- se creó `analysis.json`;
+- se creó `analysis.md`;
+- el estado principal permite determinar si puede continuar planning;
+- no se modificó código.
+
+La ausencia de lessons no impide cerrar analysis.
 
 ## Fuera de alcance
 
@@ -505,13 +775,17 @@ No debe:
 - modificar código;
 - instalar dependencias;
 - seleccionar nuevas versiones target;
-- agregar tests;
-- aplicar arquitectura;
+- agregar pruebas;
+- aplicar cambios estructurales;
+- asignar acciones `FN-*`;
+- decidir `effectiveScope`;
+- consolidar definitivamente ownership de shared resources;
+- generar migration plans;
 - actualizar dependencias;
-- generar planes;
 - migrar Runtime;
 - migrar Programming Model;
 - migrar Durable;
+- modernizar componentes legacy;
 - optimizar.
 
 Siguiente skill sugerido:
