@@ -52,6 +52,16 @@ flowchart LR
 | Package | Versión observable | Consumidores | Evidencia |
 |---|---|---|---|
 
+## Tooling de validación observable
+
+| Tooling | Archivo/comando | Estado | Evidencia |
+|---|---|---|---|
+| TypeScript | `tsconfig*.json` / scripts | | |
+| Jest | `jest.config.*` / scripts | | |
+| Coverage | `coverage` / `lcov` config | | |
+| Sonar | `sonar-project.properties` / CI | | |
+| CI validation | pipeline/template | | |
+
 ## Recursos compartidos o candidatos
 
 | Recurso | Consumidores | Estado de evidencia | Observación |

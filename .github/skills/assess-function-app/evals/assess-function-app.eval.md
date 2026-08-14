@@ -61,6 +61,10 @@ Esperado: assessment referencia BEFORE/inventory y resume implicaciones; no dupl
 ### 16. Salida
 Esperado: `assessment.json|md` con decision, target, gaps, dependency attention, validation capability, risks, unknowns y review requirements.
 
-### 17. Layout semántico
+### 17. Tooling de validación
+Entrada: discovery registró Jest, tsconfig prod/spec, scripts npm y Sonar.
+Esperado: clasificar capacidad `READY|PARTIAL|REVIEW_REQUIRED|MISSING`, identificar checks útiles y reviews; no crear acciones.
+
+### 18. Layout semántico
 Entrada: inventory/current-state existen en layout nuevo o legacy.
 Esperado: leer ambos si aplica, pero emitir assessment nuevo en `.migration/10-assessment/assessment.json|md`.

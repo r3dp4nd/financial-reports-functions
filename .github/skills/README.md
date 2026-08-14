@@ -149,7 +149,8 @@ _shared/
     ├── evidence-model.md
     ├── official-sources.md
     ├── security-patterns.md
-    └── target-architecture.md
+    ├── target-architecture.md
+    └── validation-tooling.md
 ```
 
 La política de seguridad aplica antes de cualquier lectura. `.env*`, `local.settings.json`, certificados, secretos y
@@ -178,6 +179,8 @@ No se agregan tests al código objetivo. La verificación utiliza evidencia dete
 * validaciones estructurales y de configuración;
 * Azure Functions Host local cuando sea seguro y viable;
 * comparación contra plan y target aprobados.
+
+Consultar `_shared/references/validation-tooling.md` para patrones transferibles de `package.json`, `tsconfig`, Jest y Sonar. No agregar tooling ni tests por plantilla.
 
 Tests existentes pueden ejecutarse como evidencia adicional, pero no se generan nuevos.
 

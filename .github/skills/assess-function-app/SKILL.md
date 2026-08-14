@@ -20,7 +20,10 @@ Aplicar:
 - `../_shared/status-policy.md`
 - `../_shared/dependency-baseline.json`
 
-Consultar `../_shared/architecture-policy.md` solo para evaluar gaps estructurales que afecten la migración.
+Consultar:
+
+- `../_shared/architecture-policy.md` solo para evaluar gaps estructurales que afecten la migración;
+- `../_shared/references/validation-tooling.md` para clasificar capacidad de validación y gaps de tooling.
 
 Consultar `../_shared/references/artifact-layout.md` para leer/escribir artifacts. Aceptar paths legacy si ya existen.
 

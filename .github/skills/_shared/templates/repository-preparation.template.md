@@ -21,6 +21,11 @@
 - Estructura:
 - Shared resources:
 
+## Tooling de validación
+
+| Archivo/comando | Cambio | Motivo | Evidencia |
+|---|---|---|---|
+
 ## Archivos modificados
 
 - 

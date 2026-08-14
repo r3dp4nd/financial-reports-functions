@@ -20,6 +20,7 @@ Aplicar:
 - `../_shared/status-policy.md`
 - `../_shared/architecture-policy.md`
 - `../_shared/references/artifact-layout.md`
+- `../_shared/references/validation-tooling.md`
 - `../_shared/dependency-baseline.json`
 
 ## Precondiciones

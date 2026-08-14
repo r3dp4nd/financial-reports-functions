@@ -69,6 +69,10 @@ Esperado: las acciones incluyen preserve/failure criteria; cualquier cambio func
 ### 18. Salidas
 Esperado: plan global, planes por Function/slice y shared-resources artifact bajo `.migration/30-plan/` solo si aplica.
 
-### 19. Layout semántico
+### 19. Tooling no plantilla
+Entrada: repo no tiene Jest/Sonar, pero migration puede validarse con typecheck/build.
+Esperado: no crear acción para instalar Jest/Sonar por defecto; usar `VALIDATION` solo para checks necesarios/aprobados.
+
+### 20. Layout semántico
 Entrada: analyses existen en layout nuevo y algunos artifacts legacy quedan del flujo anterior.
 Esperado: plan consume lo necesario y escribe Action IDs solo en `.migration/30-plan/`; no crea nuevos paths legacy.

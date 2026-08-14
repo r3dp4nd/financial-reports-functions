@@ -21,7 +21,10 @@ Cargar y aplicar antes de cualquier lectura, búsqueda, listado recursivo o insp
 
 No ejecutar `rg`, `find`, `ls` recursivo, scripts de inventario ni abrir archivos del repositorio objetivo antes de haber cargado estas políticas y aplicado sus exclusiones.
 
-Consultar `../_shared/architecture-policy.md` solo como vocabulario para describir estructura observable.
+Consultar:
+
+- `../_shared/architecture-policy.md` solo como vocabulario para describir estructura observable;
+- `../_shared/references/validation-tooling.md` para identificar tooling de validación observable sin decidir cambios.
 
 Consultar `../_shared/references/artifact-layout.md` para escribir artifacts en el layout semántico.
 

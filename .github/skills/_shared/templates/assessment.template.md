@@ -41,6 +41,15 @@
 - host local:
 - tests existentes, si aplican:
 
+| Tooling | Estado | Uso en migración | Review |
+|---|---|---|---|
+| package scripts | | | |
+| tsconfig | | | |
+| Jest | | | |
+| Coverage/JUnit | | | |
+| Sonar | | | |
+| CI validation | | | |
+
 ## Arquitectura y shared resources
 
 - gaps estructurales transversales:

@@ -76,6 +76,10 @@ Esperado: registrar señales iniciales compactas por Function/slice; no diseñar
 ### 18. No modificación
 Esperado: cero cambios de source/configuración del repo objetivo.
 
-### 19. Layout semántico
+### 19. Tooling de validación
+Entrada: repo contiene `jest.config.js`, `tsconfig*.json`, `sonar-project.properties` y scripts npm de validación.
+Esperado: registrar archivos/comandos y evidencia en BEFORE; no recomendar cambios ni instalar tooling.
+
+### 20. Layout semántico
 Entrada: existen artifacts legacy bajo `.migration/repository` o `.migration/catalog`.
 Esperado: puede leerlos para continuidad, pero una nueva ejecución escribe en `.migration/00-before/`.

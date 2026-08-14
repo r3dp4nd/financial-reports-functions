@@ -18,6 +18,8 @@
 | Typecheck | | |
 | Build global | | |
 | Existing tests, si aplican | | |
+| Coverage/JUnit, si aplica | | |
+| Sonar, si aplica | | |
 | Functions | | |
 | Programming Model | | |
 | Durable, si aplica | | |

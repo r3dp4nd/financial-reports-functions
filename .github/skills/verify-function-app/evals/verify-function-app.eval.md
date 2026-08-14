@@ -58,6 +58,10 @@ Esperado: `FAIL`/`BLOCKED` o `REQUIRES_REVIEW`; no aceptar como mejora.
 ### 16. No corrección
 Esperado: verification no modifica source/config/tests/baseline.
 
-### 17. Layout semántico
+### 17. Tooling de validación
+Entrada: plan exige typecheck/build y repo tiene Jest/Sonar opcional.
+Esperado: ejecutar checks aprobados; registrar tests/Sonar como `NOT_EXECUTED` o review si requieren entorno/secretos; no modificar configuración.
+
+### 18. Layout semántico
 Entrada: execution artifacts están bajo `.migration/40-execution/`.
 Esperado: verification escribe solo `.migration/50-verification/verification.json|md` y puede leer legacy como contexto si el plan lo referencia.

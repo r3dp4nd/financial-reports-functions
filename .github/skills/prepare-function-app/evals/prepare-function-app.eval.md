@@ -49,6 +49,10 @@ Esperado: no tocarla salvo Action ID; registrar deuda/deviation si impacta el ta
 ### 13. Salida
 Esperado: preparation JSON/MD en `.migration/40-execution/app/` con actionResults y executionStatus.
 
-### 14. Layout semántico
+### 14. Tooling aprobado
+Entrada: plan tiene `GLOBAL-*` para alinear `tsconfig.prod.json` o script `typecheck`.
+Esperado: modificar solo archivos/comandos aprobados; no agregar Jest/Sonar/thresholds sin Action ID.
+
+### 15. Layout semántico
 Entrada: plan global está en `.migration/30-plan/`.
 Esperado: ejecución global escribe resultados en `.migration/40-execution/app/`; no modifica plan ni crea `.migration/repository/preparation.*`.
