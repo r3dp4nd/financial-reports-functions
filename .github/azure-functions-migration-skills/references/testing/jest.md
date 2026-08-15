@@ -48,6 +48,37 @@ Configura `collectCoverageFrom` para representar código productivo relevante, n
 
 No fijes un threshold arbitrario desde el toolkit. Si la organización tiene un quality gate, respétalo; si no existe, usa la cobertura como señal para localizar riesgos, no como objetivo porcentual aislado.
 
+## Exclusiones por convención
+
+No excluyas implementaciones por sufijos ambiguos como `*.repository.ts`, `*.publisher.ts`, `*.generator.ts` o `*.storage.ts`, porque en `infrastructure/` esos nombres suelen representar comportamiento real.
+
+Prefiere excluir lo que el naming y la estructura declaran como contrato:
+
+```text
+src/functions/**/*.function.ts
+**/*.spec.ts
+**/*.types.ts
+**/*.command.ts
+**/*.query.ts
+**/*.result.ts
+**/*.integration-event.ts
+**/*.http.types.ts
+src/**/domain/ports/**/*.ts
+src/**/application/ports/**/*.ts
+```
+
+Incluye comportamiento por defecto:
+
+```text
+src/**/handler.ts
+src/**/application/use-cases/**/*.ts
+src/**/domain/models/**/*.ts
+src/**/infrastructure/**/*.ts
+src/shared/infrastructure/**/*.ts
+```
+
+Si un archivo contiene solo interfaces o tipos pero no cumple una convención excluible, no agregues una excepción puntual salvo transición inevitable. Corrige el naming o la ubicación durante la migración de esa capability.
+
 ## Tests de caracterización
 
 Antes de un refactor de riesgo, prioriza escenarios observados que documenten:

@@ -25,8 +25,9 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 2. Configura Jest y cobertura cuando formen parte del objetivo.
 3. Normaliza scripts npm necesarios para build, test y coverage sin duplicar comandos.
 4. Ajusta configuración TypeScript únicamente cuando el cambio sea global y justificado.
-5. Prepara metadatos/configuración para Sonar cuando corresponda.
-6. Registra dependencias o cambios globales que deben esperar a la convergencia del código.
+5. Alinea exclusiones de coverage con la estructura/naming objetivo cuando el repositorio ya use o adopte esa convención.
+6. Prepara metadatos/configuración para Sonar cuando corresponda.
+7. Registra dependencias o cambios globales que deben esperar a la convergencia del código.
 7. Mantén separados:
    - tooling;
    - runtime;
@@ -50,6 +51,7 @@ Registra:
 - cambios pospuestos y motivo;
 - scripts disponibles;
 - configuración de testing/coverage;
+- convenciones de exclusión aplicadas;
 - cualquier incompatibilidad detectada durante la preparación.
 
 Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment vigente antes de volver a inventariar tooling global.

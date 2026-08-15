@@ -29,10 +29,11 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 3. Separa lógica de aplicación del runtime.
 4. Extrae límites de infraestructura solo cuando existe una dependencia real.
 5. Mantén el código organizado por capability/flujo de negocio.
-6. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
-7. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
-8. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
-9. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
+6. Organiza `application`, `domain` e `infrastructure` según responsabilidades internas cuando la capa ya no sea trivial.
+7. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
+8. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
+9. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
+10. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
 
 ## No hacer
 
@@ -49,6 +50,7 @@ Registra:
 
 - responsabilidades movidas;
 - límites creados y razón;
+- estructura y naming aplicados;
 - dependencias desacopladas;
 - componentes compartidos detectados;
 - validaciones realizadas.

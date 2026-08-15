@@ -25,6 +25,26 @@ Cuando la ruta sea distinta, configura el parámetro Sonar correspondiente en lu
 - no excluyas código productivo solo para satisfacer el gate;
 - justifica exclusiones técnicas reales;
 - evita duplicar configuración si el repositorio ya la gestiona desde CI/CD.
+- mantén las exclusiones de coverage alineadas con Jest y con la convención arquitectónica.
+
+## Exclusiones recomendadas
+
+Cuando el proyecto use la estructura objetivo de capabilities, Sonar debe importar el LCOV de Jest y excluir las mismas categorías no testeables:
+
+```text
+src/functions/**/*.function.ts
+**/*.spec.ts
+**/*.types.ts
+**/*.command.ts
+**/*.query.ts
+**/*.result.ts
+**/*.integration-event.ts
+**/*.http.types.ts
+src/**/domain/ports/**/*.ts
+src/**/application/ports/**/*.ts
+```
+
+No excluyas `infrastructure/**/*.repository.ts`, `infrastructure/**/*.publisher.ts`, `infrastructure/**/*.generator.ts` ni `infrastructure/**/*.storage.ts`: esas implementaciones deben quedar visibles para coverage.
 
 ## Preparación
 

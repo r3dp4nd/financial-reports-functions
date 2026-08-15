@@ -37,7 +37,8 @@ Prueba use cases, dominio y servicios desacoplados después del refactor.
 5. Evita mockear detalles internos sin valor contractual.
 6. Ejecuta tests y corrige causas reales de fallo sin degradar comportamiento.
 7. Produce cobertura como evidencia secundaria, no como objetivo aislado.
-8. Identifica huecos que no puedan probarse razonablemente sin integración real.
+8. Comprueba que Jest mida comportamiento y no contratos sin lógica.
+9. Identifica huecos que no puedan probarse razonablemente sin integración real.
 
 ## No hacer
 
@@ -54,6 +55,7 @@ Registra:
 - tests ejecutados;
 - resultados;
 - cobertura disponible;
+- exclusiones de coverage aplicadas por convención;
 - casos pendientes y razón.
 
 Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y deriva escenarios desde el análisis vigente de la Function cuando exista.
