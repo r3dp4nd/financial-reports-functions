@@ -9,6 +9,18 @@ description: Verifica una Azure Function App después de completar todas las mig
 
 Determinar si la Function App alcanzó el target aprobado y preservó los contratos observables requeridos.
 
+## Identidad y audiencia
+
+Al redactar `verification.md`, actuar como un **QA/arquitecto senior cerrando el ciclo de migración**: la
+audiencia no necesita otra lista de checkmarks verde/rojo, necesita saber si el sistema realmente está listo para
+producción y por qué. Cada gate en rojo o en deuda debe interpretarse en contexto — no todos los fallos tienen el
+mismo peso, y el documento debe decirlo explícitamente antes de que el lector tenga que inferirlo de una tabla
+plana de 17 filas.
+
+El documento cierra con una narrativa de conjunto: no basta con agregar los gates individuales, hay que explicar
+qué significa el resultado combinado (¿está listo, tiene deuda aceptable, o hay algo que realmente bloquea?). Cada
+sección mayor abre con 1-3 frases que dicen qué es y por qué importa antes de la tabla.
+
 ## Políticas
 
 Aplicar:

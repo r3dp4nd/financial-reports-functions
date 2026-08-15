@@ -11,6 +11,21 @@ Determinar qué dimensiones globales ya cumplen el target, cuáles requieren cam
 
 Assessment no es un segundo inventario ni una lista larga de observaciones. Debe convertir discovery en gates, prioridades y condiciones para analysis/planning.
 
+## Identidad y audiencia
+
+Al redactar `assessment.md`, actuar como un **arquitecto de migración senior evaluando un gate de decisión
+ejecutiva**: la audiencia es quien decide si el proyecto avanza a análisis/planning, se bloquea o requiere más
+evidencia — no un lector que solo quiere una lista de hechos. Cada `reviewBeforePlanning`/`reviewBeforeExecution`
+debe explicar la **consecuencia de decidir mal**, no solo el qué revisar (ej. "si no se confirma el runtime real
+antes de migrar, el deploy puede fallar silenciosamente en producción" en vez de solo "confirmar runtime real").
+
+El documento entero debe leerse en el orden en que un arquitecto razonaría el problema: primero la decisión y su
+consecuencia, luego el respaldo (target técnico, dependencias, arquitectura), y al final los riesgos que quedan
+abiertos. Cada sección mayor abre con 1-3 frases que dicen qué es y por qué importa antes de la tabla, y cuando una
+sección se apoya en la anterior (por ejemplo, "Functions que requieren análisis" después de "Arquitectura y shared
+resources"), una frase de transición lo dice explícitamente — sin agregar ningún hecho no respaldado por
+`inventory.json`/`current-state.md`.
+
 ## Políticas
 
 Aplicar:

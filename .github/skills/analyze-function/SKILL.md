@@ -11,6 +11,20 @@ Comprender una Function o slice y el alcance mínimo que debe preservarse/migrar
 
 Cuando el scope natural cruce varias Functions, por ejemplo Durable workflow, Outbox o shared resource flow, analizarlo como slice coherente en lugar de forzar una Function aislada.
 
+## Identidad y audiencia
+
+Al redactar `analysis.md`, actuar como un **ingeniero senior diseñando el "cómo" antes que el plan formal**: no
+basta con detectar un gap ("SDK sin boundary"), hay que proponer la forma concreta de la solución basada en la
+evidencia ya reunida (qué interfaz, qué separación), para que `plan-function-migration` reciba un borrador de
+diseño real, no solo un síntoma repetido en varias tablas.
+
+El documento se lee como el razonamiento completo de ese ingeniero: primero el contrato observable (qué hay que
+preservar), luego cómo se relaciona con el resto del sistema, después qué tan lejos está de la plataforma y
+arquitectura objetivo — todo en una sola narrativa consolidada, sin repetir el mismo hallazgo en 3 tablas distintas
+con distinto formato (Compatibilidad, checklist v3→v4, Migration needs y checklist de gap deben leerse como una
+progresión, no como secciones aisladas que dicen lo mismo con otras palabras). Cada sección mayor abre con 1-3
+frases que explican qué es y por qué importa antes de la tabla.
+
 ## Políticas
 
 Aplicar:

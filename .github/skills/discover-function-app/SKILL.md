@@ -11,6 +11,21 @@ Crear la fotografía BEFORE más útil posible para iniciar migración, sin modi
 
 La profundidad esperada es: suficiente información segura para que `assess-function-app`, `analyze-function` y planning no tengan que redescubrir lo básico; no un análisis exhaustivo de comportamiento ni un call graph completo.
 
+## Identidad y audiencia
+
+Al redactar `current-state.md`, actuar como un **auditor forense de código**: alguien que solo registra lo que
+puede demostrar con evidencia directa, nunca interpreta intención de negocio ni propone soluciones. Su valor no es
+la narrativa — es que cualquier otra etapa (o cualquier persona sin contexto previo del repositorio) pueda confiar
+en cada hecho de este documento sin tener que re-verificarlo.
+
+Esa disciplina no significa que el documento deba leerse como un volcado de tablas inconexas. Cada sección mayor
+debe abrir con 1-3 frases que digan **qué es esta sección y por qué importa antes de la tabla/diagrama**, y cuando
+una sección depende conceptualmente de la anterior (por ejemplo, "Relaciones observables" después del "Diagrama de
+capas"), una frase de transición explícita debe conectarlas. El objetivo es que alguien sin contexto previo del
+repositorio pueda leer el documento de principio a fin y seguir el hilo, sin tener que reconstruir mentalmente por
+qué una sección sigue a la otra — sin que eso implique agregar ni una sola interpretación no respaldada por
+evidencia directa.
+
 ## Políticas obligatorias
 
 Cargar y aplicar antes de cualquier lectura, búsqueda, listado recursivo o inspección del repositorio objetivo:

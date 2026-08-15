@@ -10,6 +10,10 @@
 - **UNKNOWN** (desconocido): no hay evidencia suficiente todavía.
 - **NOT_APPLICABLE** (no aplica): esa dimensión no corresponde a este repositorio.
 
+El documento avanza de lo general a lo específico: primero qué es este repositorio y sobre qué plataforma corre,
+luego cómo está organizado internamente y qué Functions contiene, después las dependencias y configuración que lo
+sostienen, y cierra con la sección más importante — complejidad y deuda técnica — antes de indicar cómo ejecutarlo.
+
 ## 1. Visión general
 
 - Repositorio:
@@ -18,6 +22,9 @@
 - Fecha/evidencia base:
 
 ## 2. Plataforma
+
+Antes de entrar en el código, conviene saber sobre qué versión de Node.js, Runtime y Programming Model está
+construido — esto determina qué reglas de migración aplicarían si algún día se decide actuar sobre este repositorio.
 
 | Dimensión | Estado observado | Requisito mínimo oficial | Evidencia |
 |---|---|---|---|
@@ -31,6 +38,9 @@
 
 ## 3. Arquitectura observable
 
+Con la plataforma ya establecida, esta sección explica cómo está organizado el código internamente — dónde vive la
+lógica de negocio y qué tan separada está del runtime de Azure.
+
 - Organización del código:
 - Puntos de entrada de Azure (adapters):
 - Lógica de negocio (application/domain):
@@ -38,6 +48,8 @@
 - Dependencias importantes entre partes (acoplamientos):
 
 ### Diagrama de arquitectura
+
+El diagrama siguiente traduce visualmente los puntos anteriores.
 
 ```mermaid
 flowchart TB
@@ -50,12 +62,16 @@ flowchart TB
 
 ## 4. Inventario de Functions
 
-> Mismo nivel de detalle para Functions legacy (`function.json`) y modernas (`app.X(...)`).
+Con la arquitectura ya clara, este inventario detalla cada Function concreta — mismo nivel de detalle para
+Functions legacy (`function.json`) y modernas (`app.X(...)`).
 
 | Function | Trigger | Capability | Programming Model | Durable role | Complejidad | Detalle |
 |---|---|---|---|---|---|---|
 
 ## 5. Dependencias
+
+Las Functions de arriba se sostienen sobre paquetes externos concretos — esta tabla confirma cuáles realmente se
+usan en el código (`usageDetected`), no solo cuáles están declaradas en `package.json`.
 
 | Package | Versión | Consumidores | usageDetected | Evidencia |
 |---|---|---|---|---|
@@ -71,13 +87,18 @@ Solo nombres de claves; nunca valores.
 
 ## 7. Recursos compartidos
 
+Un recurso usado por más de una Function es un punto de coordinación crítico — cambiarlo sin avisar a todos sus
+consumidores puede romper algo que parecía no estar relacionado.
+
 | Recurso | Consumidores | Ownership | Observación |
 |---|---|---|---|
 
 ## 8. Complejidad y deuda técnica
 
-> Sección obligatoria. Ver `_shared/references/complexity-debt-rubric.md` para los criterios. Esta sección informa,
-> no planifica: no incluir Action IDs, executor sugerido ni orden de ejecución.
+Esta es la sección que distingue este documento de un README genérico: con todo lo anterior ya mapeado, responde
+qué tan complejo y arriesgado es tocar cada parte del repositorio, y por qué. Ver
+`_shared/references/complexity-debt-rubric.md` para los criterios. Esta sección informa, no planifica: no incluir
+Action IDs, executor sugerido ni orden de ejecución.
 
 ### Resumen ejecutivo
 
@@ -94,21 +115,24 @@ Solo nombres de claves; nunca valores.
 
 ### God files
 
-> Generada de forma determinista desde `inventory.json.largeFiles`. No implica automáticamente necesidad de refactor.
+Generada de forma determinista desde `inventory.json.largeFiles`. No implica automáticamente necesidad de
+refactor — solo señala dónde mirar primero.
 
 | Archivo | Líneas | Umbral |
 |---|---|---|
 
 ### Deuda técnica priorizada
 
-> Ordenada por impacto, no por orden de detección.
+Ordenada por impacto, no por orden de detección — para que quien lea esto sepa qué atender primero si algún día se
+decide actuar.
 
 | # | Hallazgo | Impacto | Evidencia | Affected scope |
 |---|---|---|---|---|
 
 ## 9. Cómo ejecutar/desplegar
 
-> Solo comandos ya observables de forma segura. Nunca credenciales ni pasos que requieran secretos.
+Con el panorama completo ya cubierto, estos son los comandos concretos ya observables de forma segura para
+levantar el proyecto — nunca credenciales ni pasos que requieran secretos.
 
 | Acción | Comando | Evidencia |
 |---|---|---|
@@ -118,6 +142,9 @@ Solo nombres de claves; nunca valores.
 | Tests, si existen | | |
 
 ## 10. Riesgos y unknowns
+
+Cierre del documento: qué de todo lo anterior merece atención, y qué preguntas siguen sin respuesta confirmable
+desde el código.
 
 - Riesgos:
 - Unknowns:

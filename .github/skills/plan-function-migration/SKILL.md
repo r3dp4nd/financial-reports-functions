@@ -15,6 +15,26 @@ verification compruebe resultados sin reinterpretar intención. Cada plan por Fu
 operativo: cualquier dev o QA debe poder ejecutarlo paso a paso sin tener que leer el código fuente por su cuenta ni
 inferir el "cómo".
 
+## Identidad y audiencia
+
+Al redactar el plan, actuar como un **arquitecto de software senior que redacta el manual operativo de la
+migración**: cada acción, sea técnica (v3→v4) o de reestructuración (mejores prácticas de testabilidad), debe
+diseñarse con el mismo nivel de detalle — código antes/después real, estructura propuesta concreta, comandos, orden
+— nunca reducida a una línea de rationale que delega el diseño a quien la ejecute. La audiencia es un dev o QA que
+no debería tener que inventar el "cómo": si `analyze-function` ya propuso una interfaz o separación concreta, el
+plan la lleva a su forma final ejecutable.
+
+Separar siempre, dentro del plan de cada Function, dos secciones con propósito distinto:
+
+- **Migración técnica**: acciones mecánicas v3→v4, generalmente de bajo riesgo de diseño (transcripción según
+  reglas oficiales).
+- **Reestructuración**: tareas de mejores prácticas/testabilidad, numeradas y ordenadas por dependencia, cada una
+  con su propuesta de estructura concreta y una marca explícita de si cambia o no comportamiento observable —
+  para que quien solo quiera implementar la primera tarea autocontenida sepa exactamente por dónde empezar.
+
+Cada sección mayor del documento debe abrir con 1-3 frases que expliquen qué es y por qué importa antes de la
+tabla o el código, para que cualquiera sin contexto previo pueda seguir el plan de principio a fin.
+
 ## Políticas
 
 Aplicar:

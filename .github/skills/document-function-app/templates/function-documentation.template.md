@@ -37,6 +37,9 @@ siempre trazable a la sección "Contrato observable" o al fragmento de código c
 
 ## Contrato observable
 
+La narrativa contó la historia; esta sección es su versión exacta y verificable — qué entra, qué pasa, qué sale y
+qué puede fallar, con el mismo detalle que se citará si algún día se decide migrar esta Function.
+
 ### Entrada
 
 ### Comportamiento
@@ -47,12 +50,17 @@ siempre trazable a la sección "Contrato observable" o al fragmento de código c
 
 ## Fragmento de código relevante
 
+El contrato de arriba se describe en prosa/estructura; este fragmento es la evidencia literal que lo respalda.
+
 ```ts
 ```
 
 *(archivo: ruta/al/archivo.ts, líneas X-Y)*
 
 ## Dependencias
+
+Toda Function depende de otros módulos y paquetes externos para cumplir su contrato — esta sección lista
+exactamente cuáles.
 
 - internas: (nombres reales de clases/módulos importados, no descripciones)
 - externas:
@@ -64,11 +72,17 @@ Solo nombres de claves.
 
 ## Relaciones
 
+Más allá de las dependencias técnicas, esta sección ubica a la Function dentro del flujo más amplio del
+repositorio: quién la invoca, a quién invoca ella, y si forma parte de un workflow coordinado.
+
 - callers/producers:
 - consumers/downstream:
 - workflow participants:
 
 ## Arquitectura actual
+
+Con el contrato, dependencias y relaciones ya claros, esta sección resume cómo está organizado el código
+internamente — si el adapter Azure está separado de la lógica de negocio, o si todo vive mezclado.
 
 - Azure adapter:
 - lógica funcional:
@@ -76,6 +90,9 @@ Solo nombres de claves.
 - acoplamientos:
 
 ## Complejidad y deuda técnica
+
+Con la arquitectura ya descrita, esta sección responde qué tan arriesgado es tocar esta Function y por qué — la
+misma clasificación que alimentará el resumen ejecutivo de `repository.md`.
 
 > Ver `_shared/references/complexity-debt-rubric.md`. Si ya existe `analysis.json` para esta Function/slice
 > (`.migration/20-analysis/`), citar su clasificación en vez de re-derivarla.
