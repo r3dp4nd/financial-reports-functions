@@ -16,6 +16,44 @@ comprender -> definir alcance -> preparar -> transformar -> probar -> verificar
 
 No mezcles cambios funcionales con migración tecnológica.
 
+## Ingenieria de contexto
+
+En repositorios grandes o con dependencias cruzadas, pide primero una lectura progresiva antes de abrir muchos archivos.
+
+Ejemplo:
+
+```text
+Usa assess-function-app aplicando ingenieria de contexto: primero scan liviano, luego shortlist de archivos, luego lectura puntual.
+```
+
+La IA debe trabajar con esta secuencia:
+
+```text
+scan -> shortlist -> lectura puntual -> resumen -> siguiente decision
+```
+
+Úsala especialmente cuando:
+
+- el repo tiene muchas Functions o muchos imports compartidos;
+- una Function consume servicios, repositorios o utilidades difíciles de delimitar;
+- un componente compartido tiene varios consumidores;
+- existe `.migration/` y conviene reutilizar evidencia vigente antes de reconstruir inventarios;
+- la verificación final debe revisar discrepancias, no reanalizar todo desde cero.
+
+Antes de profundizar, la respuesta o el artefacto puede dejar una mini fotografía:
+
+```text
+Objetivo:
+Evidencia ya leida:
+Shortlist:
+Por que estos archivos:
+Archivos no leidos por ahora:
+Riesgo si no se leen:
+Siguiente decision:
+```
+
+No uses esta regla para agregar ceremonia. Su valor es reducir contexto innecesario y hacer que cada archivo leido tenga una razon.
+
 ## Orden recomendado
 
 ### 1. Diagnóstico inicial
@@ -241,6 +279,17 @@ shared-components/<component-name>.md
 verification.md
 ```
 
+Antes de reconstruir un inventario o analisis, revisa el estado del artefacto:
+
+```text
+vigente -> reutilizar y validar con muestreo dirigido
+parcial -> completar solo huecos
+desactualizado -> registrar motivo y actualizar
+inexistente -> producir el minimo necesario
+```
+
+No copies un artefacto completo dentro de otro. Enlaza la evidencia usada y registra solo la diferencia que aporta el nuevo alcance.
+
 ## Settings y secretos
 
 El toolkit puede inventariar settings y ayudar a pedir `local.settings.json`, pero nunca debe registrar secretos.
@@ -296,4 +345,3 @@ func start
 ```
 
 No declares terminada una migración si una validación requerida no pudo ejecutarse.
-
