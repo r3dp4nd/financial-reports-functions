@@ -74,6 +74,28 @@ oficial de una API/método que deba citarse literal:
 Si aparece un término técnico sin equivalente natural en el uso común de desarrolladores hispanohablantes, dejarlo en
 inglés en vez de forzar una traducción forzada o poco usada.
 
+## Vocabulario controlado (enum) vs. prosa narrativa
+
+Los valores de un enum controlado (por ejemplo `HIGH|MEDIUM|LOW`, `GOOD|PARTIAL|POOR`,
+`CONFIRMED|INFERRED|UNKNOWN|NOT_APPLICABLE`, `COMPLETED|BLOCKED|REQUIRES_REVIEW`) permanecen literales cuando
+aparecen en su columna/celda de estado propia (por ejemplo la columna "Estado" o "Criticidad" de una tabla), porque
+son vocabulario técnico consistente entre artifacts JSON y MD, y permiten trazabilidad directa entre ambos.
+
+Cuando el mismo concepto se menciona **dentro de prosa narrativa** (Rationale, Narrativa funcional/técnica,
+hallazgos, riesgos), traducir al adjetivo natural en español en vez de repetir el literal del enum:
+
+| Enum (permanece literal en su celda de estado) | Adjetivo en prosa |
+|---|---|
+| `HIGH`       | alta                  |
+| `MEDIUM`     | media                 |
+| `LOW`        | baja                  |
+| `GOOD`       | buena                 |
+| `PARTIAL`    | parcial               |
+| `POOR`       | pobre / deficiente    |
+
+Ejemplo correcto: celda "Criticidad: `HIGH`" acompañada de la prosa "esta operación tiene criticidad alta porque
+muta datos de forma masiva…" — nunca "criticidad HIGH" dentro de la oración narrativa.
+
 ## Verificación antes de guardar
 
 Antes de escribir cualquier artifact `.md` con narrativa, revisar el texto generado contra este glosario y las
