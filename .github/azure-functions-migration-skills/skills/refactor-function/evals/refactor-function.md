@@ -14,6 +14,7 @@ Usa refactor-function para ordenar <FunctionName> por capability, DI, applicatio
 
 - `principles/copilot-rules.md`
 - `references/architecture/function-architecture.md`
+- `references/architecture/capability-slicing.md` si divide un servicio monolítico o god file
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
 
@@ -23,6 +24,7 @@ Artefactos bajo `.migration/functions/<function-name>/` con:
 
 - estructura y naming aplicados;
 - responsabilidades movidas por evidencia;
+- capability origen/destino de responsabilidades extraídas;
 - DI aplicada o descartada con razón;
 - validaciones incrementales;
 - deuda o mejoras futuras fuera de alcance.
@@ -33,4 +35,5 @@ Artefactos bajo `.migration/functions/<function-name>/` con:
 - crear capas, interfaces o archivos sin uso inmediato;
 - alterar bindings o settings salvo que sea consecuencia técnica documentada;
 - convertir mejoras futuras en parte de la migración;
+- reescribir un servicio monolítico completo sin cortes incrementales;
 - apropiarse de componentes compartidos sin revisar consumidores.

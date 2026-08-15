@@ -135,6 +135,8 @@ Ubicación recomendada:
 
 No dividas por número de métodos. Divide cuando existan responsabilidades con diferentes razones de cambio.
 
+Cuando el servicio o god file mezcle varias capabilities o tenga consumidores múltiples, carga `capability-slicing.md` antes de proponer movimientos.
+
 Ejemplo de mezcla problemática:
 
 ```text

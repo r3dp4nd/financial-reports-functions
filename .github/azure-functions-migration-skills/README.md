@@ -96,7 +96,8 @@ references/
 │   ├── dependency-strategy.md
 │   └── azure-sdk-js.md
 ├── architecture/
-│   └── function-architecture.md
+│   ├── function-architecture.md
+│   └── capability-slicing.md
 ├── testing/
 │   └── jest.md
 └── quality/

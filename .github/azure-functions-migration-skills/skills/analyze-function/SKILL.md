@@ -28,13 +28,14 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 5. Inventaría variables de entorno y settings usados por la Function, solo por nombre.
 6. Detecta responsabilidades mezcladas y acoplamiento al runtime/SDK.
 7. Identifica componentes compartidos y sus consumidores conocidos.
-8. Propone una separación conceptual mínima:
+8. Si encuentra servicios monolíticos o god files, produce un mapa de slicing por capability antes de proponer movimientos.
+9. Propone una separación conceptual mínima:
    - adapter/composition root Azure;
    - lógica de aplicación;
    - dominio cuando exista;
    - límites de infraestructura necesarios.
-9. Define escenarios de comportamiento que deberían preservarse durante la transformación.
-10. Declara incertidumbres que requieran evidencia adicional.
+10. Define escenarios de comportamiento que deberían preservarse durante la transformación.
+11. Declara incertidumbres que requieran evidencia adicional.
 
 ## No hacer
 
@@ -53,6 +54,7 @@ La salida debe permitir entender:
 - qué comportamiento debe conservarse;
 - qué settings y bindings debe preservar;
 - qué parte es Azure, negocio e infraestructura;
+- qué responsabilidades podrían separarse por capability;
 - qué separación arquitectónica mínima tendría sentido.
 
 Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment global vigente como inventario inicial.
@@ -68,5 +70,6 @@ Carga según lo observado:
 - `../../references/azure-functions/bindings-v4.md`: para inventariar con precisión trigger/bindings que luego deberán preservarse.
 - `../../references/configuration/environment-and-bindings.md`: settings usados por bindings, código y configuración.
 - `../../references/architecture/function-architecture.md`: para proponer separación conceptual mínima.
+- `../../references/architecture/capability-slicing.md`: solo si detecta servicios monolíticos, god files o responsabilidades mezcladas entre capabilities.
 - `../../references/azure-functions/durable-v4.md`: únicamente si se detecta Durable Functions.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

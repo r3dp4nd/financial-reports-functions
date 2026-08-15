@@ -42,11 +42,12 @@ Respeta las exclusiones de archivos sensibles definidas por el entorno o proyect
 9. Si detecta SDKs Azure, sugiere versión objetivo solo con fuente oficial vigente y razón.
 10. Inventaría variables de entorno y settings usados por código, bindings y configuración, solo por nombre.
 11. Identifica servicios, clientes, repositorios y configuración compartidos.
-12. Evalúa madurez observable de estructura, separación de responsabilidades, dependency injection, testing y calidad.
-13. Define qué entra en el alcance de migración y qué debe quedar fuera.
-14. Describe la arquitectura observable sin imponer todavía la arquitectura objetivo.
-15. Identifica brechas, riesgos, deuda relevante y desconocidos.
-16. Propone un mapa de migración de alto nivel sin convertirlo en un workflow obligatorio.
+12. Detecta servicios monolíticos, god files o módulos compartidos que requieran slicing por capability.
+13. Evalúa madurez observable de estructura, separación de responsabilidades, dependency injection, testing y calidad.
+14. Define qué entra en el alcance de migración y qué debe quedar fuera.
+15. Describe la arquitectura observable sin imponer todavía la arquitectura objetivo.
+16. Identifica brechas, riesgos, deuda relevante y desconocidos.
+17. Propone un mapa de migración de alto nivel sin convertirlo en un workflow obligatorio.
 
 ## No hacer
 
@@ -87,6 +88,7 @@ Carga solo las necesarias para el caso:
 - `../../references/dependencies/dependency-strategy.md`: clasificación de dependencias.
 - `../../references/dependencies/azure-sdk-js.md`: solo si detecta paquetes Azure SDK o SDKs Azure legacy.
 - `../../references/architecture/function-architecture.md`: madurez estructural, DI y separación observable.
+- `../../references/architecture/capability-slicing.md`: solo si detecta servicios monolíticos, god files o responsabilidades mezcladas entre capabilities.
 - `../../references/configuration/environment-and-bindings.md`: inventario de settings, bindings y configuración.
 - `../../references/planning/migration-scope-and-debt.md`: alcance, fuera de alcance y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

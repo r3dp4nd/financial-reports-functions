@@ -33,9 +33,10 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 7. Aplica dependency injection explícita cuando reduzca acoplamiento real o facilite tests.
 8. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
 9. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
-10. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
-11. Documenta cambios deseables fuera de alcance como deuda técnica o mejora futura.
-12. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
+10. Usa el mapa de slicing vigente cuando exista; si no existe y el riesgo es alto, registra el bloqueo antes de mover.
+11. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
+12. Documenta cambios deseables fuera de alcance como deuda técnica o mejora futura.
+13. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
 
 ## No hacer
 
@@ -68,5 +69,6 @@ Termina cuando la Function tiene límites suficientemente claros para probar neg
 ## Referencias
 
 - `../../references/architecture/function-architecture.md`: arquitectura objetivo y criterios para evitar sobrearquitectura.
+- `../../references/architecture/capability-slicing.md`: solo si se divide un servicio monolítico, god file o módulo con responsabilidades mezcladas.
 - `../../references/planning/migration-scope-and-debt.md`: cambios fuera de alcance, deuda y mejoras futuras.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

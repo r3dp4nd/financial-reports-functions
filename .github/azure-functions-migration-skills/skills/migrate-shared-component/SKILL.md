@@ -23,18 +23,19 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 1. Identifica todos los consumidores razonablemente detectables.
 2. Determina qué contrato debe preservarse.
-3. Clasifica responsabilidades del componente:
+3. Si el componente es monolítico o mezcla capabilities, produce un mapa de slicing antes de separar.
+4. Clasifica responsabilidades del componente:
    - aplicación/negocio;
    - infraestructura;
    - configuración;
    - mapping;
    - utilidades.
-4. Identifica settings compartidos, solo por nombre, y su contrato de uso.
-5. Separa migración técnica de refactor arquitectónico cuando sea viable.
-6. Actualiza SDKs o APIs únicamente cuando la migración del componente lo requiera.
-7. Diseña el cambio para que los consumidores converjan sobre una sola decisión coherente.
-8. Evita duplicar adapters, clientes o repositorios equivalentes por Function sin necesidad.
-9. Comprueba consumidores afectados de forma proporcional al cambio.
+5. Identifica settings compartidos, solo por nombre, y su contrato de uso.
+6. Separa migración técnica de refactor arquitectónico cuando sea viable.
+7. Actualiza SDKs o APIs únicamente cuando la migración del componente lo requiera.
+8. Diseña el cambio para que los consumidores converjan sobre una sola decisión coherente.
+9. Evita duplicar adapters, clientes o repositorios equivalentes por Function sin necesidad.
+10. Comprueba consumidores afectados de forma proporcional al cambio.
 
 ## No hacer
 
@@ -65,6 +66,7 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 - `../../references/dependencies/dependency-strategy.md`: cuando el componente encapsula un SDK o dependencia que debe actualizarse.
 - `../../references/dependencies/azure-sdk-js.md`: cuando el componente encapsula un SDK Azure o SDK Azure legacy.
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
+- `../../references/architecture/capability-slicing.md`: cuando el componente sea monolítico o mezcle responsabilidades de varias capabilities.
 - `../../references/configuration/environment-and-bindings.md`: configuración compartida y settings transversales.
 - `../../references/planning/migration-scope-and-debt.md`: límites de cambio y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

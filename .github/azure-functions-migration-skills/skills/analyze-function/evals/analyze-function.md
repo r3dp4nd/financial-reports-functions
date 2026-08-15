@@ -16,6 +16,7 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 - `references/azure-functions/bindings-v4.md`
 - `references/configuration/environment-and-bindings.md`
 - `references/architecture/function-architecture.md`
+- `references/architecture/capability-slicing.md` si detecta servicio monolítico o god file
 - `references/evidence/migration-artifacts.md`
 - `references/azure-functions/durable-v4.md` solo si detecta Durable Functions
 
@@ -27,6 +28,7 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 - flujo funcional observable;
 - reglas, side effects y manejo de errores;
 - dependencias internas, externas y compartidas;
+- mapa de slicing por capability cuando aplique;
 - separación conceptual mínima;
 - escenarios de comportamiento a preservar;
 - incertidumbres que requieran evidencia adicional.

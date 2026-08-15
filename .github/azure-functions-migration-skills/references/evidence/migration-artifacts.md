@@ -53,6 +53,7 @@ Contiene:
 - inventario de dependencias con uso, consumidores y acción sugerida;
 - componentes compartidos y consumidores conocidos;
 - arquitectura observable;
+- servicios monolíticos o god files con capabilities candidatas cuando existan;
 - brechas, riesgos, deuda e incógnitas;
 - alcance de migración y elementos fuera de alcance;
 - variables de entorno/configuración requeridas, solo por nombre;
@@ -90,6 +91,7 @@ Contiene:
 - componentes compartidos consumidos;
 - responsabilidades mezcladas;
 - separación conceptual mínima propuesta;
+- mapa de slicing por capability cuando detecte servicios monolíticos o god files;
 - escenarios de comportamiento a preservar;
 - incógnitas.
 
@@ -117,6 +119,7 @@ Dueño: `refactor-function`.
 Contiene:
 
 - responsabilidades movidas;
+- capability origen/destino de cada responsabilidad movida cuando aplique;
 - límites creados y razón;
 - dependencias desacopladas;
 - componentes compartidos detectados durante el refactor;

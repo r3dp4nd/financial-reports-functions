@@ -37,6 +37,7 @@ dependencies/
 
 architecture/
   function-architecture.md
+  capability-slicing.md
 
 testing/
   jest.md

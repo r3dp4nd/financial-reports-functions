@@ -19,6 +19,7 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - `references/dependencies/dependency-strategy.md`
 - `references/dependencies/azure-sdk-js.md` si detecta SDKs Azure o SDKs Azure legacy
 - `references/architecture/function-architecture.md`
+- `references/architecture/capability-slicing.md` si detecta servicios monolíticos, god files o responsabilidades mezcladas
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
@@ -36,6 +37,7 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - orden observable entre triggers, handlers, orchestrators, activities, outputs y eventos;
 - inventario de dependencias con uso, consumidores y acción sugerida;
 - sugerencia de versión para SDKs Azure y runtime dependencies detectadas, con fuente oficial y razón;
+- servicios monolíticos o god files con capabilities candidatas cuando existan;
 - settings/env requeridos, solo por nombre;
 - componentes compartidos;
 - madurez estructural y de tests;
