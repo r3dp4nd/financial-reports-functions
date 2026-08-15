@@ -16,10 +16,13 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 - `references/azure-functions/bindings-v4.md`
 - `references/configuration/environment-and-bindings.md`
 - `references/architecture/function-architecture.md`
+- `references/architecture/naming-and-coverage.md` si propone naming, cobertura o exclusiones
+- `references/architecture/di-and-composition.md` si propone puertos, factories o composición
 - `references/architecture/capability-slicing.md` si detecta servicio monolítico o god file
 - `references/infrastructure/exceljs-document-generation.md` si detecta ExcelJS, streams o templates de reporte
 - `references/infrastructure/cosmos-mongo-persistence.md` si detecta Cosmos DB, MongoDB, queries o cursors
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `analysis.md`
 - `references/azure-functions/durable-v4.md` solo si detecta Durable Functions
 
 ## Debe producir

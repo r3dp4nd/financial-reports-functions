@@ -58,7 +58,7 @@ Registra:
 - exclusiones de coverage aplicadas por convención;
 - casos pendientes y razón.
 
-Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y deriva escenarios desde el análisis vigente de la Function cuando exista.
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y deriva escenarios desde el análisis vigente de la Function cuando exista. Carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `tests.md`.
 
 ## Finalización
 
@@ -70,4 +70,5 @@ Termina cuando los comportamientos de mayor valor/riesgo disponen de evidencia e
 - `../../references/azure-functions/programming-model-v4.md`: solo si se prueba directamente un adapter/handler v4.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si se prueban generators ExcelJS, templates o streaming de documentos.
 - `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si se prueban repositorios, query builders, paginación/cursors o mappers Cosmos/Mongo.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

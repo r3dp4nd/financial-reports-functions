@@ -24,6 +24,7 @@ azure-functions/
 
 evidence/
   migration-artifacts.md
+  artifact-contracts.md
 
 planning/
   migration-scope-and-debt.md
@@ -34,9 +35,12 @@ configuration/
 dependencies/
   dependency-strategy.md
   azure-sdk-js.md
+  runtime-baseline.md
 
 architecture/
   function-architecture.md
+  naming-and-coverage.md
+  di-and-composition.md
   capability-slicing.md
 
 infrastructure/

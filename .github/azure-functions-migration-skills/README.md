@@ -82,7 +82,8 @@ Referencias disponibles:
 ```text
 references/
 ├── evidence/
-│   └── migration-artifacts.md
+│   ├── migration-artifacts.md
+│   └── artifact-contracts.md
 ├── planning/
 │   └── migration-scope-and-debt.md
 ├── configuration/
@@ -94,9 +95,12 @@ references/
 │   └── durable-v4.md
 ├── dependencies/
 │   ├── dependency-strategy.md
-│   └── azure-sdk-js.md
+│   ├── azure-sdk-js.md
+│   └── runtime-baseline.md
 ├── architecture/
 │   ├── function-architecture.md
+│   ├── naming-and-coverage.md
+│   ├── di-and-composition.md
 │   └── capability-slicing.md
 ├── infrastructure/
 │   ├── exceljs-document-generation.md
@@ -113,7 +117,7 @@ No se crea una skill nueva por cada tecnología, trigger o dependencia. Primero 
 
 Las skills deben favorecer resultados comprobables. Cuando el repositorio use una carpeta de evidencia, el toolkit propone `.migration/` como ubicación neutral para conservar diagnósticos, análisis, decisiones y verificaciones sin convertirla en un motor de workflow.
 
-El contrato de artefactos vive en [`references/evidence/migration-artifacts.md`](references/evidence/migration-artifacts.md). Cada skill conserva ownership claro de su evidencia y reutiliza artefactos previos vigentes antes de volver a investigar o documentar lo mismo.
+El uso ligero de evidencia vive en [`references/evidence/migration-artifacts.md`](references/evidence/migration-artifacts.md), y los contratos detallados en [`references/evidence/artifact-contracts.md`](references/evidence/artifact-contracts.md). Cada skill conserva ownership claro de su evidencia y reutiliza artefactos previos vigentes antes de volver a investigar o documentar lo mismo.
 
 ## Evals
 

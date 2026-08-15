@@ -61,7 +61,7 @@ La salida debe permitir entender:
 - qué smells de generación de documentos bloquean testabilidad cuando existan;
 - qué separación arquitectónica mínima tendría sentido.
 
-Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment global vigente como inventario inicial.
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment global vigente como inventario inicial. Carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `analysis.md`.
 
 ## Finalización
 
@@ -74,8 +74,11 @@ Carga según lo observado:
 - `../../references/azure-functions/bindings-v4.md`: para inventariar con precisión trigger/bindings que luego deberán preservarse.
 - `../../references/configuration/environment-and-bindings.md`: settings usados por bindings, código y configuración.
 - `../../references/architecture/function-architecture.md`: para proponer separación conceptual mínima.
+- `../../references/architecture/naming-and-coverage.md`: solo si propones nombres, exclusiones o puntos de testabilidad por convención.
+- `../../references/architecture/di-and-composition.md`: solo si propones puertos, factories o composición.
 - `../../references/architecture/capability-slicing.md`: solo si detecta servicios monolíticos, god files o responsabilidades mezcladas entre capabilities.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si detecta ExcelJS, streams o templates de reporte.
 - `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si detecta Cosmos DB, MongoDB, query iterators, cursors o mapeo de documentos.
 - `../../references/azure-functions/durable-v4.md`: únicamente si se detecta Durable Functions.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

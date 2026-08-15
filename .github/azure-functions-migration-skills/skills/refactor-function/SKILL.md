@@ -63,7 +63,7 @@ Registra:
 - deuda técnica o mejoras futuras fuera de alcance;
 - validaciones realizadas.
 
-Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y enlaza el análisis o la migración previa en vez de repetirlos.
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y enlaza el análisis o la migración previa en vez de repetirlos. Carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `refactor.md`.
 
 ## Finalización
 
@@ -72,8 +72,11 @@ Termina cuando la Function tiene límites suficientemente claros para probar neg
 ## Referencias
 
 - `../../references/architecture/function-architecture.md`: arquitectura objetivo y criterios para evitar sobrearquitectura.
+- `../../references/architecture/naming-and-coverage.md`: cuando apliques naming, exclusiones o estructura testeable.
+- `../../references/architecture/di-and-composition.md`: cuando crees puertos, factories, composition roots o DI explícita.
 - `../../references/architecture/capability-slicing.md`: solo si se divide un servicio monolítico, god file o módulo con responsabilidades mezcladas.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si se refactoriza generación Excel/CSV, streaming o templates.
 - `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si se refactoriza persistencia Cosmos/Mongo, queries o mappers de documentos.
 - `../../references/planning/migration-scope-and-debt.md`: cambios fuera de alcance, deuda y mejoras futuras.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

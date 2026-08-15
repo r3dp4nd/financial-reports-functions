@@ -19,7 +19,9 @@ Usa prepare-function-app para preparar TypeScript, Jest, coverage, Sonar y scrip
 - `references/configuration/environment-and-bindings.md` si hay settings/local settings
 - `references/dependencies/dependency-strategy.md` si modifica dependencias o lockfile
 - `references/dependencies/azure-sdk-js.md` si recomienda o actualiza SDKs Azure detectados
+- `references/dependencies/runtime-baseline.md` si sugiere versiones runtime concretas
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `preparation.md`
 
 ## Debe producir
 

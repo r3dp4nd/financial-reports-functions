@@ -21,6 +21,7 @@ Usa verify-function-app para comprobar convergencia final de la Function App.
 - `references/quality/sonar.md` si aplica
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `verification.md`
 - `references/azure-functions/durable-v4.md` solo si aplica
 
 ## Debe producir

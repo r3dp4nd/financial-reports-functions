@@ -18,13 +18,17 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - `references/azure-functions/bindings-v4.md`
 - `references/dependencies/dependency-strategy.md`
 - `references/dependencies/azure-sdk-js.md` si detecta SDKs Azure o SDKs Azure legacy
+- `references/dependencies/runtime-baseline.md` solo si sugiere versiones runtime concretas
 - `references/architecture/function-architecture.md`
+- `references/architecture/naming-and-coverage.md` si evalúa naming, cobertura o exclusiones
+- `references/architecture/di-and-composition.md` si evalúa DI, composition roots o reuso de clientes
 - `references/architecture/capability-slicing.md` si detecta servicios monolíticos, god files o responsabilidades mezcladas
 - `references/infrastructure/exceljs-document-generation.md` si detecta ExcelJS, streams o templates de reporte
 - `references/infrastructure/cosmos-mongo-persistence.md` si detecta Cosmos DB, MongoDB, queries o cursors
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `app-assessment.md`
 - `references/azure-functions/durable-v4.md` solo si detecta Durable Functions
 
 ## Debe producir

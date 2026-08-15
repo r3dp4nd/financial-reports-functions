@@ -72,7 +72,7 @@ Produce una visión que permita responder:
 - qué requiere investigación;
 - qué riesgos condicionan la migración.
 
-Cuando exista una convención de evidencia, conserva el resultado bajo `.migration/` sin convertir esa carpeta en un motor de estado. Usa `../../references/evidence/migration-artifacts.md` para nombrar y estructurar el artefacto.
+Cuando exista una convención de evidencia, conserva el resultado bajo `.migration/` sin convertir esa carpeta en un motor de estado. Usa `../../references/evidence/migration-artifacts.md`; carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `app-assessment.md`.
 
 ## Finalización
 
@@ -87,10 +87,14 @@ Carga solo las necesarias para el caso:
 - `../../references/azure-functions/bindings-v4.md`: inventario de triggers, bindings y equivalencia futura.
 - `../../references/dependencies/dependency-strategy.md`: clasificación de dependencias.
 - `../../references/dependencies/azure-sdk-js.md`: solo si detecta paquetes Azure SDK o SDKs Azure legacy.
-- `../../references/architecture/function-architecture.md`: madurez estructural, DI y separación observable.
+- `../../references/dependencies/runtime-baseline.md`: solo si vas a sugerir versiones concretas para `package.json`.
+- `../../references/architecture/function-architecture.md`: madurez estructural y separación observable.
+- `../../references/architecture/naming-and-coverage.md`: solo si evalúas naming, cobertura o exclusiones por convención.
+- `../../references/architecture/di-and-composition.md`: solo si evalúas DI, composition roots o creación/reuso de clientes.
 - `../../references/architecture/capability-slicing.md`: solo si detecta servicios monolíticos, god files o responsabilidades mezcladas entre capabilities.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si detecta ExcelJS, generación de documentos, streams o templates de reporte.
 - `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si detecta Cosmos DB, MongoDB, queries, cursors o persistencia compartida.
 - `../../references/configuration/environment-and-bindings.md`: inventario de settings, bindings y configuración.
 - `../../references/planning/migration-scope-and-debt.md`: alcance, fuera de alcance y deuda futura.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

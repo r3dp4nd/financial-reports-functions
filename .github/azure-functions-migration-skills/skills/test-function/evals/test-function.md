@@ -15,6 +15,7 @@ Usa test-function para diseñar, implementar y ejecutar tests útiles para <Func
 - `principles/copilot-rules.md`
 - `references/testing/jest.md`
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `tests.md`
 - `references/azure-functions/programming-model-v4.md` solo si prueba directamente un adapter/handler v4
 - `references/infrastructure/exceljs-document-generation.md` si prueba generación ExcelJS, templates o streaming
 - `references/infrastructure/cosmos-mongo-persistence.md` si prueba repositorios, query builders, paginación o mappers Cosmos/Mongo

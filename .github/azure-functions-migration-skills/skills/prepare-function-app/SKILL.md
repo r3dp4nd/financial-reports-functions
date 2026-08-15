@@ -58,7 +58,7 @@ Registra:
 - convenciones de exclusión aplicadas;
 - cualquier incompatibilidad detectada durante la preparación.
 
-Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment vigente antes de volver a inventariar tooling global.
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment vigente antes de volver a inventariar tooling global. Carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `preparation.md`.
 
 ## Finalización
 
@@ -69,8 +69,10 @@ Termina cuando el repositorio dispone del tooling global necesario para continua
 - `../../references/azure-functions/platform-target.md`: restricciones globales de runtime/Node.js.
 - `../../references/dependencies/dependency-strategy.md`: cambios seguros en `package.json` y lockfile.
 - `../../references/dependencies/azure-sdk-js.md`: solo si la preparación incluye recomendar o actualizar SDKs Azure detectados.
+- `../../references/dependencies/runtime-baseline.md`: solo si vas a sugerir versiones runtime concretas.
 - `references/typescript-build-scripts.md`: TypeScript, scripts npm y validaciones globales propias de preparación.
 - `../../references/configuration/environment-and-bindings.md`: settings, local settings y configuración compartida.
 - `../../references/testing/jest.md`: solo cuando Jest/testing formen parte del objetivo.
 - `../../references/quality/sonar.md`: solo cuando Sonar forme parte del alcance.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

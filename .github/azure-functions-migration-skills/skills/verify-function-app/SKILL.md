@@ -63,7 +63,7 @@ Produce una comparación clara entre estado inicial y final, con:
 - desconocidos;
 - conclusión sustentada.
 
-Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y consume los artefactos previos aplicables antes de reconstruir comparaciones.
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y consume los artefactos previos aplicables antes de reconstruir comparaciones. Carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `verification.md`.
 
 ## Finalización
 
@@ -81,4 +81,5 @@ Carga según el alcance final:
 - `../../references/testing/jest.md`: tests y coverage.
 - `../../references/quality/sonar.md`: cuando Sonar forme parte del objetivo.
 - `../../references/planning/migration-scope-and-debt.md`: alcance, deuda y mejoras futuras.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

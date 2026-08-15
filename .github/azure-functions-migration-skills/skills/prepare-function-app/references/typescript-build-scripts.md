@@ -198,7 +198,7 @@ Aplica esta lista solo si el repo escaneado necesita esas capacidades. Antes de 
 
 Jest debe usar `tsconfig.spec.json` cuando se use `ts-jest`.
 
-Coverage debe seguir la estructura objetivo:
+Coverage debe seguir la estructura objetivo. Carga `../../../references/architecture/naming-and-coverage.md` si necesitas aplicar o ajustar convenciones de naming/exclusión.
 
 - exclude composition roots `src/functions/**/*.function.ts`;
 - exclude contratos por sufijo (`*.types.ts`, `*.command.ts`, `*.query.ts`, `*.result.ts`, `*.integration-event.ts`, `*.http.types.ts`);

@@ -14,11 +14,14 @@ Usa refactor-function para ordenar <FunctionName> por capability, DI, applicatio
 
 - `principles/copilot-rules.md`
 - `references/architecture/function-architecture.md`
+- `references/architecture/naming-and-coverage.md` si aplica naming, cobertura o estructura testeable
+- `references/architecture/di-and-composition.md` si crea puertos, factories o DI explícita
 - `references/architecture/capability-slicing.md` si divide un servicio monolítico o god file
 - `references/infrastructure/exceljs-document-generation.md` si refactoriza generación Excel/CSV
 - `references/infrastructure/cosmos-mongo-persistence.md` si refactoriza persistencia Cosmos/Mongo
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `refactor.md`
 
 ## Debe producir
 

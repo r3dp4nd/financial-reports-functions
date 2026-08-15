@@ -55,7 +55,7 @@ Registra:
 - responsabilidades separadas;
 - impacto y verificaciones por consumidor.
 
-Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza análisis de Functions consumidoras cuando estén vigentes.
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza análisis de Functions consumidoras cuando estén vigentes. Carga `../../references/evidence/artifact-contracts.md` solo si necesitas el contrato detallado de `shared-components/<name>.md`.
 
 ## Finalización
 
@@ -65,10 +65,14 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 
 - `../../references/dependencies/dependency-strategy.md`: cuando el componente encapsula un SDK o dependencia que debe actualizarse.
 - `../../references/dependencies/azure-sdk-js.md`: cuando el componente encapsula un SDK Azure o SDK Azure legacy.
+- `../../references/dependencies/runtime-baseline.md`: solo si vas a sugerir versiones runtime concretas.
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
+- `../../references/architecture/naming-and-coverage.md`: cuando apliques naming o estructura testeable.
+- `../../references/architecture/di-and-composition.md`: cuando crees puertos, factories o composición compartida.
 - `../../references/architecture/capability-slicing.md`: cuando el componente sea monolítico o mezcle responsabilidades de varias capabilities.
 - `../../references/infrastructure/exceljs-document-generation.md`: cuando el componente compartido genere Excel/CSV o use templates de documento.
 - `../../references/infrastructure/cosmos-mongo-persistence.md`: cuando el componente compartido acceda a Cosmos/Mongo o encapsule queries/cursors.
 - `../../references/configuration/environment-and-bindings.md`: configuración compartida y settings transversales.
 - `../../references/planning/migration-scope-and-debt.md`: límites de cambio y deuda futura.
-- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/migration-artifacts.md`: reglas ligeras de evidencia reutilizable bajo `.migration/`.
+- `../../references/evidence/artifact-contracts.md`: solo cuando necesites detalle completo del artefacto.

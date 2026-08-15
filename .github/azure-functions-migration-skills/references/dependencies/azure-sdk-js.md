@@ -92,36 +92,11 @@ Usa versiones estables cuando exista una ruta estable suficiente. Propón previe
 - una capacidad requerida existe únicamente en preview;
 - la documentación oficial indica que esa ruta es necesaria para el objetivo.
 
-## Baseline candidato para Runtime v4
+## Baseline runtime
 
-Cuando el repo use alguno de estos paquetes, considera esta baseline estabilizada como versión objetivo inicial, siempre verificando fuente oficial vigente antes de modificar `package.json`:
+Carga `runtime-baseline.md` solo cuando necesites proponer versiones concretas para `package.json`.
 
-```json
-{
-  "dependencies": {
-    "@azure/cosmos": "^4.10.0",
-    "@azure/functions": "~4.16.2",
-    "@azure/service-bus": "^7.9.5",
-    "@azure/storage-blob": "^12.33.0",
-    "durable-functions": "~3.5.0"
-  }
-}
-```
-
-Criterios:
-
-- `@azure/functions` usa `~` para evitar saltos menores inesperados del Programming Model durante una migración.
-- `durable-functions` usa `~` porque el paquete define APIs de orquestación sensibles al modelo v4.
-- Azure SDK clients pueden usar `^` cuando el paquete mantiene semver estable y no se detectan breaking changes relevantes.
-- No agregues un SDK ausente solo porque está en la baseline; debe existir uso real o una migración desde SDK legacy equivalente.
-- Si el paquete oficial publicó una versión estable más reciente, registra si conviene mantener esta baseline por reproducibilidad o adoptar la nueva por compatibilidad/seguridad.
-
-Fuentes a comprobar por paquete:
-
-- `@azure/functions`: npm y guía oficial de Programming Model v4.
-- `durable-functions`: npm y guía oficial Durable Functions Node.js v4.
-- SDKs `@azure/*`: índice oficial Azure SDK, releases oficiales y README/changelog del paquete.
-- `@azure/cosmos`: carga también `../infrastructure/cosmos-mongo-persistence.md` si el cambio afecta queries, paginación o repositorios.
+Si el paquete es `@azure/cosmos`, carga también `../infrastructure/cosmos-mongo-persistence.md` si el cambio afecta queries, paginación o repositorios.
 
 ## Alcance
 

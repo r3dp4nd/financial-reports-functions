@@ -15,13 +15,17 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - `principles/copilot-rules.md`
 - `references/dependencies/dependency-strategy.md` cuando cambie SDK/dependencia
 - `references/dependencies/azure-sdk-js.md` cuando cambie un SDK Azure detectado
+- `references/dependencies/runtime-baseline.md` si sugiere versiones runtime concretas
 - `references/architecture/function-architecture.md`
+- `references/architecture/naming-and-coverage.md` si aplica naming o estructura testeable
+- `references/architecture/di-and-composition.md` si crea puertos, factories o composición compartida
 - `references/architecture/capability-slicing.md` si el componente mezcla varias capabilities
 - `references/infrastructure/exceljs-document-generation.md` si el componente genera Excel/CSV
 - `references/infrastructure/cosmos-mongo-persistence.md` si el componente accede a Cosmos/Mongo
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo del componente
 
 ## Debe producir
 

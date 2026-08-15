@@ -17,6 +17,7 @@ Usa migrate-function para migrar <FunctionName> a Programming Model v4 preservan
 - `references/azure-functions/bindings-v4.md`
 - `references/configuration/environment-and-bindings.md`
 - `references/evidence/migration-artifacts.md`
+- `references/evidence/artifact-contracts.md` solo si necesita detalle completo de `migration.md`
 - `references/azure-functions/durable-v4.md` solo si aplica
 
 ## Debe producir
