@@ -75,6 +75,13 @@ C4Context
   Rel(functionApp, serviceBus, "Publica o consume mensajes")
   Rel(functionApp, blob, "Guarda o lee archivos")
   Rel(functionApp, externalLibs, "Usa mediante providers/adapters")
+
+  UpdateElementStyle(user, $fontColor="#FFFFFF", $bgColor="#374151", $borderColor="#111827")
+  UpdateElementStyle(functionApp, $fontColor="#FFFFFF", $bgColor="#1D4ED8", $borderColor="#1E3A8A")
+  UpdateElementStyle(cosmos, $fontColor="#FFFFFF", $bgColor="#15803D", $borderColor="#14532D")
+  UpdateElementStyle(serviceBus, $fontColor="#FFFFFF", $bgColor="#B45309", $borderColor="#78350F")
+  UpdateElementStyle(blob, $fontColor="#FFFFFF", $bgColor="#4338CA", $borderColor="#312E81")
+  UpdateElementStyle(externalLibs, $fontColor="#FFFFFF", $bgColor="#BE185D", $borderColor="#831843")
 ```
 
 ## Vista C4: Contenedores internos
@@ -99,6 +106,14 @@ C4Container
   Rel(application, infrastructure, "depende de contratos implementados por adapters")
   Rel(infrastructure, sharedInfra, "usa clientes compartidos")
   Rel(sharedInfra, azureSdks, "crea clientes / usa SDKs")
+
+  UpdateElementStyle(functions, $fontColor="#FFFFFF", $bgColor="#1D4ED8", $borderColor="#1E3A8A")
+  UpdateElementStyle(handler, $fontColor="#FFFFFF", $bgColor="#0369A1", $borderColor="#0C4A6E")
+  UpdateElementStyle(application, $fontColor="#FFFFFF", $bgColor="#15803D", $borderColor="#14532D")
+  UpdateElementStyle(domain, $fontColor="#FFFFFF", $bgColor="#B45309", $borderColor="#78350F")
+  UpdateElementStyle(infrastructure, $fontColor="#FFFFFF", $bgColor="#BE185D", $borderColor="#831843")
+  UpdateElementStyle(sharedInfra, $fontColor="#FFFFFF", $bgColor="#6D28D9", $borderColor="#4C1D95")
+  UpdateElementStyle(azureSdks, $fontColor="#FFFFFF", $bgColor="#374151", $borderColor="#111827")
 ```
 
 ## Indice

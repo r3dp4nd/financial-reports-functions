@@ -4,35 +4,61 @@ Cuando se usa una libreria externa como ExcelJS, PDFKit, Sharp, CSV parsers o cl
 
 La recomendacion es crear un contrato interno y una implementacion en infraestructura. A este adaptador se le puede llamar `provider`, `generator`, `client`, `gateway` o `adapter`, segun el caso.
 
-## Diagrama de contratos
+## Diagrama de proveedor por capas
+
+Este `flowchart` comunica mejor la idea que un diagrama de clases porque muestra donde vive cada pieza y que dependencias cruzan capas.
 
 ```mermaid
-classDiagram
-  class GenerateDocumentUseCase
-  class DocumentGenerator {
-    <<interface>>
-    +generate(input) Promise~Uint8Array~
-  }
-  class DocumentStorage {
-    <<interface>>
-    +save(input) Promise~StoredDocument~
-  }
-  class ExcelJsDocumentGenerator {
-    +generate(input) Promise~Uint8Array~
-  }
-  class BlobDocumentStorage {
-    +save(input) Promise~StoredDocument~
-  }
-  class ExcelJS {
-    <<external library>>
-  }
+flowchart LR
+  subgraph Application["application"]
+    UseCase["GenerateDocumentUseCase<br/>coordina generar + guardar"]
+    GeneratorContract["DocumentGenerator<br/>interface interna"]
+    StorageContract["DocumentStorage<br/>interface interna"]
+  end
 
-  GenerateDocumentUseCase --> DocumentGenerator
-  GenerateDocumentUseCase --> DocumentStorage
-  DocumentGenerator <|.. ExcelJsDocumentGenerator
-  DocumentStorage <|.. BlobDocumentStorage
-  ExcelJsDocumentGenerator --> ExcelJS
+  subgraph Infrastructure["infrastructure"]
+    ExcelProvider["ExcelJsDocumentGenerator<br/>provider/adaptador"]
+    BlobStorage["BlobDocumentStorage<br/>storage adapter"]
+  end
+
+  subgraph External["externo"]
+    ExcelJS["exceljs<br/>libreria externa"]
+    AzureBlob["Azure Blob Storage<br/>SDK/servicio"]
+  end
+
+  subgraph Tests["tests"]
+    FakeGenerator["FakeDocumentGenerator<br/>mock/stub"]
+    FakeStorage["FakeDocumentStorage<br/>mock/stub"]
+  end
+
+  UseCase --> GeneratorContract
+  UseCase --> StorageContract
+  ExcelProvider -. implementa .-> GeneratorContract
+  BlobStorage -. implementa .-> StorageContract
+  FakeGenerator -. reemplaza en tests .-> GeneratorContract
+  FakeStorage -. reemplaza en tests .-> StorageContract
+  ExcelProvider --> ExcelJS
+  BlobStorage --> AzureBlob
+
+  classDef app fill:#DCFCE7,stroke:#15803D,color:#111827
+  classDef contract fill:#DBEAFE,stroke:#1D4ED8,color:#111827
+  classDef infra fill:#FCE7F3,stroke:#BE185D,color:#111827
+  classDef external fill:#F3F4F6,stroke:#374151,color:#111827
+  classDef test fill:#FEF3C7,stroke:#B45309,color:#111827
+
+  class UseCase app
+  class GeneratorContract,StorageContract contract
+  class ExcelProvider,BlobStorage infra
+  class ExcelJS,AzureBlob external
+  class FakeGenerator,FakeStorage test
 ```
+
+Lectura del diagrama:
+
+- El caso de uso depende de interfaces internas, no de ExcelJS ni Blob.
+- Infraestructura implementa esas interfaces con librerias reales.
+- Los tests reemplazan los providers reales por mocks o stubs.
+- Cambiar ExcelJS por otra libreria implica crear otro provider, no reescribir el caso de uso.
 
 ## Contrato interno
 
