@@ -13,6 +13,7 @@ Usa verify-function-app para comprobar convergencia final de la Function App.
 ## Debe cargar
 
 - `principles/copilot-rules.md`
+- `references/context/context-engineering.md`
 - `references/azure-functions/platform-target.md`
 - `references/azure-functions/programming-model-v4.md`
 - `references/azure-functions/bindings-v4.md`
@@ -41,4 +42,5 @@ Usa verify-function-app para comprobar convergencia final de la Function App.
 - declarar éxito si una comprobación requerida no corrió;
 - leer secretos;
 - corregir silenciosamente problemas arquitectónicos grandes durante la verificación;
+- reconstruir todo el assessment si `.migration/` vigente alcanza para comparar;
 - reabrir análisis ya cubiertos por evidencia vigente salvo que exista contradicción.

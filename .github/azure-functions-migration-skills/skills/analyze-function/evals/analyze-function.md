@@ -13,6 +13,7 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 ## Debe cargar
 
 - `principles/copilot-rules.md`
+- `references/context/context-engineering.md` si la Function tiene muchos imports o consumidores indirectos
 - `references/azure-functions/bindings-v4.md`
 - `references/configuration/environment-and-bindings.md`
 - `references/architecture/function-architecture.md`
@@ -46,4 +47,5 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 - crear capas o interfaces;
 - migrar Programming Model;
 - refactorizar;
+- leer modulos no relacionados sin senal;
 - inventar reglas de negocio no sustentadas por código o evidencia.

@@ -11,6 +11,8 @@ Comprender una Function antes de modificarla y producir una propuesta conceptual
 
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
+Si la Function tiene muchos imports o componentes relacionados, aplica `../../references/context/context-engineering.md` para leer por shortlist antes de profundizar.
+
 ## Entradas
 
 - Function objetivo;
@@ -71,6 +73,7 @@ Termina cuando el comportamiento y los límites conceptuales están suficienteme
 
 Carga según lo observado:
 
+- `../../references/context/context-engineering.md`: cuando necesites controlar lectura incremental de handler, imports, tests y componentes compartidos.
 - `../../references/azure-functions/bindings-v4.md`: para inventariar con precisión trigger/bindings que luego deberán preservarse.
 - `../../references/configuration/environment-and-bindings.md`: settings usados por bindings, código y configuración.
 - `../../references/architecture/function-architecture.md`: para proponer separación conceptual mínima.

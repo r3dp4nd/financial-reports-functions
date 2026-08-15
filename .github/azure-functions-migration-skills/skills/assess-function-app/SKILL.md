@@ -11,6 +11,8 @@ Construir una fotografía técnica y funcional del estado actual de la Function 
 
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
+Si el repositorio es grande o el alcance no esta claro, aplica `../../references/context/context-engineering.md` antes de abrir muchos archivos.
+
 ## Entradas
 
 Usa únicamente evidencia necesaria del repositorio:
@@ -82,6 +84,7 @@ Termina cuando existe información suficiente para que el desarrollador pueda de
 
 Carga solo las necesarias para el caso:
 
+- `../../references/context/context-engineering.md`: cuando necesites controlar lectura de repo, shortlist de archivos o carga condicional de referencias.
 - `../../references/azure-functions/platform-target.md`: compatibilidad Runtime v4, Node.js 24 y hosting.
 - `../../references/azure-functions/programming-model-v4.md`: identificación y brechas del modelo.
 - `../../references/azure-functions/bindings-v4.md`: inventario de triggers, bindings y equivalencia futura.

@@ -40,6 +40,8 @@ La estructura es una convención de evidencia, no un estado obligatorio. Si el r
 
 Consulta `artifact-contracts.md` cuando necesites saber el contenido esperado de cada artefacto.
 
+Para decidir que evidencia leer primero y cuando evitar reconstruir inventarios, usa `../context/context-engineering.md`.
+
 ## Reutilización por skill
 
 | Skill | Produce | Reutiliza |

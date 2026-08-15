@@ -11,6 +11,8 @@ Demostrar con evidencia que la Function App completa alcanzó un estado técnico
 
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
+Antes de reconstruir inventarios, aplica `../../references/context/context-engineering.md` para consumir `.migration/` vigente y revisar solo discrepancias.
+
 ## Entradas
 
 - assessment inicial;
@@ -73,6 +75,7 @@ Termina cuando puede determinarse, con evidencia, si la Function App está técn
 
 Carga según el alcance final:
 
+- `../../references/context/context-engineering.md`: para priorizar evidencia previa, evitar reconstrucción completa y dirigir verificaciones.
 - `../../references/azure-functions/platform-target.md`: Runtime v4, Node.js 24 y hosting.
 - `../../references/azure-functions/programming-model-v4.md`: convergencia completa del modelo.
 - `../../references/azure-functions/bindings-v4.md`: comparación de triggers y bindings.

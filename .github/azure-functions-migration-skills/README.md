@@ -81,6 +81,8 @@ Referencias disponibles:
 
 ```text
 references/
+├── context/
+│   └── context-engineering.md
 ├── evidence/
 │   ├── migration-artifacts.md
 │   └── artifact-contracts.md

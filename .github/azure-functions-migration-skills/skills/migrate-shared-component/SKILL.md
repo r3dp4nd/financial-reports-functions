@@ -11,6 +11,8 @@ Transformar componentes compartidos sin introducir cambios contradictorios, dupl
 
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
+Si los consumidores no estan claros, aplica `../../references/context/context-engineering.md` antes de abrir implementaciones completas.
+
 ## Entradas
 
 - componente compartido objetivo;
@@ -63,6 +65,7 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 
 ## Referencias
 
+- `../../references/context/context-engineering.md`: cuando necesites descubrir consumidores, contrato publico y contexto minimo del componente.
 - `../../references/dependencies/dependency-strategy.md`: cuando el componente encapsula un SDK o dependencia que debe actualizarse.
 - `../../references/dependencies/azure-sdk-js.md`: cuando el componente encapsula un SDK Azure o SDK Azure legacy.
 - `../../references/dependencies/runtime-baseline.md`: solo si vas a sugerir versiones runtime concretas.

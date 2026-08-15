@@ -13,6 +13,7 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 ## Debe cargar
 
 - `principles/copilot-rules.md`
+- `references/context/context-engineering.md` si el repositorio es grande o necesita shortlist de archivos
 - `references/azure-functions/platform-target.md`
 - `references/azure-functions/programming-model-v4.md`
 - `references/azure-functions/bindings-v4.md`
@@ -55,5 +56,6 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 
 - modificar código o configuración;
 - leer o copiar secretos;
+- abrir todo `src/` sin shortlist ni razon;
 - inventar comportamiento no sustentado;
 - convertir el mapa de migración en workflow obligatorio.

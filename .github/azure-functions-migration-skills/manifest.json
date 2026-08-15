@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
@@ -20,6 +20,7 @@
   "references": [
     "references/README.md",
     "references/official-sources.md",
+    "references/context/context-engineering.md",
     "references/evidence/migration-artifacts.md",
     "references/evidence/artifact-contracts.md",
     "references/planning/migration-scope-and-debt.md",

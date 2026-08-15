@@ -13,6 +13,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 ## Debe cargar
 
 - `principles/copilot-rules.md`
+- `references/context/context-engineering.md` si necesita descubrir consumidores o contrato publico
 - `references/dependencies/dependency-strategy.md` cuando cambie SDK/dependencia
 - `references/dependencies/azure-sdk-js.md` cuando cambie un SDK Azure detectado
 - `references/dependencies/runtime-baseline.md` si sugiere versiones runtime concretas
@@ -47,5 +48,6 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - cambiar contrato público sin evidencia y aprobación;
 - migrar consumidores no relacionados;
 - leer secretos;
+- abrir todos los consumidores completos antes de identificar contrato e impacto;
 - crear una abstracción compartida nueva si no existe uso productivo inmediato;
 - ocultar impacto transversal dentro de una Function individual.

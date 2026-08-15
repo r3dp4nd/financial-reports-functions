@@ -16,6 +16,9 @@ Prefiere una referencia cuando el contenido:
 ## Referencias disponibles
 
 ```text
+context/
+  context-engineering.md
+
 azure-functions/
   platform-target.md
   programming-model-v4.md
