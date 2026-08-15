@@ -17,7 +17,6 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - `references/azure-functions/programming-model-v4.md`
 - `references/azure-functions/bindings-v4.md`
 - `references/dependencies/dependency-strategy.md`
-- `references/tooling/typescript-build-scripts.md`
 - `references/architecture/function-architecture.md`
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
@@ -46,4 +45,3 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - leer o copiar secretos;
 - inventar comportamiento no sustentado;
 - convertir el mapa de migración en workflow obligatorio.
-

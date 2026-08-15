@@ -13,7 +13,7 @@ Usa prepare-function-app para preparar TypeScript, Jest, coverage, Sonar y scrip
 ## Debe cargar
 
 - `principles/copilot-rules.md`
-- `references/tooling/typescript-build-scripts.md`
+- `skills/prepare-function-app/references/typescript-build-scripts.md`
 - `references/testing/jest.md` si Jest/testing forma parte del objetivo
 - `references/quality/sonar.md` si Sonar forma parte del objetivo
 - `references/configuration/environment-and-bindings.md` si hay settings/local settings
@@ -39,4 +39,3 @@ Usa prepare-function-app para preparar TypeScript, Jest, coverage, Sonar y scrip
 - actualizar dependencias a `latest` sin estrategia;
 - copiar valores de `local.settings.json`;
 - crear excepciones de coverage que oculten comportamiento real.
-

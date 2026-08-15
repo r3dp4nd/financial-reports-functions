@@ -4,7 +4,7 @@
 
 Definir una base genérica para preparar TypeScript, build, Jest, coverage y scripts npm en una Azure Function App Node.js/TypeScript.
 
-Esta referencia sustenta `prepare-function-app` y debe aplicarse alineada con la estructura objetivo descrita en `../architecture/function-architecture.md`.
+Esta referencia sustenta `prepare-function-app` y debe aplicarse alineada con la estructura objetivo descrita en `../../../references/architecture/function-architecture.md`.
 
 ## Principio
 
@@ -179,7 +179,7 @@ Coverage debe seguir la estructura objetivo:
 - exclude puertos por ubicación (`domain/ports`, `application/ports`);
 - include comportamiento (`handler.ts`, `application/use-cases`, `domain/models`, `infrastructure`).
 
-Consulta `../testing/jest.md` para detalles.
+Consulta `../../../references/testing/jest.md` para detalles.
 
 ## Relación con Sonar
 
@@ -189,7 +189,7 @@ Sonar debe consumir el LCOV generado por Jest, normalmente:
 coverage/lcov.info
 ```
 
-No dupliques una política distinta de coverage en Sonar. Consulta `../quality/sonar.md`.
+No dupliques una política distinta de coverage en Sonar. Consulta `../../../references/quality/sonar.md`.
 
 ## Validación mínima
 
@@ -217,4 +217,3 @@ Registra en `.migration/preparation.md`:
 - convenciones de coverage aplicadas;
 - validaciones ejecutadas;
 - cambios pospuestos y razón.
-

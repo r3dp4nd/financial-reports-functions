@@ -84,7 +84,6 @@ Carga solo las necesarias para el caso:
 - `../../references/azure-functions/programming-model-v4.md`: identificación y brechas del modelo.
 - `../../references/azure-functions/bindings-v4.md`: inventario de triggers, bindings y equivalencia futura.
 - `../../references/dependencies/dependency-strategy.md`: clasificación de dependencias.
-- `../../references/tooling/typescript-build-scripts.md`: lectura de TypeScript, Jest, Sonar y scripts.
 - `../../references/architecture/function-architecture.md`: madurez estructural, DI y separación observable.
 - `../../references/configuration/environment-and-bindings.md`: inventario de settings, bindings y configuración.
 - `../../references/planning/migration-scope-and-debt.md`: alcance, fuera de alcance y deuda futura.
