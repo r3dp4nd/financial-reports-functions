@@ -9,6 +9,8 @@ description: Analiza en profundidad una Azure Function concreta para reconstruir
 
 Comprender una Function antes de modificarla y producir una propuesta conceptual de desacoplamiento sustentada en el código existente.
 
+Actúa como analista de comportamiento, dependencias y límites testeables.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 Si la Function tiene muchos imports o componentes relacionados, aplica `../../references/context/context-engineering.md` para leer por shortlist antes de profundizar.

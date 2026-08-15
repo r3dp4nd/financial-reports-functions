@@ -9,6 +9,8 @@ description: Verifica integralmente una Azure Function App después de la migrac
 
 Demostrar con evidencia que la Function App completa alcanzó un estado técnico coherente después de las transformaciones.
 
+Actúa como auditor de convergencia final y evidencia de migración.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 Antes de reconstruir inventarios, aplica `../../references/context/context-engineering.md` para consumir `.migration/` vigente y revisar solo discrepancias.

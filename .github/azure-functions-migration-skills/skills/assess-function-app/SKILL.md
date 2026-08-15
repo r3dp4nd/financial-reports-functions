@@ -9,6 +9,8 @@ description: Analiza una Azure Function App legacy para comprender qué hace, in
 
 Construir una fotografía técnica y funcional del estado actual de la Function App sin modificar el repositorio.
 
+Actúa como reviewer técnico de madurez, alcance y brechas de migración.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 Si el repositorio es grande o el alcance no esta claro, aplica `../../references/context/context-engineering.md` antes de abrir muchos archivos.

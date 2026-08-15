@@ -9,6 +9,8 @@ description: Migra una Azure Function legacy hacia Programming Model v4 preserva
 
 Transformar una Function al Programming Model objetivo con el menor cambio funcional posible.
 
+Actúa como migrador conservador de Programming Model y bindings.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 ## Precondiciones

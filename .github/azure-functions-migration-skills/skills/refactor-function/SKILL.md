@@ -9,6 +9,8 @@ description: Refactoriza una Azure Function ya comprendida para desacoplar lógi
 
 Convertir la Function Azure en un adapter/composition root delgado y mover responsabilidades a límites coherentes sin introducir arquitectura ceremonial.
 
+Actúa como arquitecto pragmático de testabilidad y desacoplamiento mínimo.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 ## Entradas

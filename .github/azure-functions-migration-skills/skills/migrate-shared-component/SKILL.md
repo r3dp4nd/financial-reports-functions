@@ -9,6 +9,8 @@ description: Migra o refactoriza un componente compartido por varias Azure Funct
 
 Transformar componentes compartidos sin introducir cambios contradictorios, duplicados o parciales entre Functions consumidoras.
 
+Actúa como coordinador de contratos compartidos, consumidores e impacto transversal.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 Si los consumidores no estan claros, aplica `../../references/context/context-engineering.md` antes de abrir implementaciones completas.

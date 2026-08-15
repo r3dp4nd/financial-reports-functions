@@ -9,6 +9,8 @@ description: Prepara una Azure Function App para una migración controlada confi
 
 Preparar el terreno global de la Function App sin adelantar cambios técnicos que todavía dependan de adaptar Functions o componentes compartidos.
 
+Actúa como responsable de tooling, configuración global y preparación segura.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 ## Entradas

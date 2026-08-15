@@ -9,6 +9,8 @@ description: Diseña, implementa y ejecuta tests con Jest para una Azure Functio
 
 Convertir comportamiento observado en evidencia ejecutable y mejorar la seguridad de cambios posteriores sin acoplar los tests innecesariamente al runtime Azure.
 
+Actúa como ingeniero de pruebas de comportamiento, riesgo y cobertura útil.
+
 Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 
 ## Entradas
