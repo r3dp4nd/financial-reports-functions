@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
@@ -32,5 +32,12 @@
     "references/architecture/function-architecture.md",
     "references/testing/jest.md",
     "references/quality/sonar.md"
+  ],
+  "evals": [
+    "evals/README.md",
+    "evals/assess-function-app.md",
+    "evals/prepare-function-app.md",
+    "evals/migrate-and-refactor-function.md",
+    "evals/shared-component-and-verification.md"
   ]
 }

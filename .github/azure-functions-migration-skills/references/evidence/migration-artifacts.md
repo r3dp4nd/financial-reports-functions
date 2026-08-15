@@ -45,9 +45,12 @@ Dueño: `assess-function-app`.
 Contiene:
 
 - propósito observable de la Function App;
+- archivos globales revisados y evidencia aportada;
 - inventario de Functions;
 - triggers, bindings y recursos externos por Function;
+- mapa de ejecución observable entre Functions, handlers, orchestrators, activities, outputs y eventos;
 - versiones observables de runtime, Node.js, Programming Model, TypeScript y dependencias relevantes;
+- inventario de dependencias con uso, consumidores y acción sugerida;
 - componentes compartidos y consumidores conocidos;
 - arquitectura observable;
 - brechas, riesgos, deuda e incógnitas;

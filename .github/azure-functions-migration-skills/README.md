@@ -16,6 +16,10 @@ Acelerar migraciones hacia:
 
 El toolkit **no es un flujo autónomo**. El desarrollador conserva el control de las decisiones y solicita a la IA la capacidad que necesita en cada momento.
 
+Para una guía práctica de uso, consulta [`USAGE.md`](USAGE.md).
+
+Para escenarios de validación del toolkit, consulta [`evals/`](evals/).
+
 ## Modelo de trabajo
 
 ```text
@@ -107,6 +111,10 @@ No se crea una skill nueva por cada tecnología, trigger o dependencia. Primero 
 Las skills deben favorecer resultados comprobables. Cuando el repositorio use una carpeta de evidencia, el toolkit propone `.migration/` como ubicación neutral para conservar diagnósticos, análisis, decisiones y verificaciones sin convertirla en un motor de workflow.
 
 El contrato de artefactos vive en [`references/evidence/migration-artifacts.md`](references/evidence/migration-artifacts.md). Cada skill conserva ownership claro de su evidencia y reutiliza artefactos previos vigentes antes de volver a investigar o documentar lo mismo.
+
+## Evals
+
+Los evals son escenarios de revisión para comprobar que las skills cargan referencias apropiadas, preservan comportamiento, no leen secretos y producen evidencia reutilizable.
 
 ## Idioma y nombres
 
