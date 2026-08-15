@@ -54,6 +54,58 @@ Siguiente decision:
 
 No uses esta regla para agregar ceremonia. Su valor es reducir contexto innecesario y hacer que cada archivo leido tenga una razon.
 
+## Prompts de ejemplo
+
+Usa estos prompts como punto de partida y ajusta `<...>` al repositorio o alcance real.
+
+### `assess-function-app`
+
+```text
+Usa assess-function-app para analizar esta Function App y generar o actualizar .migration/app-assessment.md. Aplica ingenieria de contexto: primero scan liviano, luego shortlist de archivos y despues lectura puntual. No modifiques codigo ni leas secretos.
+```
+
+### `prepare-function-app`
+
+```text
+Usa prepare-function-app para preparar tooling global alineado al assessment vigente: TypeScript, Jest, coverage, Sonar, scripts npm y plantilla local segura si aplica. No migres Functions ni refactorices negocio.
+```
+
+### `analyze-function`
+
+```text
+Usa analyze-function para analizar <FunctionName>, reconstruir comportamiento observable, settings, bindings, side effects, dependencias y limites testeables. Registra la evidencia en .migration/functions/<function-name>/analysis.md sin mover archivos.
+```
+
+### `migrate-function`
+
+```text
+Usa migrate-function para migrar <FunctionName> a Programming Model v4 preservando trigger, bindings, settings, errores y comportamiento observable. Usa el analisis vigente y registra la equivalencia en .migration/functions/<function-name>/migration.md.
+```
+
+### `migrate-shared-component`
+
+```text
+Usa migrate-shared-component para trabajar sobre <ComponentName>. Identifica consumidores, contrato publico, settings compartidos e impacto antes de cambiarlo. No dupliques implementaciones por Function para evitar entender el contrato.
+```
+
+### `refactor-function`
+
+```text
+Usa refactor-function para ordenar <FunctionName> por capability, application, domain e infrastructure, aplicando arquitectura minima y DI solo donde reduzca acoplamiento real. Preserva comportamiento y registra deuda fuera de alcance.
+```
+
+### `test-function`
+
+```text
+Usa test-function para agregar o ajustar tests de comportamiento para <FunctionName>/<CapabilityName>. Prioriza dominio, casos de uso, handlers con mapping relevante e infraestructura con logica propia. Ejecuta las validaciones proporcionales.
+```
+
+### `verify-function-app`
+
+```text
+Usa verify-function-app para comprobar convergencia final usando .migration vigente: inventario inicial vs final, Runtime v4, Programming Model v4, Node.js objetivo, bindings, settings, build, tests, coverage y deuda pendiente.
+```
+
 ## Orden recomendado
 
 ### 1. Diagnóstico inicial

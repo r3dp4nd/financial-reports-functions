@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
