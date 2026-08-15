@@ -89,6 +89,7 @@ Carga solo las necesarias para el caso:
 - `../../references/dependencies/azure-sdk-js.md`: solo si detecta paquetes Azure SDK o SDKs Azure legacy.
 - `../../references/architecture/function-architecture.md`: madurez estructural, DI y separación observable.
 - `../../references/architecture/capability-slicing.md`: solo si detecta servicios monolíticos, god files o responsabilidades mezcladas entre capabilities.
+- `../../references/infrastructure/exceljs-document-generation.md`: solo si detecta ExcelJS, generación de documentos, streams o templates de reporte.
 - `../../references/configuration/environment-and-bindings.md`: inventario de settings, bindings y configuración.
 - `../../references/planning/migration-scope-and-debt.md`: alcance, fuera de alcance y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

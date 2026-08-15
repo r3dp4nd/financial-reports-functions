@@ -16,6 +16,7 @@ Usa test-function para diseñar, implementar y ejecutar tests útiles para <Func
 - `references/testing/jest.md`
 - `references/evidence/migration-artifacts.md`
 - `references/azure-functions/programming-model-v4.md` solo si prueba directamente un adapter/handler v4
+- `references/infrastructure/exceljs-document-generation.md` si prueba generación ExcelJS, templates o streaming
 
 ## Debe producir
 
@@ -26,6 +27,7 @@ Usa test-function para diseñar, implementar y ejecutar tests útiles para <Func
 - resultados de ejecución;
 - cobertura disponible;
 - exclusiones aplicadas por convención;
+- evidencia de templates/documentos generados cuando aplique;
 - huecos pendientes y razón.
 
 ## No debe
@@ -34,4 +36,5 @@ Usa test-function para diseñar, implementar y ejecutar tests útiles para <Func
 - probar interfaces, tipos o contratos sin comportamiento;
 - cambiar negocio para que un test pase;
 - mockear detalles internos sin valor contractual;
+- validar solo que ExcelJS fue llamado sin comprobar contrato observable del documento;
 - crear abstracciones productivas únicamente para facilitar mocks.

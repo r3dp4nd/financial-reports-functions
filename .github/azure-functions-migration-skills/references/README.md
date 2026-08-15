@@ -39,6 +39,9 @@ architecture/
   function-architecture.md
   capability-slicing.md
 
+infrastructure/
+  exceljs-document-generation.md
+
 testing/
   jest.md
 

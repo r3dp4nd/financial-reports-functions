@@ -17,6 +17,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - `references/dependencies/azure-sdk-js.md` cuando cambie un SDK Azure detectado
 - `references/architecture/function-architecture.md`
 - `references/architecture/capability-slicing.md` si el componente mezcla varias capabilities
+- `references/infrastructure/exceljs-document-generation.md` si el componente genera Excel/CSV
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
@@ -28,6 +29,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - consumidores;
 - contrato preservado;
 - mapa de responsabilidades por capability cuando aplique;
+- contrato de template/documento si genera Excel/CSV;
 - settings compartidos, solo por nombre;
 - versión objetivo de SDK Azure, fuente oficial y breaking changes si aplica;
 - impacto por consumidor;

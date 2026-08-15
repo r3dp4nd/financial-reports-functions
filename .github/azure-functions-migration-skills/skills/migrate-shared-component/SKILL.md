@@ -67,6 +67,7 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 - `../../references/dependencies/azure-sdk-js.md`: cuando el componente encapsula un SDK Azure o SDK Azure legacy.
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
 - `../../references/architecture/capability-slicing.md`: cuando el componente sea monolítico o mezcle responsabilidades de varias capabilities.
+- `../../references/infrastructure/exceljs-document-generation.md`: cuando el componente compartido genere Excel/CSV o use templates de documento.
 - `../../references/configuration/environment-and-bindings.md`: configuración compartida y settings transversales.
 - `../../references/planning/migration-scope-and-debt.md`: límites de cambio y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

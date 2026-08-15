@@ -55,6 +55,7 @@ No convertir estas URLs en reglas permanentes por sí solas. Cada referencia té
 - Azure SDK releases para JavaScript: https://azure.github.io/azure-sdk/releases/latest/js.html
 - durable-functions npm: https://www.npmjs.com/package/durable-functions
 - exceljs npm: https://www.npmjs.com/package/exceljs
+- exceljs GitHub/README: https://github.com/exceljs/exceljs
 - npm `package.json`: https://docs.npmjs.com/cli/v12/configuring-npm/package-json/
 - Jest TypeScript setup: https://jestjs.io/docs/getting-started
 - Jest coverage configuration: https://jestjs.io/docs/configuration

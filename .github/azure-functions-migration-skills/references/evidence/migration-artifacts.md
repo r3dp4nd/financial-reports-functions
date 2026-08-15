@@ -54,6 +54,7 @@ Contiene:
 - componentes compartidos y consumidores conocidos;
 - arquitectura observable;
 - servicios monolíticos o god files con capabilities candidatas cuando existan;
+- generación de documentos Excel/CSV y templates detectados cuando existan;
 - brechas, riesgos, deuda e incógnitas;
 - alcance de migración y elementos fuera de alcance;
 - variables de entorno/configuración requeridas, solo por nombre;
@@ -92,6 +93,7 @@ Contiene:
 - responsabilidades mezcladas;
 - separación conceptual mínima propuesta;
 - mapa de slicing por capability cuando detecte servicios monolíticos o god files;
+- contrato de generación de documentos cuando la Function produzca Excel/CSV;
 - escenarios de comportamiento a preservar;
 - incógnitas.
 
@@ -122,6 +124,7 @@ Contiene:
 - capability origen/destino de cada responsabilidad movida cuando aplique;
 - límites creados y razón;
 - dependencias desacopladas;
+- generación de documentos separada como infraestructura cuando aplique;
 - componentes compartidos detectados durante el refactor;
 - validaciones incrementales realizadas;
 - desviaciones frente al análisis inicial.
@@ -154,6 +157,7 @@ Contiene:
 - contrato preservado o cambio explícito;
 - responsabilidades del componente;
 - dependencias actualizadas;
+- contrato de documento/template cuando el componente genere Excel/CSV;
 - impacto por consumidor;
 - verificaciones realizadas;
 - riesgos compartidos pendientes.

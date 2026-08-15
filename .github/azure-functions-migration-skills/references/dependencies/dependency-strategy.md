@@ -73,6 +73,7 @@ Algunas librerías no pertenecen al Azure SDK, pero pueden ser parte del comport
 Antes de sugerirla o instalarla:
 
 - confirma que el código usa `exceljs` o migra desde una librería equivalente ya presente;
+- carga `../infrastructure/exceljs-document-generation.md` si el cambio afecta generación, streaming o templates;
 - revisa npm, README oficial y changelog del paquete;
 - valida que el cambio no altere formato, estilos, streaming, fechas, fórmulas ni compatibilidad de archivos;
 - registra pruebas o casos manuales necesarios para comprobar equivalencia.

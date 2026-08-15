@@ -15,6 +15,7 @@ Usa refactor-function para ordenar <FunctionName> por capability, DI, applicatio
 - `principles/copilot-rules.md`
 - `references/architecture/function-architecture.md`
 - `references/architecture/capability-slicing.md` si divide un servicio monolítico o god file
+- `references/infrastructure/exceljs-document-generation.md` si refactoriza generación Excel/CSV
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
 
@@ -25,6 +26,7 @@ Artefactos bajo `.migration/functions/<function-name>/` con:
 - estructura y naming aplicados;
 - responsabilidades movidas por evidencia;
 - capability origen/destino de responsabilidades extraídas;
+- separación entre filtros/reglas de aplicación y generator ExcelJS;
 - DI aplicada o descartada con razón;
 - validaciones incrementales;
 - deuda o mejoras futuras fuera de alcance.
