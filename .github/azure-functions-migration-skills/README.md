@@ -86,6 +86,8 @@ references/
 │   └── durable-v4.md
 ├── dependencies/
 │   └── dependency-strategy.md
+├── tooling/
+│   └── typescript-build-scripts.md
 ├── architecture/
 │   └── function-architecture.md
 ├── testing/

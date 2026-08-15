@@ -28,6 +28,9 @@ evidence/
 dependencies/
   dependency-strategy.md
 
+tooling/
+  typescript-build-scripts.md
+
 architecture/
   function-architecture.md
 

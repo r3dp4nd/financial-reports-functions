@@ -22,13 +22,14 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 ## Trabajo
 
 1. Determina qué tooling global puede prepararse sin romper prematuramente el proyecto.
-2. Configura Jest y cobertura cuando formen parte del objetivo.
-3. Normaliza scripts npm necesarios para build, test y coverage sin duplicar comandos.
-4. Ajusta configuración TypeScript únicamente cuando el cambio sea global y justificado.
-5. Alinea exclusiones de coverage con la estructura/naming objetivo cuando el repositorio ya use o adopte esa convención.
-6. Prepara metadatos/configuración para Sonar cuando corresponda.
-7. Registra dependencias o cambios globales que deben esperar a la convergencia del código.
-7. Mantén separados:
+2. Configura TypeScript base, productivo y de specs cuando formen parte del objetivo.
+3. Configura Jest y cobertura cuando formen parte del objetivo.
+4. Normaliza scripts npm necesarios para build, typecheck, test y coverage sin duplicar comandos.
+5. Ajusta configuración TypeScript únicamente cuando el cambio sea global y justificado.
+6. Alinea exclusiones de coverage con la estructura/naming objetivo cuando el repositorio ya use o adopte esa convención.
+7. Prepara metadatos/configuración para Sonar cuando corresponda.
+8. Registra dependencias o cambios globales que deben esperar a la convergencia del código.
+9. Mantén separados:
    - tooling;
    - runtime;
    - Programming Model;
@@ -50,6 +51,7 @@ Registra:
 - cambios globales aplicados;
 - cambios pospuestos y motivo;
 - scripts disponibles;
+- configuración TypeScript base/prod/spec;
 - configuración de testing/coverage;
 - convenciones de exclusión aplicadas;
 - cualquier incompatibilidad detectada durante la preparación.
@@ -64,6 +66,7 @@ Termina cuando el repositorio dispone del tooling global necesario para continua
 
 - `../../references/azure-functions/platform-target.md`: restricciones globales de runtime/Node.js.
 - `../../references/dependencies/dependency-strategy.md`: cambios seguros en `package.json` y lockfile.
+- `../../references/tooling/typescript-build-scripts.md`: TypeScript, scripts npm y validaciones globales.
 - `../../references/testing/jest.md`: solo cuando Jest/testing formen parte del objetivo.
 - `../../references/quality/sonar.md`: solo cuando Sonar forme parte del alcance.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
