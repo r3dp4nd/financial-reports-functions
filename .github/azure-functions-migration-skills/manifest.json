@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
@@ -34,9 +34,13 @@
   ],
   "evals": [
     "evals/README.md",
-    "evals/assess-function-app.md",
-    "evals/prepare-function-app.md",
-    "evals/migrate-and-refactor-function.md",
-    "evals/shared-component-and-verification.md"
+    "skills/assess-function-app/evals/assess-function-app.md",
+    "skills/prepare-function-app/evals/prepare-function-app.md",
+    "skills/analyze-function/evals/analyze-function.md",
+    "skills/migrate-function/evals/migrate-function.md",
+    "skills/refactor-function/evals/refactor-function.md",
+    "skills/migrate-shared-component/evals/migrate-shared-component.md",
+    "skills/test-function/evals/test-function.md",
+    "skills/verify-function-app/evals/verify-function-app.md"
   ]
 }

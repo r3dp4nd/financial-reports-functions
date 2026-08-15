@@ -20,9 +20,12 @@ Todo eval debe comprobar:
 ## Evals disponibles
 
 ```text
-assess-function-app.md
-prepare-function-app.md
-migrate-and-refactor-function.md
-shared-component-and-verification.md
+skills/assess-function-app/evals/assess-function-app.md
+skills/prepare-function-app/evals/prepare-function-app.md
+skills/analyze-function/evals/analyze-function.md
+skills/migrate-function/evals/migrate-function.md
+skills/refactor-function/evals/refactor-function.md
+skills/migrate-shared-component/evals/migrate-shared-component.md
+skills/test-function/evals/test-function.md
+skills/verify-function-app/evals/verify-function-app.md
 ```
-
