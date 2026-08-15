@@ -93,7 +93,8 @@ references/
 │   ├── bindings-v4.md
 │   └── durable-v4.md
 ├── dependencies/
-│   └── dependency-strategy.md
+│   ├── dependency-strategy.md
+│   └── azure-sdk-js.md
 ├── architecture/
 │   └── function-architecture.md
 ├── testing/

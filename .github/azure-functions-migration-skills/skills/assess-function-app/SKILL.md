@@ -39,13 +39,14 @@ Respeta las exclusiones de archivos sensibles definidas por el entorno o proyect
 6. Produce un mapa textual o diagrama simple de Functions y dependencias principales.
 7. Determina versiones observables de Node.js, Azure Functions Runtime, Programming Model, TypeScript y paquetes relevantes.
 8. Clasifica dependencias según impacto esperado: mantener, actualizar, reemplazar, eliminar o investigar.
-9. Inventaría variables de entorno y settings usados por código, bindings y configuración, solo por nombre.
-10. Identifica servicios, clientes, repositorios y configuración compartidos.
-11. Evalúa madurez observable de estructura, separación de responsabilidades, dependency injection, testing y calidad.
-12. Define qué entra en el alcance de migración y qué debe quedar fuera.
-13. Describe la arquitectura observable sin imponer todavía la arquitectura objetivo.
-14. Identifica brechas, riesgos, deuda relevante y desconocidos.
-15. Propone un mapa de migración de alto nivel sin convertirlo en un workflow obligatorio.
+9. Si detecta SDKs Azure, sugiere versión objetivo solo con fuente oficial vigente y razón.
+10. Inventaría variables de entorno y settings usados por código, bindings y configuración, solo por nombre.
+11. Identifica servicios, clientes, repositorios y configuración compartidos.
+12. Evalúa madurez observable de estructura, separación de responsabilidades, dependency injection, testing y calidad.
+13. Define qué entra en el alcance de migración y qué debe quedar fuera.
+14. Describe la arquitectura observable sin imponer todavía la arquitectura objetivo.
+15. Identifica brechas, riesgos, deuda relevante y desconocidos.
+16. Propone un mapa de migración de alto nivel sin convertirlo en un workflow obligatorio.
 
 ## No hacer
 
@@ -84,6 +85,7 @@ Carga solo las necesarias para el caso:
 - `../../references/azure-functions/programming-model-v4.md`: identificación y brechas del modelo.
 - `../../references/azure-functions/bindings-v4.md`: inventario de triggers, bindings y equivalencia futura.
 - `../../references/dependencies/dependency-strategy.md`: clasificación de dependencias.
+- `../../references/dependencies/azure-sdk-js.md`: solo si detecta paquetes Azure SDK o SDKs Azure legacy.
 - `../../references/architecture/function-architecture.md`: madurez estructural, DI y separación observable.
 - `../../references/configuration/environment-and-bindings.md`: inventario de settings, bindings y configuración.
 - `../../references/planning/migration-scope-and-debt.md`: alcance, fuera de alcance y deuda futura.

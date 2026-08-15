@@ -6,6 +6,8 @@ Definir cómo actualizar dependencias sin convertir la modernización de Azure F
 
 Esta referencia sustenta `assess-function-app`, `prepare-function-app` y `migrate-shared-component`.
 
+Cuando detectes SDKs Azure para JavaScript, carga también `azure-sdk-js.md` para sugerir versiones con base en documentación oficial vigente.
+
 ## Clasificación
 
 Para cada dependencia relevante registra:
@@ -56,6 +58,25 @@ Mantén tooling en `devDependencies`, por ejemplo:
 
 No muevas paquetes por estilo; decide según su uso real.
 
+## Baseline runtime no Azure
+
+Algunas librerías no pertenecen al Azure SDK, pero pueden ser parte del comportamiento runtime. Si el repo genera o manipula archivos Excel con `exceljs`, considera esta versión candidata:
+
+```json
+{
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}
+```
+
+Antes de sugerirla o instalarla:
+
+- confirma que el código usa `exceljs` o migra desde una librería equivalente ya presente;
+- revisa npm, README oficial y changelog del paquete;
+- valida que el cambio no altere formato, estilos, streaming, fechas, fórmulas ni compatibilidad de archivos;
+- registra pruebas o casos manuales necesarios para comprobar equivalencia.
+
 ## No usar `latest` como estrategia
 
 `latest` no expresa compatibilidad.
@@ -102,5 +123,6 @@ Preserva el lockfile como evidencia de la resolución exacta de dependencias. Ev
 - Azure Functions Node.js developer reference: https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node
 - npm package.json: https://docs.npmjs.com/cli/v12/configuring-npm/package-json/
 - npm scripts: https://docs.npmjs.com/cli/v11/using-npm/scripts/
+- exceljs npm/package: https://www.npmjs.com/package/exceljs
 
 Para Azure SDKs concretos, consulta la documentación y changelog oficiales del paquete detectado antes de fijar una versión objetivo.

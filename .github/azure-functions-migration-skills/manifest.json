@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.7",
+  "version": "0.2.9",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
@@ -28,6 +28,7 @@
     "references/azure-functions/bindings-v4.md",
     "references/azure-functions/durable-v4.md",
     "references/dependencies/dependency-strategy.md",
+    "references/dependencies/azure-sdk-js.md",
     "references/architecture/function-architecture.md",
     "references/testing/jest.md",
     "references/quality/sonar.md"

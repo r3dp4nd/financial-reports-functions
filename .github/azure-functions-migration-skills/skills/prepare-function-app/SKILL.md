@@ -68,6 +68,7 @@ Termina cuando el repositorio dispone del tooling global necesario para continua
 
 - `../../references/azure-functions/platform-target.md`: restricciones globales de runtime/Node.js.
 - `../../references/dependencies/dependency-strategy.md`: cambios seguros en `package.json` y lockfile.
+- `../../references/dependencies/azure-sdk-js.md`: solo si la preparación incluye recomendar o actualizar SDKs Azure detectados.
 - `references/typescript-build-scripts.md`: TypeScript, scripts npm y validaciones globales propias de preparación.
 - `../../references/configuration/environment-and-bindings.md`: settings, local settings y configuración compartida.
 - `../../references/testing/jest.md`: solo cuando Jest/testing formen parte del objetivo.

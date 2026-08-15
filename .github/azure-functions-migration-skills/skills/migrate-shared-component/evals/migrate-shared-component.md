@@ -14,6 +14,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 
 - `principles/copilot-rules.md`
 - `references/dependencies/dependency-strategy.md` cuando cambie SDK/dependencia
+- `references/dependencies/azure-sdk-js.md` cuando cambie un SDK Azure detectado
 - `references/architecture/function-architecture.md`
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
@@ -26,6 +27,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - consumidores;
 - contrato preservado;
 - settings compartidos, solo por nombre;
+- versión objetivo de SDK Azure, fuente oficial y breaking changes si aplica;
 - impacto por consumidor;
 - validaciones realizadas;
 - deuda o riesgos que no deban resolverse dentro del cambio compartido.

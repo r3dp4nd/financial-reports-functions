@@ -42,6 +42,7 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 - No aplicar arquitectura limpia simultáneamente salvo cambio mínimo indispensable para compilar.
 - No modernizar reglas de negocio.
 - No actualizar SDKs no relacionados solo por oportunidad.
+- No resolver cambios mayores de SDK dentro de una Function si corresponden a preparación global o componente compartido; registra el bloqueo y deriva.
 - No asumir que una Function App con mezcla temporal de modelos es un estado operacional final válido.
 - No eliminar evidencia legacy antes de asegurar que su semántica fue trasladada.
 

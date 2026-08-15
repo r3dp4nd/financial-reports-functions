@@ -33,6 +33,7 @@ configuration/
 
 dependencies/
   dependency-strategy.md
+  azure-sdk-js.md
 
 architecture/
   function-architecture.md

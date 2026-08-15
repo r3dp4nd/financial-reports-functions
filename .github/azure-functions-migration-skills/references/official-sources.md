@@ -50,6 +50,11 @@ No convertir estas URLs en reglas permanentes por sí solas. Cada referencia té
 
 ## Dependencias y calidad
 
+- Azure SDK package index para JavaScript: https://learn.microsoft.com/en-us/azure/developer/javascript/azure-sdk-library-package-index
+- Azure SDK for JavaScript repository/docs: https://azure.github.io/azure-sdk-for-js/
+- Azure SDK releases para JavaScript: https://azure.github.io/azure-sdk/releases/latest/js.html
+- durable-functions npm: https://www.npmjs.com/package/durable-functions
+- exceljs npm: https://www.npmjs.com/package/exceljs
 - npm `package.json`: https://docs.npmjs.com/cli/v12/configuring-npm/package-json/
 - Jest TypeScript setup: https://jestjs.io/docs/getting-started
 - Jest coverage configuration: https://jestjs.io/docs/configuration

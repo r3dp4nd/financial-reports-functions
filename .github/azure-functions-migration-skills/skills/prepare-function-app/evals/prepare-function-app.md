@@ -18,6 +18,7 @@ Usa prepare-function-app para preparar TypeScript, Jest, coverage, Sonar y scrip
 - `references/quality/sonar.md` si Sonar forma parte del objetivo
 - `references/configuration/environment-and-bindings.md` si hay settings/local settings
 - `references/dependencies/dependency-strategy.md` si modifica dependencias o lockfile
+- `references/dependencies/azure-sdk-js.md` si recomienda o actualiza SDKs Azure detectados
 - `references/evidence/migration-artifacts.md`
 
 ## Debe producir
@@ -26,6 +27,8 @@ Usa prepare-function-app para preparar TypeScript, Jest, coverage, Sonar y scrip
 
 - archivos globales creados/actualizados;
 - scripts agregados o preservados;
+- dependencies runtime sugeridas o preservadas cuando el repo las usa, con razón;
+- devDependencies sugeridas o preservadas para TypeScript/Jest, con razón;
 - configuración TypeScript base/prod/spec;
 - configuración Jest/coverage y Sonar;
 - settings necesarios para local, solo por nombre;
@@ -37,5 +40,7 @@ Usa prepare-function-app para preparar TypeScript, Jest, coverage, Sonar y scrip
 - migrar Programming Model;
 - refactorizar Functions;
 - actualizar dependencias a `latest` sin estrategia;
+- agregar SDKs o librerías runtime no usadas por el repo;
+- agregar devDependencies que el repo no necesita;
 - copiar valores de `local.settings.json`;
 - crear excepciones de coverage que oculten comportamiento real.

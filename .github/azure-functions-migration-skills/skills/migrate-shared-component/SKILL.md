@@ -63,6 +63,7 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 ## Referencias
 
 - `../../references/dependencies/dependency-strategy.md`: cuando el componente encapsula un SDK o dependencia que debe actualizarse.
+- `../../references/dependencies/azure-sdk-js.md`: cuando el componente encapsula un SDK Azure o SDK Azure legacy.
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
 - `../../references/configuration/environment-and-bindings.md`: configuración compartida y settings transversales.
 - `../../references/planning/migration-scope-and-debt.md`: límites de cambio y deuda futura.

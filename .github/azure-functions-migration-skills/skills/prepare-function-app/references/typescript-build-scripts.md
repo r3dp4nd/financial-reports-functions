@@ -168,6 +168,32 @@ Base recomendada:
 
 No sobrescribas scripts corporativos, pipelines locales o comandos con semántica distinta sin registrar la decisión.
 
+## DevDependencies sugeridas
+
+Cuando el repositorio necesite preparar TypeScript, Jest, coverage y reporter JUnit, usa esta base probada como sugerencia inicial:
+
+```json
+{
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.0.0",
+    "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "rimraf": "^6.1.3",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.9.0"
+  }
+}
+```
+
+Aplica esta lista solo si el repo escaneado necesita esas capacidades. Antes de modificar `package.json`:
+
+- conserva versiones existentes cuando ya sean compatibles y estén justificadas por el proyecto;
+- revisa compatibilidad entre `jest`, `ts-jest`, TypeScript y Node.js objetivo;
+- no agregues `jest-junit` si el pipeline no consume reporte JUnit;
+- no agregues `rimraf` si ya existe una alternativa equivalente usada por scripts vigentes;
+- actualiza lockfile una sola vez y registra la razón.
+
 ## Relación con Jest
 
 Jest debe usar `tsconfig.spec.json` cuando se use `ts-jest`.
