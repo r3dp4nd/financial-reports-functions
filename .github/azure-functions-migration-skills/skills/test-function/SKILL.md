@@ -56,6 +56,8 @@ Registra:
 - cobertura disponible;
 - casos pendientes y razón.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y deriva escenarios desde el análisis vigente de la Function cuando exista.
+
 ## Finalización
 
 Termina cuando los comportamientos de mayor valor/riesgo disponen de evidencia ejecutable suficiente para el alcance acordado.
@@ -64,3 +66,4 @@ Termina cuando los comportamientos de mayor valor/riesgo disponen de evidencia e
 
 - `../../references/testing/jest.md`: estrategia, TypeScript, coverage y dobles de prueba.
 - `../../references/azure-functions/programming-model-v4.md`: solo si se prueba directamente un adapter/handler v4.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

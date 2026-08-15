@@ -53,6 +53,8 @@ Registra:
 - componentes compartidos detectados;
 - validaciones realizadas.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y enlaza el análisis o la migración previa en vez de repetirlos.
+
 ## Finalización
 
 Termina cuando la Function tiene límites suficientemente claros para probar negocio sin depender innecesariamente del runtime Azure y no quedan abstracciones sin justificación.
@@ -60,3 +62,4 @@ Termina cuando la Function tiene límites suficientemente claros para probar neg
 ## Referencias
 
 - `../../references/architecture/function-architecture.md`: arquitectura objetivo y criterios para evitar sobrearquitectura.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

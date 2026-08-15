@@ -59,6 +59,8 @@ Produce una comparación clara entre estado inicial y final, con:
 - desconocidos;
 - conclusión sustentada.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y consume los artefactos previos aplicables antes de reconstruir comparaciones.
+
 ## Finalización
 
 Termina cuando puede determinarse, con evidencia, si la Function App está técnicamente convergida o qué impide considerarla lista.
@@ -73,3 +75,4 @@ Carga según el alcance final:
 - `../../references/azure-functions/durable-v4.md`: únicamente si existe Durable Functions.
 - `../../references/testing/jest.md`: tests y coverage.
 - `../../references/quality/sonar.md`: cuando Sonar forme parte del objetivo.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

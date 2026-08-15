@@ -53,6 +53,8 @@ La salida debe permitir entender:
 - qué parte es Azure, negocio e infraestructura;
 - qué separación arquitectónica mínima tendría sentido.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment global vigente como inventario inicial.
+
 ## Finalización
 
 Termina cuando el comportamiento y los límites conceptuales están suficientemente claros para ejecutar una transformación sin depender de suposiciones relevantes.
@@ -64,3 +66,4 @@ Carga según lo observado:
 - `../../references/azure-functions/bindings-v4.md`: para inventariar con precisión trigger/bindings que luego deberán preservarse.
 - `../../references/architecture/function-architecture.md`: para proponer separación conceptual mínima.
 - `../../references/azure-functions/durable-v4.md`: únicamente si se detecta Durable Functions.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

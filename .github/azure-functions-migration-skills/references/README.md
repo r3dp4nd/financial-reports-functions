@@ -22,6 +22,9 @@ azure-functions/
   bindings-v4.md
   durable-v4.md
 
+evidence/
+  migration-artifacts.md
+
 dependencies/
   dependency-strategy.md
 

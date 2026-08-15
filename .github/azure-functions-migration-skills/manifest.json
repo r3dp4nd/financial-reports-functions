@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
@@ -20,6 +20,7 @@
   "references": [
     "references/README.md",
     "references/official-sources.md",
+    "references/evidence/migration-artifacts.md",
     "references/azure-functions/platform-target.md",
     "references/azure-functions/programming-model-v4.md",
     "references/azure-functions/bindings-v4.md",

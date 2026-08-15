@@ -52,6 +52,8 @@ Registra:
 - responsabilidades separadas;
 - impacto y verificaciones por consumidor.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza análisis de Functions consumidoras cuando estén vigentes.
+
 ## Finalización
 
 Termina cuando el componente compartido tiene un estado coherente para todos sus consumidores conocidos y el cambio no depende de refactors duplicados por Function.
@@ -60,3 +62,4 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 
 - `../../references/dependencies/dependency-strategy.md`: cuando el componente encapsula un SDK o dependencia que debe actualizarse.
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

@@ -52,6 +52,8 @@ Registra:
 - configuración de testing/coverage;
 - cualquier incompatibilidad detectada durante la preparación.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment vigente antes de volver a inventariar tooling global.
+
 ## Finalización
 
 Termina cuando el repositorio dispone del tooling global necesario para continuar de forma controlada y los cambios que deben esperar están explícitamente identificados.
@@ -62,3 +64,4 @@ Termina cuando el repositorio dispone del tooling global necesario para continua
 - `../../references/dependencies/dependency-strategy.md`: cambios seguros en `package.json` y lockfile.
 - `../../references/testing/jest.md`: solo cuando Jest/testing formen parte del objetivo.
 - `../../references/quality/sonar.md`: solo cuando Sonar forme parte del alcance.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

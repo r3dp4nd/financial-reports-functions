@@ -54,6 +54,8 @@ Registra:
 - validaciones ejecutadas;
 - riesgos o bloqueos pendientes de convergencia global.
 
+Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el análisis vigente de la Function antes de reconstruir comportamiento.
+
 ## Finalización
 
 Termina cuando la Function está expresada en Programming Model v4 de forma equivalente y cualquier limitación pendiente está explícita. La validez integral de la Function App corresponde a `verify-function-app`.
@@ -63,3 +65,4 @@ Termina cuando la Function está expresada en Programming Model v4 de forma equi
 - `../../references/azure-functions/programming-model-v4.md`: reglas base de la transformación v3 -> v4.
 - `../../references/azure-functions/bindings-v4.md`: traslado de triggers, inputs y outputs.
 - `../../references/azure-functions/durable-v4.md`: cargar únicamente si la Function usa Durable Functions.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

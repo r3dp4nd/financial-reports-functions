@@ -77,6 +77,8 @@ Referencias disponibles:
 
 ```text
 references/
+├── evidence/
+│   └── migration-artifacts.md
 ├── azure-functions/
 │   ├── platform-target.md
 │   ├── programming-model-v4.md
@@ -97,6 +99,8 @@ No se crea una skill nueva por cada tecnología, trigger o dependencia. Primero 
 ## Evidencia
 
 Las skills deben favorecer resultados comprobables. Cuando el repositorio use una carpeta de evidencia, el toolkit propone `.migration/` como ubicación neutral para conservar diagnósticos, análisis, decisiones y verificaciones sin convertirla en un motor de workflow.
+
+El contrato de artefactos vive en [`references/evidence/migration-artifacts.md`](references/evidence/migration-artifacts.md). Cada skill conserva ownership claro de su evidencia y reutiliza artefactos previos vigentes antes de volver a investigar o documentar lo mismo.
 
 ## Idioma y nombres
 

@@ -57,7 +57,7 @@ Produce una visión que permita responder:
 - qué requiere investigación;
 - qué riesgos condicionan la migración.
 
-Cuando exista una convención de evidencia, conserva el resultado bajo `.migration/` sin convertir esa carpeta en un motor de estado.
+Cuando exista una convención de evidencia, conserva el resultado bajo `.migration/` sin convertir esa carpeta en un motor de estado. Usa `../../references/evidence/migration-artifacts.md` para nombrar y estructurar el artefacto.
 
 ## Finalización
 
@@ -70,3 +70,4 @@ Carga solo las necesarias para el caso:
 - `../../references/azure-functions/platform-target.md`: compatibilidad Runtime v4, Node.js 24 y hosting.
 - `../../references/azure-functions/programming-model-v4.md`: identificación y brechas del modelo.
 - `../../references/dependencies/dependency-strategy.md`: clasificación de dependencias.
+- `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
