@@ -55,66 +55,113 @@ Esta separacion no busca crear carpetas por estetica. Busca que cada cambio teng
 - Cambio de libreria como ExcelJS: tocar el provider.
 - Cambio de regla: tocar `domain` y tests.
 
-## Vista C4: Contexto
+## Vista de contexto
 
-Este diagrama muestra el sistema desde afuera. Ayuda a explicar a una persona nueva que la Function App es una pieza dentro de un ecosistema con usuarios, Azure y sistemas externos.
-
-```mermaid
-C4Context
-  title Contexto general de una Azure Functions App estandarizada
-
-  Person(user, "Cliente o sistema consumidor", "Invoca endpoints HTTP o envia mensajes")
-  System(functionApp, "Azure Functions App", "Ejecuta triggers, handlers y casos de uso")
-  System_Ext(cosmos, "Cosmos DB / Storage de datos", "Persiste entidades, estados e idempotencia")
-  System_Ext(serviceBus, "Service Bus / Broker", "Transporta eventos y mensajes asincronos")
-  System_Ext(blob, "Blob Storage / Document Storage", "Almacena archivos generados")
-  System_Ext(externalLibs, "Librerias externas", "ExcelJS, PDFKit, SDKs de terceros")
-
-  Rel(user, functionApp, "HTTP / Queue / Timer trigger")
-  Rel(functionApp, cosmos, "Lee y escribe datos")
-  Rel(functionApp, serviceBus, "Publica o consume mensajes")
-  Rel(functionApp, blob, "Guarda o lee archivos")
-  Rel(functionApp, externalLibs, "Usa mediante providers/adapters")
-
-  UpdateElementStyle(user, $fontColor="#FFFFFF", $bgColor="#374151", $borderColor="#111827")
-  UpdateElementStyle(functionApp, $fontColor="#FFFFFF", $bgColor="#1D4ED8", $borderColor="#1E3A8A")
-  UpdateElementStyle(cosmos, $fontColor="#FFFFFF", $bgColor="#15803D", $borderColor="#14532D")
-  UpdateElementStyle(serviceBus, $fontColor="#FFFFFF", $bgColor="#B45309", $borderColor="#78350F")
-  UpdateElementStyle(blob, $fontColor="#FFFFFF", $bgColor="#4338CA", $borderColor="#312E81")
-  UpdateElementStyle(externalLibs, $fontColor="#FFFFFF", $bgColor="#BE185D", $borderColor="#831843")
-```
-
-## Vista C4: Contenedores internos
-
-Este diagrama baja un nivel y muestra como se organiza el codigo dentro del repositorio.
+Esta vista cumple el rol de un C4 Context, pero usa `flowchart` para evitar texto sobre flechas. Las relaciones se explican en la tabla posterior.
 
 ```mermaid
-C4Container
-  title Contenedores internos del repositorio
+flowchart LR
+  Consumer["Cliente o sistema consumidor"]
 
-  Container(functions, "functions", "Azure Functions v4", "Registra triggers con app.* y compone dependencias")
-  Container(handler, "handler", "TypeScript", "Adapta entrada/salida del trigger")
-  Container(application, "application", "TypeScript", "Coordina casos de uso")
-  Container(domain, "domain", "TypeScript", "Contiene reglas puras e invariantes")
-  Container(infrastructure, "infrastructure", "TypeScript + SDKs", "Implementa repositorios, publishers, providers y gateways")
-  Container(sharedInfra, "shared/infrastructure", "TypeScript + Azure SDKs", "Centraliza configuracion y clientes")
-  System_Ext(azureSdks, "Azure SDKs / librerias externas", "Cosmos, Service Bus, Blob, ExcelJS, etc.")
+  subgraph Azure["Azure / Runtime"]
+    FunctionApp["Azure Functions App<br/>triggers + handlers + use cases"]
+  end
 
-  Rel(functions, handler, "delegates request/message")
-  Rel(handler, application, "execute(command/query)")
-  Rel(application, domain, "usa reglas y modelos")
-  Rel(application, infrastructure, "depende de contratos implementados por adapters")
-  Rel(infrastructure, sharedInfra, "usa clientes compartidos")
-  Rel(sharedInfra, azureSdks, "crea clientes / usa SDKs")
+  subgraph Data["Datos y archivos"]
+    Cosmos["Cosmos DB<br/>entidades, estados, idempotencia"]
+    Blob["Blob Storage<br/>archivos generados"]
+  end
 
-  UpdateElementStyle(functions, $fontColor="#FFFFFF", $bgColor="#1D4ED8", $borderColor="#1E3A8A")
-  UpdateElementStyle(handler, $fontColor="#FFFFFF", $bgColor="#0369A1", $borderColor="#0C4A6E")
-  UpdateElementStyle(application, $fontColor="#FFFFFF", $bgColor="#15803D", $borderColor="#14532D")
-  UpdateElementStyle(domain, $fontColor="#FFFFFF", $bgColor="#B45309", $borderColor="#78350F")
-  UpdateElementStyle(infrastructure, $fontColor="#FFFFFF", $bgColor="#BE185D", $borderColor="#831843")
-  UpdateElementStyle(sharedInfra, $fontColor="#FFFFFF", $bgColor="#6D28D9", $borderColor="#4C1D95")
-  UpdateElementStyle(azureSdks, $fontColor="#FFFFFF", $bgColor="#374151", $borderColor="#111827")
+  subgraph Messaging["Mensajeria"]
+    Bus["Service Bus / Broker<br/>eventos y comandos asincronos"]
+  end
+
+  subgraph External["Dependencias externas"]
+    Libraries["Providers / librerias<br/>ExcelJS, PDFKit, SDKs terceros"]
+  end
+
+  Consumer --> FunctionApp
+  FunctionApp --> Cosmos
+  FunctionApp --> Blob
+  FunctionApp --> Bus
+  FunctionApp --> Libraries
+
+  classDef actor fill:#374151,stroke:#111827,color:#FFFFFF
+  classDef app fill:#1D4ED8,stroke:#1E3A8A,color:#FFFFFF
+  classDef data fill:#15803D,stroke:#14532D,color:#FFFFFF
+  classDef msg fill:#B45309,stroke:#78350F,color:#FFFFFF
+  classDef ext fill:#BE185D,stroke:#831843,color:#FFFFFF
+
+  class Consumer actor
+  class FunctionApp app
+  class Cosmos,Blob data
+  class Bus msg
+  class Libraries ext
 ```
+
+| Relacion | Significado |
+| --- | --- |
+| Consumidor -> Function App | Invoca HTTP, envia mensajes o dispara procesos. |
+| Function App -> Cosmos DB | Lee y escribe datos de negocio, estados e idempotencia. |
+| Function App -> Blob Storage | Guarda o lee archivos generados. |
+| Function App -> Broker | Publica o consume eventos asincronos. |
+| Function App -> Providers | Usa librerias externas mediante adaptadores. |
+
+## Vista de contenedores internos
+
+Esta vista cumple el rol de un C4 Container. Muestra los contenedores logicos del repositorio sin saturar las flechas.
+
+```mermaid
+flowchart TD
+  subgraph Entry["Entrada y composicion"]
+    Functions["functions<br/>registra triggers app.*"]
+    Handler["handler<br/>adapta entrada/salida"]
+  end
+
+  subgraph Core["Nucleo de aplicacion"]
+    Application["application<br/>casos de uso"]
+    Domain["domain<br/>reglas puras"]
+    Contracts["contracts<br/>repository / publisher / provider"]
+  end
+
+  subgraph Adapters["Adaptadores tecnicos"]
+    Infrastructure["infrastructure<br/>Cosmos, Service Bus, providers"]
+    Shared["shared/infrastructure<br/>configuracion y clientes"]
+    SDKs["Azure SDKs / librerias externas"]
+  end
+
+  Functions --> Handler
+  Handler --> Application
+  Application --> Domain
+  Application --> Contracts
+  Infrastructure -.-> Contracts
+  Infrastructure --> Shared
+  Shared --> SDKs
+
+  classDef entry fill:#1D4ED8,stroke:#1E3A8A,color:#FFFFFF
+  classDef core fill:#15803D,stroke:#14532D,color:#FFFFFF
+  classDef contract fill:#B45309,stroke:#78350F,color:#FFFFFF
+  classDef adapter fill:#BE185D,stroke:#831843,color:#FFFFFF
+  classDef shared fill:#6D28D9,stroke:#4C1D95,color:#FFFFFF
+  classDef external fill:#374151,stroke:#111827,color:#FFFFFF
+
+  class Functions,Handler entry
+  class Application,Domain core
+  class Contracts contract
+  class Infrastructure adapter
+  class Shared shared
+  class SDKs external
+```
+
+| Contenedor | Responsabilidad |
+| --- | --- |
+| `functions` | Registra triggers y construye dependencias reales. |
+| `handler` | Traduce entrada/salida del trigger. |
+| `application` | Coordina casos de uso. |
+| `domain` | Protege reglas e invariantes. |
+| `contracts` | Define interfaces que necesita el caso de uso. |
+| `infrastructure` | Implementa contratos usando SDKs o librerias reales. |
+| `shared/infrastructure` | Centraliza configuracion y clientes reutilizables. |
 
 ## Indice
 
@@ -157,6 +204,21 @@ C4Container
 | Se quiere validar calidad antes de entregar | [Tests y migraciones futuras](./azure-functions-standard/04-tests-y-migraciones-futuras.md) |
 | Una persona nueva necesita entender el repo | Leer este documento y luego el checklist de onboarding |
 
+## Diagramas incluidos
+
+Cada diagrama tiene un objetivo distinto:
+
+| Diagrama | Ubicacion | Proposito |
+| --- | --- | --- |
+| Ruta recomendada | Documento principal | Mostrar el orden de trabajo: migrar, reestructurar, providers, tests. |
+| Vista de contexto | Documento principal | Explicar como la Function App se relaciona con consumidores y servicios externos. |
+| Vista de contenedores internos | Documento principal | Explicar las capas internas del repositorio. |
+| Equivalencias v3 -> v4 | Guia de migracion | Mapear elementos legacy a Programming Model v4. |
+| AS IS / TO BE | Guia de reestructuracion | Comparar logica monolitica contra flujo separado por capas. |
+| Proveedor por capas | Guia de proveedores | Mostrar como encapsular librerias como ExcelJS. |
+| Estrategia de tests | Guia de tests | Mostrar que se prueba en cada capa. |
+| Migraciones futuras | Guia de tests | Separar lo estable de lo reemplazable. |
+
 ## Estandar final esperado
 
 ```text
@@ -170,26 +232,6 @@ src/
 │   └── handler.ts
 └── shared/
     └── infrastructure/
-```
-
-```mermaid
-flowchart TD
-  Functions["functions<br/>registra triggers"]
-  Handler["handler<br/>adapta entrada/salida"]
-  Application["application<br/>coordina casos de uso"]
-  Domain["domain<br/>protege reglas"]
-  Contracts["contracts<br/>repository/publisher/generator"]
-  Infrastructure["infrastructure<br/>adapters SDKs"]
-  Shared["shared/infrastructure<br/>config y clientes"]
-  SDKs["Azure SDKs / librerias externas"]
-
-  Functions --> Handler
-  Handler --> Application
-  Application --> Domain
-  Application --> Contracts
-  Infrastructure -. implementa .-> Contracts
-  Infrastructure --> Shared
-  Shared --> SDKs
 ```
 
 ## Como usar este manual
