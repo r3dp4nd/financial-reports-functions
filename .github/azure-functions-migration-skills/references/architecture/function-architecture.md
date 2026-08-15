@@ -167,6 +167,31 @@ Evita crear nuevos clientes de servicios en cada invocación cuando puedan reuti
 
 La composición debe mantener claro dónde se construyen estos clientes y cómo se inyectan hacia la aplicación.
 
+## Dependency Injection
+
+La dependency injection debe reducir acoplamiento real y mejorar testabilidad. No requiere introducir un contenedor si la composición manual es suficiente.
+
+Patrón recomendado:
+
+```text
+*.function.ts
+  └── construye clients/adapters/use cases una vez a nivel módulo
+      └── crea handler con dependencias explícitas
+          └── handler invoca caso de uso
+              └── caso de uso depende de puertos
+                  └── infraestructura implementa puertos
+```
+
+Reglas:
+
+- usa `*.function.ts` como composition root del runtime Azure;
+- inyecta dependencias en handlers mediante factory explícita cuando aporte testabilidad;
+- inyecta puertos/adapters en casos de uso mediante constructor o factory simple;
+- reutiliza clientes Azure a nivel módulo cuando sea seguro;
+- evita service locators globales;
+- evita contenedores DI si no existe complejidad real que los justifique;
+- no crees interfaces únicamente para satisfacer un patrón de inyección.
+
 ## Testabilidad como criterio
 
 Una buena separación debería permitir probar las reglas de aplicación sin:

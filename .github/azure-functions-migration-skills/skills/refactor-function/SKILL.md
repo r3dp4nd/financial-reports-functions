@@ -30,10 +30,12 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 4. Extrae límites de infraestructura solo cuando existe una dependencia real.
 5. Mantén el código organizado por capability/flujo de negocio.
 6. Organiza `application`, `domain` e `infrastructure` según responsabilidades internas cuando la capa ya no sea trivial.
-7. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
-8. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
-9. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
-10. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
+7. Aplica dependency injection explícita cuando reduzca acoplamiento real o facilite tests.
+8. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
+9. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
+10. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
+11. Documenta cambios deseables fuera de alcance como deuda técnica o mejora futura.
+12. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
 
 ## No hacer
 
@@ -51,8 +53,10 @@ Registra:
 - responsabilidades movidas;
 - límites creados y razón;
 - estructura y naming aplicados;
+- dependency injection aplicada o descartada con razón;
 - dependencias desacopladas;
 - componentes compartidos detectados;
+- deuda técnica o mejoras futuras fuera de alcance;
 - validaciones realizadas.
 
 Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y enlaza el análisis o la migración previa en vez de repetirlos.
@@ -64,4 +68,5 @@ Termina cuando la Function tiene límites suficientemente claros para probar neg
 ## Referencias
 
 - `../../references/architecture/function-architecture.md`: arquitectura objetivo y criterios para evitar sobrearquitectura.
+- `../../references/planning/migration-scope-and-debt.md`: cambios fuera de alcance, deuda y mejoras futuras.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

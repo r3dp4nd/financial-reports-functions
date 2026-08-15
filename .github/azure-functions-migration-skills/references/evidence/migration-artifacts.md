@@ -14,7 +14,7 @@ Cada artefacto debe tener un dueño claro y una responsabilidad única. Una skil
 evidencia previa vigente -> reutilizar
 evidencia previa parcial -> completar solo el hueco
 evidencia previa desactualizada -> registrar motivo y actualizar
-evidencia inexistente -> producir el artefacto minimo necesario
+evidencia inexistente -> producir el artefacto mínimo necesario
 ```
 
 ## Estructura sugerida
@@ -51,6 +51,8 @@ Contiene:
 - componentes compartidos y consumidores conocidos;
 - arquitectura observable;
 - brechas, riesgos, deuda e incógnitas;
+- alcance de migración y elementos fuera de alcance;
+- variables de entorno/configuración requeridas, solo por nombre;
 - mapa de migración de alto nivel.
 
 Este artefacto es la autoridad inicial para inventario global. Otras skills no deben reconstruirlo completo salvo que el código haya cambiado o falte evidencia necesaria.
@@ -64,6 +66,8 @@ Contiene:
 - cambios globales aplicados;
 - scripts disponibles;
 - configuración de build, test, coverage y calidad;
+- configuración TypeScript base/prod/spec cuando aplique;
+- variables necesarias para ejecución local, solo por nombre;
 - dependencias o cambios pospuestos y motivo;
 - incompatibilidades detectadas durante la preparación.
 
@@ -79,6 +83,7 @@ Contiene:
 - flujo funcional observable;
 - reglas de negocio, side effects y manejo de errores;
 - dependencias internas y externas;
+- variables de entorno y bindings usados por la Function, solo por nombre;
 - componentes compartidos consumidos;
 - responsabilidades mezcladas;
 - separación conceptual mínima propuesta;
@@ -114,6 +119,7 @@ Contiene:
 - componentes compartidos detectados durante el refactor;
 - validaciones incrementales realizadas;
 - desviaciones frente al análisis inicial.
+- deuda técnica o mejoras futuras detectadas fuera del alcance.
 
 No debe apropiarse de cambios transversales; si aparecen, registra el hallazgo y deriva a `migrate-shared-component`.
 
@@ -145,6 +151,7 @@ Contiene:
 - impacto por consumidor;
 - verificaciones realizadas;
 - riesgos compartidos pendientes.
+- configuración compartida afectada, solo por nombre de setting.
 
 Este artefacto evita que cada Function tome decisiones incompatibles sobre el mismo componente.
 
@@ -161,8 +168,9 @@ Contiene:
 - comandos de install, build, test, coverage y arranque local ejecutados;
 - resultado de cada verificación;
 - bloqueos, desviaciones, desconocidos y conclusión sustentada.
+- deuda técnica y mejoras futuras documentadas.
 
-No declara exito si una comprobacion requerida no pudo ejecutarse.
+No declara éxito si una comprobación requerida no pudo ejecutarse.
 
 ## Reutilización por skill
 
@@ -202,6 +210,22 @@ Si el artefacto actualiza o reemplaza evidencia previa, registra brevemente:
 - No dupliques un inventario global dentro de un artefacto por Function.
 - No copies secretos ni valores sensibles; registra solo nombres de claves de configuración.
 - No conviertas `.migration/` en una lista de pasos obligatorios.
--- No marques una evidencia como vigente si depende de código que no fue inspeccionado después de cambios relevantes.
+- No marques una evidencia como vigente si depende de código que no fue inspeccionado después de cambios relevantes.
 - Prefiere enlaces relativos a otros artefactos antes que repetir bloques completos.
-- Si una skill necesita evidencia de otra y no existe, produce solo la minima evidencia local o registra la ausencia como incognita.
+- Si una skill necesita evidencia de otra y no existe, produce solo la mínima evidencia local o registra la ausencia como incógnita.
+
+## Secciones transversales recomendadas
+
+Cuando el artefacto lo amerite, usa estas secciones sin duplicar contenido ya registrado en otro archivo:
+
+```text
+## Alcance de migración
+
+## Fuera de alcance
+
+## Variables de entorno y configuración
+
+## Deuda técnica y mejoras futuras
+```
+
+`Fuera de alcance` y `Deuda técnica y mejoras futuras` no autorizan cambios funcionales durante la migración. Solo preservan decisiones para una iniciativa posterior.

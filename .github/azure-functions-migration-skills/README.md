@@ -79,6 +79,10 @@ Referencias disponibles:
 references/
 ├── evidence/
 │   └── migration-artifacts.md
+├── planning/
+│   └── migration-scope-and-debt.md
+├── configuration/
+│   └── environment-and-bindings.md
 ├── azure-functions/
 │   ├── platform-target.md
 │   ├── programming-model-v4.md

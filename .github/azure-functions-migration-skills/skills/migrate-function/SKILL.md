@@ -29,6 +29,7 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
    - auth level;
    - bindings;
    - entradas y salidas;
+   - nombres de settings usados por bindings/configuración;
    - semántica observable de errores;
    - side effects.
 4. Mantén la lógica existente lo más intacta posible durante esta transformación.
@@ -50,6 +51,7 @@ Registra:
 
 - definición legacy transformada;
 - equivalencia de trigger/bindings;
+- settings preservados, solo por nombre;
 - adaptaciones técnicas obligatorias;
 - validaciones ejecutadas;
 - riesgos o bloqueos pendientes de convergencia global.
@@ -64,5 +66,6 @@ Termina cuando la Function está expresada en Programming Model v4 de forma equi
 
 - `../../references/azure-functions/programming-model-v4.md`: reglas base de la transformación v3 -> v4.
 - `../../references/azure-functions/bindings-v4.md`: traslado de triggers, inputs y outputs.
+- `../../references/configuration/environment-and-bindings.md`: preservación de settings y configuración asociada.
 - `../../references/azure-functions/durable-v4.md`: cargar únicamente si la Function usa Durable Functions.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

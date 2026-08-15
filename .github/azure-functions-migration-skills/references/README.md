@@ -25,6 +25,12 @@ azure-functions/
 evidence/
   migration-artifacts.md
 
+planning/
+  migration-scope-and-debt.md
+
+configuration/
+  environment-and-bindings.md
+
 dependencies/
   dependency-strategy.md
 

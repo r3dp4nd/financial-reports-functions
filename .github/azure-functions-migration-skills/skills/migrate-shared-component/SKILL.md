@@ -29,11 +29,12 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
    - configuración;
    - mapping;
    - utilidades.
-4. Separa migración técnica de refactor arquitectónico cuando sea viable.
-5. Actualiza SDKs o APIs únicamente cuando la migración del componente lo requiera.
-6. Diseña el cambio para que los consumidores converjan sobre una sola decisión coherente.
-7. Evita duplicar adapters, clientes o repositorios equivalentes por Function sin necesidad.
-8. Comprueba consumidores afectados de forma proporcional al cambio.
+4. Identifica settings compartidos, solo por nombre, y su contrato de uso.
+5. Separa migración técnica de refactor arquitectónico cuando sea viable.
+6. Actualiza SDKs o APIs únicamente cuando la migración del componente lo requiera.
+7. Diseña el cambio para que los consumidores converjan sobre una sola decisión coherente.
+8. Evita duplicar adapters, clientes o repositorios equivalentes por Function sin necesidad.
+9. Comprueba consumidores afectados de forma proporcional al cambio.
 
 ## No hacer
 
@@ -48,6 +49,7 @@ Registra:
 
 - consumidores;
 - contrato preservado o cambio explícito;
+- settings compartidos preservados, solo por nombre;
 - dependencias actualizadas;
 - responsabilidades separadas;
 - impacto y verificaciones por consumidor.
@@ -62,4 +64,6 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 
 - `../../references/dependencies/dependency-strategy.md`: cuando el componente encapsula un SDK o dependencia que debe actualizarse.
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
+- `../../references/configuration/environment-and-bindings.md`: configuración compartida y settings transversales.
+- `../../references/planning/migration-scope-and-debt.md`: límites de cambio y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

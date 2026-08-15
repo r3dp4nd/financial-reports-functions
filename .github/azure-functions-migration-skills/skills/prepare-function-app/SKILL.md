@@ -27,9 +27,10 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 4. Normaliza scripts npm necesarios para build, typecheck, test y coverage sin duplicar comandos.
 5. Ajusta configuración TypeScript únicamente cuando el cambio sea global y justificado.
 6. Alinea exclusiones de coverage con la estructura/naming objetivo cuando el repositorio ya use o adopte esa convención.
-7. Prepara metadatos/configuración para Sonar cuando corresponda.
-8. Registra dependencias o cambios globales que deben esperar a la convergencia del código.
-9. Mantén separados:
+7. Prepara plantillas o documentación local de settings solo con placeholders seguros cuando corresponda.
+8. Prepara metadatos/configuración para Sonar cuando corresponda.
+9. Registra dependencias o cambios globales que deben esperar a la convergencia del código.
+10. Mantén separados:
    - tooling;
    - runtime;
    - Programming Model;
@@ -53,6 +54,7 @@ Registra:
 - scripts disponibles;
 - configuración TypeScript base/prod/spec;
 - configuración de testing/coverage;
+- settings requeridos para ejecución local, solo por nombre;
 - convenciones de exclusión aplicadas;
 - cualquier incompatibilidad detectada durante la preparación.
 
@@ -67,6 +69,7 @@ Termina cuando el repositorio dispone del tooling global necesario para continua
 - `../../references/azure-functions/platform-target.md`: restricciones globales de runtime/Node.js.
 - `../../references/dependencies/dependency-strategy.md`: cambios seguros en `package.json` y lockfile.
 - `../../references/tooling/typescript-build-scripts.md`: TypeScript, scripts npm y validaciones globales.
+- `../../references/configuration/environment-and-bindings.md`: settings, local settings y configuración compartida.
 - `../../references/testing/jest.md`: solo cuando Jest/testing formen parte del objetivo.
 - `../../references/quality/sonar.md`: solo cuando Sonar forme parte del alcance.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

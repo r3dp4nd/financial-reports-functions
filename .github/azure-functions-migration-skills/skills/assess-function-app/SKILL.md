@@ -33,10 +33,13 @@ Respeta las exclusiones de archivos sensibles definidas por el entorno o proyect
 3. Registra triggers, bindings y recursos externos.
 4. Determina versiones observables de Node.js, Azure Functions Runtime, Programming Model, TypeScript y paquetes relevantes.
 5. Clasifica dependencias según impacto esperado: mantener, actualizar, reemplazar, eliminar o investigar.
-6. Identifica servicios, clientes, repositorios y configuración compartidos.
-7. Describe la arquitectura observable sin imponer todavía la arquitectura objetivo.
-8. Identifica brechas, riesgos, deuda relevante y desconocidos.
-9. Propone un mapa de migración de alto nivel sin convertirlo en un workflow obligatorio.
+6. Inventaría variables de entorno y settings usados por código, bindings y configuración, solo por nombre.
+7. Identifica servicios, clientes, repositorios y configuración compartidos.
+8. Evalúa madurez observable de estructura, separación de responsabilidades, dependency injection, testing y calidad.
+9. Define qué entra en el alcance de migración y qué debe quedar fuera.
+10. Describe la arquitectura observable sin imponer todavía la arquitectura objetivo.
+11. Identifica brechas, riesgos, deuda relevante y desconocidos.
+12. Propone un mapa de migración de alto nivel sin convertirlo en un workflow obligatorio.
 
 ## No hacer
 
@@ -54,6 +57,8 @@ Produce una visión que permita responder:
 - qué contiene;
 - qué comparte;
 - qué debe cambiar;
+- qué entra y qué queda fuera del alcance de migración;
+- qué variables/settings requiere;
 - qué requiere investigación;
 - qué riesgos condicionan la migración.
 
@@ -70,4 +75,6 @@ Carga solo las necesarias para el caso:
 - `../../references/azure-functions/platform-target.md`: compatibilidad Runtime v4, Node.js 24 y hosting.
 - `../../references/azure-functions/programming-model-v4.md`: identificación y brechas del modelo.
 - `../../references/dependencies/dependency-strategy.md`: clasificación de dependencias.
+- `../../references/configuration/environment-and-bindings.md`: inventario de settings, bindings y configuración.
+- `../../references/planning/migration-scope-and-debt.md`: alcance, fuera de alcance y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

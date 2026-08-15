@@ -37,9 +37,11 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 4. Ejecuta install/build/test/coverage según los scripts del proyecto y el entorno disponible.
 5. Valida registro de Functions y arranque local seguro cuando sea viable.
 6. Comprueba que la configuración global sea coherente con el código final.
-7. Verifica que componentes compartidos y consumidores hayan convergido.
-8. Resume bloqueos, desviaciones y evidencia faltante.
-9. No declares éxito si una comprobación requerida no pudo ejecutarse; marca explícitamente su estado.
+7. Comprueba que settings, bindings y plantillas locales estén documentados sin secretos.
+8. Verifica que componentes compartidos y consumidores hayan convergido.
+9. Comprueba que deuda técnica y mejoras futuras fuera de alcance estén registradas.
+10. Resume bloqueos, desviaciones y evidencia faltante.
+11. No declares éxito si una comprobación requerida no pudo ejecutarse; marca explícitamente su estado.
 
 ## No hacer
 
@@ -55,7 +57,9 @@ Produce una comparación clara entre estado inicial y final, con:
 - verificaciones ejecutadas;
 - resultado de cada una;
 - diferencias justificadas;
+- estado de settings y configuración sin valores sensibles;
 - bloqueos;
+- deuda técnica y mejoras futuras documentadas;
 - desconocidos;
 - conclusión sustentada.
 
@@ -72,7 +76,9 @@ Carga según el alcance final:
 - `../../references/azure-functions/platform-target.md`: Runtime v4, Node.js 24 y hosting.
 - `../../references/azure-functions/programming-model-v4.md`: convergencia completa del modelo.
 - `../../references/azure-functions/bindings-v4.md`: comparación de triggers y bindings.
+- `../../references/configuration/environment-and-bindings.md`: settings, bindings y configuración local/hospedada.
 - `../../references/azure-functions/durable-v4.md`: únicamente si existe Durable Functions.
 - `../../references/testing/jest.md`: tests y coverage.
 - `../../references/quality/sonar.md`: cuando Sonar forme parte del objetivo.
+- `../../references/planning/migration-scope-and-debt.md`: alcance, deuda y mejoras futuras.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

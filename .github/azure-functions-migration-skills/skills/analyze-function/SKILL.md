@@ -25,15 +25,16 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 2. Reconstruye el flujo funcional observable.
 3. Identifica reglas de negocio, side effects y manejo de errores.
 4. Mapea dependencias internas y externas.
-5. Detecta responsabilidades mezcladas y acoplamiento al runtime/SDK.
-6. Identifica componentes compartidos y sus consumidores conocidos.
-7. Propone una separación conceptual mínima:
+5. Inventaría variables de entorno y settings usados por la Function, solo por nombre.
+6. Detecta responsabilidades mezcladas y acoplamiento al runtime/SDK.
+7. Identifica componentes compartidos y sus consumidores conocidos.
+8. Propone una separación conceptual mínima:
    - adapter/composition root Azure;
    - lógica de aplicación;
    - dominio cuando exista;
    - límites de infraestructura necesarios.
-8. Define escenarios de comportamiento que deberían preservarse durante la transformación.
-9. Declara incertidumbres que requieran evidencia adicional.
+9. Define escenarios de comportamiento que deberían preservarse durante la transformación.
+10. Declara incertidumbres que requieran evidencia adicional.
 
 ## No hacer
 
@@ -50,6 +51,7 @@ La salida debe permitir entender:
 - qué hace la Function;
 - qué depende de ella y de qué depende;
 - qué comportamiento debe conservarse;
+- qué settings y bindings debe preservar;
 - qué parte es Azure, negocio e infraestructura;
 - qué separación arquitectónica mínima tendría sentido.
 
@@ -64,6 +66,7 @@ Termina cuando el comportamiento y los límites conceptuales están suficienteme
 Carga según lo observado:
 
 - `../../references/azure-functions/bindings-v4.md`: para inventariar con precisión trigger/bindings que luego deberán preservarse.
+- `../../references/configuration/environment-and-bindings.md`: settings usados por bindings, código y configuración.
 - `../../references/architecture/function-architecture.md`: para proponer separación conceptual mínima.
 - `../../references/azure-functions/durable-v4.md`: únicamente si se detecta Durable Functions.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
