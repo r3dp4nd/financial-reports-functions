@@ -1,0 +1,32 @@
+{
+  "name": "azure-functions-migration-skills",
+  "version": "0.2.0",
+  "language": "es",
+  "skill_names_language": "en",
+  "autonomous_workflow": false,
+  "skills": [
+    "assess-function-app",
+    "prepare-function-app",
+    "analyze-function",
+    "migrate-function",
+    "refactor-function",
+    "migrate-shared-component",
+    "test-function",
+    "verify-function-app"
+  ],
+  "principles": [
+    "principles/copilot-rules.md"
+  ],
+  "references": [
+    "references/README.md",
+    "references/official-sources.md",
+    "references/azure-functions/platform-target.md",
+    "references/azure-functions/programming-model-v4.md",
+    "references/azure-functions/bindings-v4.md",
+    "references/azure-functions/durable-v4.md",
+    "references/dependencies/dependency-strategy.md",
+    "references/architecture/function-architecture.md",
+    "references/testing/jest.md",
+    "references/quality/sonar.md"
+  ]
+}

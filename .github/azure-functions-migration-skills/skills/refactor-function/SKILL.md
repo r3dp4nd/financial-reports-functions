@@ -1,0 +1,62 @@
+---
+name: refactor-function
+description: Refactoriza una Azure Function ya comprendida para desacoplar lógica de negocio, runtime e infraestructura mediante una arquitectura limpia/hexagonal mínima y orientada por capability. Usar después de estabilizar la migración técnica cuando el código necesita mejorar testabilidad y reducir acoplamiento.
+---
+
+# Refactor Function
+
+## Propósito
+
+Convertir la Function Azure en un adapter/composition root delgado y mover responsabilidades a límites coherentes sin introducir arquitectura ceremonial.
+
+Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
+
+## Entradas
+
+- análisis vigente de la Function;
+- comportamiento que debe preservarse;
+- estado técnico migrado o suficientemente estable;
+- componentes compartidos identificados.
+
+## Trabajo
+
+1. Revisa la separación conceptual propuesta durante el análisis.
+2. Mantén la Function Azure enfocada en:
+   - recibir;
+   - mapear;
+   - invocar aplicación;
+   - responder.
+3. Separa lógica de aplicación del runtime.
+4. Extrae límites de infraestructura solo cuando existe una dependencia real.
+5. Mantén el código organizado por capability/flujo de negocio.
+6. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
+7. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
+8. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
+9. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
+
+## No hacer
+
+- No crear capas vacías.
+- No crear interfaces para cada clase.
+- No introducir patrones por preferencia estilística.
+- No cambiar reglas de negocio.
+- No absorber silenciosamente refactors transversales.
+- No reescribir módulos completos si una evolución localizada es suficiente.
+
+## Evidencia esperada
+
+Registra:
+
+- responsabilidades movidas;
+- límites creados y razón;
+- dependencias desacopladas;
+- componentes compartidos detectados;
+- validaciones realizadas.
+
+## Finalización
+
+Termina cuando la Function tiene límites suficientemente claros para probar negocio sin depender innecesariamente del runtime Azure y no quedan abstracciones sin justificación.
+
+## Referencias
+
+- `../../references/architecture/function-architecture.md`: arquitectura objetivo y criterios para evitar sobrearquitectura.
