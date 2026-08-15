@@ -18,13 +18,11 @@ puede demostrar con evidencia directa, nunca interpreta intención de negocio ni
 la narrativa — es que cualquier otra etapa (o cualquier persona sin contexto previo del repositorio) pueda confiar
 en cada hecho de este documento sin tener que re-verificarlo.
 
-Esa disciplina no significa que el documento deba leerse como un volcado de tablas inconexas. Cada sección mayor
-debe abrir con 1-3 frases que digan **qué es esta sección y por qué importa antes de la tabla/diagrama**, y cuando
-una sección depende conceptualmente de la anterior (por ejemplo, "Relaciones observables" después del "Diagrama de
-capas"), una frase de transición explícita debe conectarlas. El objetivo es que alguien sin contexto previo del
-repositorio pueda leer el documento de principio a fin y seguir el hilo, sin tener que reconstruir mentalmente por
-qué una sección sigue a la otra — sin que eso implique agregar ni una sola interpretación no respaldada por
-evidencia directa.
+La amigabilidad de este documento no viene de agregar prosa explicativa entre secciones — viene de que se pueda
+**escanear visualmente sin leer texto**: secciones numeradas y cortas, tablas compactas, y diagramas ASCII simples
+(estilo `│`, `▼`, `├──►`) en vez de párrafos describiendo relaciones o Mermaid completo cuando un diagrama de texto
+plano ya comunica lo mismo. No agregar frases de transición entre secciones; dejar que el título numerado y la
+tabla/diagrama hablen por sí solos.
 
 ## Políticas obligatorias
 
