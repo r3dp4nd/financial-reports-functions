@@ -21,6 +21,7 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - `references/architecture/function-architecture.md`
 - `references/architecture/capability-slicing.md` si detecta servicios monolíticos, god files o responsabilidades mezcladas
 - `references/infrastructure/exceljs-document-generation.md` si detecta ExcelJS, streams o templates de reporte
+- `references/infrastructure/cosmos-mongo-persistence.md` si detecta Cosmos DB, MongoDB, queries o cursors
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
@@ -40,6 +41,7 @@ Usa assess-function-app para analizar esta Function App y generar un assessment 
 - sugerencia de versión para SDKs Azure y runtime dependencies detectadas, con fuente oficial y razón;
 - servicios monolíticos o god files con capabilities candidatas cuando existan;
 - generación de documentos Excel/CSV y templates cuando existan;
+- persistencia Cosmos/Mongo, queries, paginación y riesgos cuando existan;
 - settings/env requeridos, solo por nombre;
 - componentes compartidos;
 - madurez estructural y de tests;

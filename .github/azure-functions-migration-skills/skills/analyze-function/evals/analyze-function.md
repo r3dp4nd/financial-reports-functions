@@ -18,6 +18,7 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 - `references/architecture/function-architecture.md`
 - `references/architecture/capability-slicing.md` si detecta servicio monolítico o god file
 - `references/infrastructure/exceljs-document-generation.md` si detecta ExcelJS, streams o templates de reporte
+- `references/infrastructure/cosmos-mongo-persistence.md` si detecta Cosmos DB, MongoDB, queries o cursors
 - `references/evidence/migration-artifacts.md`
 - `references/azure-functions/durable-v4.md` solo si detecta Durable Functions
 
@@ -30,7 +31,8 @@ Usa analyze-function para comprender <FunctionName> y producir evidencia previa 
 - reglas, side effects y manejo de errores;
 - dependencias internas, externas y compartidas;
 - mapa de slicing por capability cuando aplique;
-- contrato de generación Excel/CSV cuando aplique;
+- smells de persistencia/query cuando aplique;
+- smells de generación Excel/CSV cuando aplique;
 - separación conceptual mínima;
 - escenarios de comportamiento a preservar;
 - incertidumbres que requieran evidencia adicional.

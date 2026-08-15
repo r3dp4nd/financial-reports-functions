@@ -92,6 +92,8 @@ Antes de un major upgrade, identifica:
 - soporte de Node.js;
 - impacto sobre componentes compartidos.
 
+Si una dependencia de persistencia afecta Cosmos DB, MongoDB driver, Mongoose o Cosmos API for MongoDB, carga `../infrastructure/cosmos-mongo-persistence.md` antes de recomendar cambios de SDK o API.
+
 ## Componentes compartidos
 
 Si una dependencia está encapsulada por un cliente/repositorio usado por varias Functions, actualízala preferentemente en esa frontera compartida en lugar de adaptar el SDK de forma distinta en cada Function.

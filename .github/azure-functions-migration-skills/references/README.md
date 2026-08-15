@@ -41,6 +41,7 @@ architecture/
 
 infrastructure/
   exceljs-document-generation.md
+  cosmos-mongo-persistence.md
 
 testing/
   jest.md

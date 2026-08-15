@@ -18,6 +18,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - `references/architecture/function-architecture.md`
 - `references/architecture/capability-slicing.md` si el componente mezcla varias capabilities
 - `references/infrastructure/exceljs-document-generation.md` si el componente genera Excel/CSV
+- `references/infrastructure/cosmos-mongo-persistence.md` si el componente accede a Cosmos/Mongo
 - `references/configuration/environment-and-bindings.md`
 - `references/planning/migration-scope-and-debt.md`
 - `references/evidence/migration-artifacts.md`
@@ -30,6 +31,7 @@ Usa migrate-shared-component para migrar este componente compartido identificand
 - contrato preservado;
 - mapa de responsabilidades por capability cuando aplique;
 - contrato de template/documento si genera Excel/CSV;
+- contrato de query/cursor si accede a Cosmos/Mongo;
 - settings compartidos, solo por nombre;
 - versión objetivo de SDK Azure, fuente oficial y breaking changes si aplica;
 - impacto por consumidor;

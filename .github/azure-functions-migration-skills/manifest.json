@@ -1,6 +1,6 @@
 {
   "name": "azure-functions-migration-skills",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "language": "es",
   "skill_names_language": "en",
   "autonomous_workflow": false,
@@ -32,6 +32,7 @@
     "references/architecture/function-architecture.md",
     "references/architecture/capability-slicing.md",
     "references/infrastructure/exceljs-document-generation.md",
+    "references/infrastructure/cosmos-mongo-persistence.md",
     "references/testing/jest.md",
     "references/quality/sonar.md"
   ],

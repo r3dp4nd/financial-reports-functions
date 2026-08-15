@@ -68,6 +68,7 @@ Termina cuando el componente compartido tiene un estado coherente para todos sus
 - `../../references/architecture/function-architecture.md`: para preservar límites coherentes entre consumidores e infraestructura.
 - `../../references/architecture/capability-slicing.md`: cuando el componente sea monolítico o mezcle responsabilidades de varias capabilities.
 - `../../references/infrastructure/exceljs-document-generation.md`: cuando el componente compartido genere Excel/CSV o use templates de documento.
+- `../../references/infrastructure/cosmos-mongo-persistence.md`: cuando el componente compartido acceda a Cosmos/Mongo o encapsule queries/cursors.
 - `../../references/configuration/environment-and-bindings.md`: configuración compartida y settings transversales.
 - `../../references/planning/migration-scope-and-debt.md`: límites de cambio y deuda futura.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

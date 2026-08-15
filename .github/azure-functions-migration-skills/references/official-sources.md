@@ -47,6 +47,11 @@ No convertir estas URLs en reglas permanentes por sí solas. Cada referencia té
 - Service Bus bindings: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-service-bus
 - Blob bindings: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob
 - Cosmos DB trigger: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-cosmosdb-v2-trigger
+- Azure Cosmos DB JavaScript SDK: https://learn.microsoft.com/en-us/javascript/api/overview/azure/cosmos-readme
+- Azure Cosmos DB query pagination: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/pagination
+- Azure Cosmos DB for MongoDB: https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/
+- Cosmos DB for MongoDB with JavaScript: https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/how-to-javascript-get-started
+- MongoDB Node.js driver cursors: https://www.mongodb.com/docs/drivers/node/current/crud/query/cursor/
 
 ## Dependencias y calidad
 

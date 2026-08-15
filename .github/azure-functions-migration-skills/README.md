@@ -99,7 +99,8 @@ references/
 │   ├── function-architecture.md
 │   └── capability-slicing.md
 ├── infrastructure/
-│   └── exceljs-document-generation.md
+│   ├── exceljs-document-generation.md
+│   └── cosmos-mongo-persistence.md
 ├── testing/
 │   └── jest.md
 └── quality/

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Guiar migraciones de generación Excel basada en `exceljs`, especialmente cuando el repositorio usa streams, archivos temporales, NDJSON/JSON lines o templates JSON para construir reportes grandes.
+Detectar smells en generación Excel basada en `exceljs` y guiar cómo aclararlos para volver el flujo testeable, especialmente cuando el repositorio usa streams, archivos temporales, NDJSON/JSON lines o templates JSON para construir reportes grandes.
 
 Esta referencia sustenta `assess-function-app`, `analyze-function`, `refactor-function`, `migrate-shared-component` y `test-function` cuando detecten `exceljs`, `Excel.stream.xlsx.WorkbookWriter`, templates de reporte, headers dinámicos, filtros o generación XLSX/CSV.
 
@@ -18,6 +18,30 @@ Carga esta referencia si detectas:
 - generación de reportes desde archivos temporales;
 - salida a Blob Storage, HTTP response, filesystem temporal o cola/evento posterior;
 - utilidades grandes tipo `excel-util`, `exceljs-util`, `report-generator` o similares.
+
+## Smells a identificar
+
+Registra estos smells como hallazgos, no como patrones aceptados:
+
+- una utilidad ExcelJS arma filtros de negocio y también escribe celdas;
+- `config: any` contiene filename, rutas, report type, template y reglas sin contrato;
+- el template JSON define decisiones de negocio en vez de estructura visual;
+- grouped headers están hardcodeados por reporte dentro del generator;
+- el generator conoce enums, estados, productos, usuarios o defaults del caso de uso;
+- se escribe un archivo temporal sin contrato claro de creación, consumo y limpieza;
+- se usa callback de filesystem sin esperar el resultado cuando el siguiente paso depende del archivo;
+- se cambia entre stream, buffer y file sin razón documentada;
+- los tests solo verifican que se llamó a ExcelJS y no el contrato observable del documento.
+
+Para cada smell, documenta:
+
+```text
+evidencia
+impacto en testabilidad
+riesgo de cambiarlo
+corte incremental sugerido
+validación mínima
+```
 
 ## Principio
 
@@ -36,6 +60,23 @@ template JSON + stream/output
 ```
 
 No migres ExcelJS mezclando cambio funcional, rediseño visual y cambio de transporte al mismo tiempo.
+
+Esta referencia no define cómo debe quedar todo al final. Define cómo reconocer smells y ordenar el código existente para aislar comportamiento y volverlo testeable paso a paso.
+
+## Orden para volverlo testeable
+
+Cuando encuentres una utilidad grande de ExcelJS, no la reescribas completa. Aclara los smells en este orden, deteniéndote donde el repo ya quede suficientemente claro:
+
+1. identifica el contrato observable del archivo: columnas, filtros, grouped headers, formatos y destino;
+2. extrae la construcción de filtros fuera del generator si depende de enums, fechas, defaults o reglas;
+3. tipa el template/configuración mínima que ya existe sin cambiar su formato;
+4. encapsula lectura de template/schema detrás de un reader simple si hoy está mezclada con generación;
+5. deja ExcelJS concentrado en una implementación de infraestructura;
+6. introduce un puerto de generación solo cuando el caso de uso necesite probarse sin ExcelJS;
+7. agrega tests del caso de uso con un fake generator;
+8. agrega tests del generator con template y dataset pequeños.
+
+No ejecutes todos los pasos si uno no aporta testabilidad real en el estado actual del repo.
 
 ## Inventario mínimo
 
@@ -148,9 +189,9 @@ filters: Array<{ name: string; value: unknown }>
 
 pero no debería decidir por sí mismo qué significa un estado, área, producto o usuario. Esa decisión pertenece al caso de uso o mapper de aplicación.
 
-## Fronteras recomendadas
+## Cortes posibles
 
-Usa nombres alineados con la arquitectura objetivo:
+Usa nombres alineados con la arquitectura objetivo cuando ayuden a expresar el corte:
 
 ```text
 domain/ports/<capability>.generator.ts
@@ -209,6 +250,7 @@ Cuando aplique, registra en `.migration/functions/<function-name>/analysis.md`, 
 
 ## No hacer
 
+- No tratar un smell como arquitectura objetivo.
 - No meter reglas de negocio dentro del template JSON.
 - No cambiar nombres, orden o formato de columnas sin evidencia y aprobación.
 - No reemplazar streaming por `writeBuffer` para simplificar si el reporte puede ser grande.

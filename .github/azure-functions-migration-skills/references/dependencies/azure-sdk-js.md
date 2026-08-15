@@ -121,6 +121,7 @@ Fuentes a comprobar por paquete:
 - `@azure/functions`: npm y guía oficial de Programming Model v4.
 - `durable-functions`: npm y guía oficial Durable Functions Node.js v4.
 - SDKs `@azure/*`: índice oficial Azure SDK, releases oficiales y README/changelog del paquete.
+- `@azure/cosmos`: carga también `../infrastructure/cosmos-mongo-persistence.md` si el cambio afecta queries, paginación o repositorios.
 
 ## Alcance
 

@@ -69,4 +69,5 @@ Termina cuando los comportamientos de mayor valor/riesgo disponen de evidencia e
 - `../../references/testing/jest.md`: estrategia, TypeScript, coverage y dobles de prueba.
 - `../../references/azure-functions/programming-model-v4.md`: solo si se prueba directamente un adapter/handler v4.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si se prueban generators ExcelJS, templates o streaming de documentos.
+- `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si se prueban repositorios, query builders, paginación/cursors o mappers Cosmos/Mongo.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

@@ -28,15 +28,16 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 5. Inventaría variables de entorno y settings usados por la Function, solo por nombre.
 6. Detecta responsabilidades mezcladas y acoplamiento al runtime/SDK.
 7. Identifica componentes compartidos y sus consumidores conocidos.
-8. Si la Function genera documentos Excel/CSV, identifica contrato de template, filtros, origen, destino y volumen esperado.
-9. Si encuentra servicios monolíticos o god files, produce un mapa de slicing por capability antes de proponer movimientos.
-10. Propone una separación conceptual mínima:
+8. Si la Function lee Cosmos/Mongo, identifica smells de query, filtros, paginación/cursor, mapeo y contrato de salida.
+9. Si la Function genera documentos Excel/CSV, identifica smells de template, filtros, origen, destino y volumen esperado.
+10. Si encuentra servicios monolíticos o god files, produce un mapa de slicing por capability antes de proponer movimientos.
+11. Propone una separación conceptual mínima:
    - adapter/composition root Azure;
    - lógica de aplicación;
    - dominio cuando exista;
    - límites de infraestructura necesarios.
-11. Define escenarios de comportamiento que deberían preservarse durante la transformación.
-12. Declara incertidumbres que requieran evidencia adicional.
+12. Define escenarios de comportamiento que deberían preservarse durante la transformación.
+13. Declara incertidumbres que requieran evidencia adicional.
 
 ## No hacer
 
@@ -56,7 +57,8 @@ La salida debe permitir entender:
 - qué settings y bindings debe preservar;
 - qué parte es Azure, negocio e infraestructura;
 - qué responsabilidades podrían separarse por capability;
-- qué contrato de generación de documentos debe preservarse cuando exista;
+- qué smells de persistencia/query bloquean testabilidad cuando existan;
+- qué smells de generación de documentos bloquean testabilidad cuando existan;
 - qué separación arquitectónica mínima tendría sentido.
 
 Cuando exista `.migration/`, registra esta evidencia según `../../references/evidence/migration-artifacts.md` y reutiliza el assessment global vigente como inventario inicial.
@@ -74,5 +76,6 @@ Carga según lo observado:
 - `../../references/architecture/function-architecture.md`: para proponer separación conceptual mínima.
 - `../../references/architecture/capability-slicing.md`: solo si detecta servicios monolíticos, god files o responsabilidades mezcladas entre capabilities.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si detecta ExcelJS, streams o templates de reporte.
+- `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si detecta Cosmos DB, MongoDB, query iterators, cursors o mapeo de documentos.
 - `../../references/azure-functions/durable-v4.md`: únicamente si se detecta Durable Functions.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.

@@ -34,10 +34,11 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 8. Crea únicamente carpetas, interfaces y módulos que tengan uso inmediato.
 9. Divide servicios monolíticos por responsabilidad, no por cantidad de métodos.
 10. Usa el mapa de slicing vigente cuando exista; si no existe y el riesgo es alto, registra el bloqueo antes de mover.
-11. Si hay generación Excel/CSV, separa filtros y reglas en aplicación y deja ExcelJS en infraestructura de documento.
-12. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
-13. Documenta cambios deseables fuera de alcance como deuda técnica o mejora futura.
-14. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
+11. Si hay persistencia Cosmos/Mongo, corrige el smell de menor riesgo que permita probar query, paginación o mapping sin base real.
+12. Si hay generación Excel/CSV, corrige el smell de menor riesgo que permita probar filtros, template o generator sin acoplarse al flujo completo.
+13. Si una pieza tiene varios consumidores, no la refactorices como parte exclusiva de esta Function; trátala como componente compartido.
+14. Documenta cambios deseables fuera de alcance como deuda técnica o mejora futura.
+15. Comprueba de forma incremental que el comportamiento preservado sigue siendo consistente.
 
 ## No hacer
 
@@ -53,6 +54,7 @@ Antes de ejecutar, aplica `../../principles/copilot-rules.md`.
 Registra:
 
 - responsabilidades movidas;
+- smells tratados y evidencia que justificó cada corte;
 - límites creados y razón;
 - estructura y naming aplicados;
 - dependency injection aplicada o descartada con razón;
@@ -72,5 +74,6 @@ Termina cuando la Function tiene límites suficientemente claros para probar neg
 - `../../references/architecture/function-architecture.md`: arquitectura objetivo y criterios para evitar sobrearquitectura.
 - `../../references/architecture/capability-slicing.md`: solo si se divide un servicio monolítico, god file o módulo con responsabilidades mezcladas.
 - `../../references/infrastructure/exceljs-document-generation.md`: solo si se refactoriza generación Excel/CSV, streaming o templates.
+- `../../references/infrastructure/cosmos-mongo-persistence.md`: solo si se refactoriza persistencia Cosmos/Mongo, queries o mappers de documentos.
 - `../../references/planning/migration-scope-and-debt.md`: cambios fuera de alcance, deuda y mejoras futuras.
 - `../../references/evidence/migration-artifacts.md`: contrato de evidencia reutilizable bajo `.migration/`.
