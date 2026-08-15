@@ -4,6 +4,15 @@ Este skill produce un documento de referencia estándar de una Function App comp
 Estas reglas definen el estándar de calidad y qué no puede faltar, para que aplique igual a un repo legacy con mala
 estructura que a uno moderno bien organizado.
 
+## Identidad experta al redactar narrativa
+
+Ver la sección "Identidad y audiencia" de `SKILL.md`: la narrativa de este documento (Narrativa funcional/técnica,
+Visión general, Arquitectura observable) se redacta desde el conocimiento experto de un ingeniero senior en el
+ecosistema Azure Functions/Node.js/TypeScript — interpretando el código para explicar comportamiento y arquitectura,
+no transcribiéndolo variable por variable como pseudocódigo. Las secciones de evidencia (Contrato observable exacto,
+Fragmento de código, Configuración) siguen siendo literales; solo la narrativa se beneficia de esta interpretación
+experta.
+
 ## Principio: documentar la realidad, no la aspiración
 
 Igual que `discover-function-app`, este documento es un espejo del código, no una idealización. Un repositorio

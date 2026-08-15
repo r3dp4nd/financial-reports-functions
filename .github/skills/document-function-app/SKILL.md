@@ -17,6 +17,37 @@ migración) y `analyze-function` (que produce impacto de migración por Function
 Function App, aplicable igual a código legacy (`function.json`) o moderno (Programming Model v4), y a repositorios
 con buena o mala estructura.
 
+## Identidad y audiencia
+
+Al redactar la narrativa de este documento, actuar como un ingeniero de software senior con dominio experto y
+actualizado del ecosistema completo de Azure Functions en Node.js/TypeScript:
+
+- Programming Model v3 (`function.json` + bindings) y v4 (registro por código, `app.http`/`app.timer`/
+  `app.serviceBusQueue`/etc.);
+- Durable Functions (orchestrator, activity, entity, sub-orchestrator, `durable-functions` v1.x/v3.x);
+- SDKs de Azure más comunes en este contexto: `@azure/cosmos`, `@azure/service-bus`, `@azure/storage-blob`,
+  `@azure/event-hubs`, `@azure/identity`, y sus patrones de uso (clients, bindings, triggers, retry policies, bulk
+  operations, `RetryOptions`, offer/throughput, paginación con continuation tokens, etc.);
+- Azure Functions Core Tools, `host.json`, `extensionBundle`, triggers/bindings legacy vs. code-first.
+
+Usar ese conocimiento de dominio para **interpretar** el código y explicar qué hace y por qué en términos de
+arquitectura y comportamiento del sistema, no para transcribirlo literalmente variable por variable. Si el
+repositorio usa un SDK o patrón no listado arriba, aplicar el mismo criterio experto general: identificar el
+propósito del código en el ecosistema Azure, no solo describir su sintaxis.
+
+Audiencias distintas por sección del documento por Function:
+
+- **Narrativa funcional**: un stakeholder no técnico o un dev nuevo en el equipo — cero jerga de implementación.
+- **Narrativa técnica**: un dev/arquitecto que necesita entender el diseño para decidir sobre él (migrar, refactor,
+  debug) — vocabulario técnico correcto, en prosa fluida, no enumeración de líneas de código.
+- **Secciones de evidencia** (Contrato observable exacto, Fragmento de código, Configuración): estas sí deben ser
+  literales — ahí la fidelidad al código es la audiencia (verificación por humano o por `verify-function-app`), no
+  la comprensión narrativa.
+
+Regla de oro: nombrar variables/identificadores reales solo donde aporte trazabilidad (ligar la prosa a la
+evidencia), nunca como sustituto de explicar el comportamiento. El fragmento de código exacto ya vive aparte, en su
+propia sección — la narrativa no debe duplicarlo como pseudocódigo.
+
 ## Reuso obligatorio — no reimplementar lo que ya existe
 
 Este skill **no vuelve a escanear el repositorio desde cero** si ya existe evidencia vigente:

@@ -65,6 +65,11 @@ oficial de una API/método que deba citarse literal:
 | shared resource       | recurso compartido                             |
 | consumer / consumers  | consumidor / consumidores                      |
 | trigger (genérico)    | disparador                                     |
+| throughput            | capacidad/rendimiento aprovisionado            |
+| backoff (exponencial) | espera creciente / incremental                 |
+| retry / retries       | reintento / reintentos                         |
+| bug                   | error / defecto                                |
+| offer (Cosmos RU)      | capacidad aprovisionada (mantener `RU`/`offer` como sigla técnica reconocida cuando se cite literal) |
 
 Si aparece un término técnico sin equivalente natural en el uso común de desarrolladores hispanohablantes, dejarlo en
 inglés en vez de forzar una traducción forzada o poco usada.

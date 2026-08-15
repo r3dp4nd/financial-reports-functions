@@ -17,6 +17,24 @@
 ```ts
 ```
 
+## Narrativa
+
+> Ver la sección "Identidad y audiencia" de `SKILL.md`: interpretar el código con dominio experto del ecosistema
+> Azure Functions, explicando qué hace y por qué en prosa fluida — no transcribir variables/líneas de código como
+> pseudocódigo. Nombrar identificadores reales solo cuando aporte trazabilidad hacia la evidencia, nunca como
+> sustituto de la explicación. El detalle literal exacto vive en "Contrato observable" y "Fragmento de código
+> relevante" más abajo.
+
+### Narrativa funcional (para onboarding no-técnico)
+
+Qué problema de negocio resuelve esta Function, en 2-4 frases, sin jerga técnica. Si el propósito de negocio no es
+100% claro desde la evidencia disponible, decirlo explícitamente en vez de asumirlo.
+
+### Narrativa técnica (para onboarding técnico)
+
+Cómo lo hace, en prosa fluida (paginación, batching, reintentos, validaciones, gestión de throughput, etc.),
+siempre trazable a la sección "Contrato observable" o al fragmento de código citado más abajo.
+
 ## Contrato observable
 
 ### Entrada
